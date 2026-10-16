@@ -37,10 +37,11 @@ img { display: block; max-width: 100%; }
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 850; letter-spacing: 1.6px; }
 .brand-symbol {
-  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px;
-  background: linear-gradient(135deg, var(--blue), var(--violet) 65%, var(--magenta));
-  color: #080b14; font-size: 23px; font-weight: 950; box-shadow: 0 0 26px #755dff35;
+  display: block; flex: 0 0 38px; width: 38px; height: 38px; object-fit: contain;
+  border-radius: 11px; background: transparent; box-shadow: 0 0 24px #755dff20;
 }
+.brand-symbol:hover { filter: brightness(1.08); }
+
 .topbar-actions { display: flex; align-items: center; gap: 8px; }
 .icon-button {
   display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid transparent;
