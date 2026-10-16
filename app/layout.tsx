@@ -3,6 +3,7 @@ import "./app/globals.css";
 
 export const metadata: Metadata = {
   title: "Nexora — Conectando pessoas, marcas e oportunidades",
+  icons: { icon: "/nexora-logo.svg" },
   description:
     "Descubra criadores, conecte-se a marcas e encontre novas oportunidades na Nexora.",
 };
