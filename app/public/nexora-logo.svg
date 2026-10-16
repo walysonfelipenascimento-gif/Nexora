@@ -1,31 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
   <defs>
-    <linearGradient id="front" x1="100" y1="100" x2="400" y2="420" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22F0E0"/>
-      <stop offset=".28" stop-color="#16C8E9"/>
-      <stop offset=".54" stop-color="#438BFF"/>
-      <stop offset=".78" stop-color="#865BFF"/>
-      <stop offset="1" stop-color="#D84DFA"/>
+    <linearGradient id="nexora-face" x1="128" y1="112" x2="397" y2="398" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#28F3E4"/>
+      <stop offset=".24" stop-color="#19D6E7"/>
+      <stop offset=".48" stop-color="#218FEF"/>
+      <stop offset=".7" stop-color="#5369FF"/>
+      <stop offset=".86" stop-color="#8B4DFF"/>
+      <stop offset="1" stop-color="#D34BFA"/>
     </linearGradient>
-    <linearGradient id="side" x1="110" y1="140" x2="420" y2="390" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#087EAA"/>
-      <stop offset=".52" stop-color="#263FC2"/>
-      <stop offset="1" stop-color="#6B239F"/>
+    <linearGradient id="nexora-depth" x1="160" y1="140" x2="405" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#087A9C"/>
+      <stop offset=".42" stop-color="#174CBA"/>
+      <stop offset=".72" stop-color="#3C31B5"/>
+      <stop offset="1" stop-color="#70239E"/>
     </linearGradient>
-    <linearGradient id="shine" x1="100" y1="90" x2="280" y2="270" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#7FFFF4"/>
-      <stop offset="1" stop-color="#36B8FF" stop-opacity="0"/>
+    <linearGradient id="nexora-gloss" x1="128" y1="120" x2="278" y2="265" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B4FFF8"/>
+      <stop offset=".5" stop-color="#7AEAFF" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
     </linearGradient>
-    <filter id="glow" x="20" y="20" width="472" height="472" filterUnits="userSpaceOnUse">
-      <feGaussianBlur stdDeviation="14"/>
+    <filter id="soft-glow" x="55" y="55" width="410" height="410" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="13"/>
     </filter>
   </defs>
   <rect width="512" height="512" rx="112" fill="#080B14"/>
-  <path d="M122 370V142Q122 126 138 126H166L350 326V142Q350 126 366 126H390V370H359L162 158V354Q162 370 146 370H122Z" fill="url(#front)" opacity=".42" filter="url(#glow)"/>
-  <!-- Extruded depth faces -->
-  <path d="M151 383V171L177 171L369 374V159L400 159V400H376L182 194V383H151Z" fill="url(#side)"/>
-  <path d="M112 365V131Q112 113 130 113H157L344 315V131Q344 113 362 113H388V365H359L153 146V347Q153 365 135 365H112Z" fill="url(#front)"/>
-  <!-- polished inner highlights -->
-  <path d="M127 347V132Q127 128 132 128H151L350 343V132Q350 128 355 128H372" stroke="url(#shine)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
-  <path d="M112 131Q112 113 130 113H157L344 315V131Q344 113 362 113H388" stroke="#A6FFF7" stroke-opacity=".42" stroke-width="3" stroke-linejoin="round"/>
+  <!-- subtle neon aura -->
+  <path d="M145 369V145L367 369V145" stroke="url(#nexora-face)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" opacity=".65" filter="url(#soft-glow)"/>
+  <!-- deep extruded body, offset down-right -->
+  <path d="M168 390V169L390 390V169" stroke="url(#nexora-depth)" stroke-width="57" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- rounded, continuous main N -->
+  <path d="M137 365V145L359 365V145" stroke="url(#nexora-face)" stroke-width="57" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- glossy edge and dimensional lighting -->
+  <path d="M126 350V147Q126 133 139 145L359 365V145" stroke="url(#nexora-gloss)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+  <path d="M117 151Q117 118 145 128" stroke="#B7FFF8" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+  <path d="M358 145V365" stroke="#E8C5FF" stroke-width="3" stroke-linecap="round" opacity=".35"/>
 </svg>
