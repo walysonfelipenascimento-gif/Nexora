@@ -147,7 +147,7 @@ export default function Home() {
     <main className="nexora-app">
       <header className="topbar">
         <div className="brand">
-          <div className="brand-symbol">N</div>
+          <img className="brand-symbol" src="/nexora-logo.svg" alt="Nexora" />
           <span>Nexora</span>
         </div>
 
