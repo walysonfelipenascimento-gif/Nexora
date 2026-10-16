@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="nexora-gradient" x1="15" y1="12" x2="111" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#47C8FF"/>
+      <stop offset=".52" stop-color="#9B72FF"/>
+      <stop offset="1" stop-color="#EC62D8"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <rect x="5" y="5" width="118" height="118" rx="32" fill="#080B14" stroke="url(#nexora-gradient)" stroke-opacity=".42" stroke-width="2"/>
+  <path d="M34 91V37L94 91V37" stroke="url(#nexora-gradient)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+  <path d="M34 91V37L94 91V37" stroke="url(#nexora-gradient)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
