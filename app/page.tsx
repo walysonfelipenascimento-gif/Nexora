@@ -32,6 +32,45 @@ export default function Home() {
   const [savedOpportunities, setSavedOpportunities] = useState<string[]>([]);
   const [opportunityFilter, setOpportunityFilter] = useState("Todas");
   const [opportunityQuery, setOpportunityQuery] = useState("");
+  const [localStateHydrated, setLocalStateHydrated] = useState(false);
+
+  // Mantém rascunhos, publicações de demonstração e preferências neste aparelho.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("nexora-feed-state-v1");
+      if (saved) {
+        const parsed = JSON.parse(saved) as {
+          posts?: Post[];
+          savedPosts?: Array<string | number>;
+          followedUsers?: string[];
+          savedOpportunities?: string[];
+        };
+        if (Array.isArray(parsed.posts)) setPosts(parsed.posts);
+        if (Array.isArray(parsed.savedPosts)) setSavedPosts(parsed.savedPosts);
+        if (Array.isArray(parsed.followedUsers)) setFollowedUsers(parsed.followedUsers);
+        if (Array.isArray(parsed.savedOpportunities)) setSavedOpportunities(parsed.savedOpportunities);
+      }
+    } catch {
+      // Um estado local inválido não deve impedir a abertura do feed.
+      window.localStorage.removeItem("nexora-feed-state-v1");
+    } finally {
+      setLocalStateHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!localStateHydrated) return;
+    try {
+      window.localStorage.setItem("nexora-feed-state-v1", JSON.stringify({
+        posts,
+        savedPosts,
+        followedUsers,
+        savedOpportunities,
+      }));
+    } catch {
+      // O feed continua utilizável mesmo se o navegador bloquear o armazenamento.
+    }
+  }, [localStateHydrated, posts, savedPosts, followedUsers, savedOpportunities]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -85,7 +124,10 @@ export default function Home() {
           comments: commentsByPost.get(row.id) ?? [],
         };
       });
-      setPosts(databasePosts);
+      setPosts((current) => [
+        ...databasePosts,
+        ...current.filter((post) => post.isOwn && !databasePosts.some((databasePost) => databasePost.id === post.id)),
+      ]);
       setDatabaseFeedLoaded(true);
     }
 
@@ -338,7 +380,7 @@ export default function Home() {
             </div>
 
             {visiblePosts.length === 0 && <div className="no-results"><span>⌕</span><h2>Nada por aqui ainda</h2><p>Tente outra busca ou publique a primeira ideia com esse tema.</p><button className="primary-button" onClick={() => { setSearchQuery(""); setActiveFeed("for-you"); }}>Limpar filtros</button></div>}
-            <p className="demo-notice">{databaseFeedLoaded ? "Feed carregado do banco de dados da Nexora. Publicar e interagir ainda depende da etapa de autenticação." : "As publicações de exemplo são demonstrativas. O feed real será exibido quando houver publicações no banco; publicar e interagir com persistência depende da etapa de autenticação."}</p>
+            <p className="demo-notice">{databaseFeedLoaded ? "Feed conectado ao banco da Nexora. Suas publicações locais e preferências ficam salvas neste aparelho; sincronização entre contas será ativada na etapa de autenticação." : "Feed demonstrativo: publicações, curtidas, comentários e preferências ficam salvos neste aparelho. A sincronização entre dispositivos exige a próxima etapa de autenticação."}</p>
           </>
         ) : activeTab === "explorar" ? (
           <section className="explore-section">
@@ -407,7 +449,7 @@ export default function Home() {
 
       {activeStory && <div className="story-viewer-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) setActiveStory(null); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`} style={{backgroundImage: `linear-gradient(180deg,#10091555,#10091508 45%,#100915d9),url(${activeStory.own ? "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=900&h=1500&fit=crop" : activeStory.image.replace("w=160&h=160","w=900&h=1500")})`}}><div className="story-progress"><span /></div><header className="story-viewer-header"><img src={activeStory.image || "/nexora-logo.svg"} alt="" /><div><strong>{activeStory.own ? "Seu story" : activeStory.name}</strong><small>{activeStory.own ? "Agora mesmo" : "há 12 min"}</small></div><button onClick={() => setActiveStory(null)} aria-label="Fechar story">×</button></header><div className="story-viewer-bottom"><label><input placeholder="Adicionar um comentário..." aria-label="Adicionar comentário" /><button onClick={() => alert("Os comentários de stories serão salvos quando a conta estiver conectada.")}>Enviar</button></label><button className="story-heart" onClick={() => alert("Curtida registrada nesta demonstração.")} aria-label="Curtir story">♡</button></div></section></div>}
 
-      {showComposer && <div className="composer-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) setShowComposer(false); }}><section className="composer-modal" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-title-row"><div><p className="eyebrow">SUA VOZ, SEU ESPAÇO</p><h2 id="composer-title">Criar publicação</h2></div><button className="composer-close" onClick={() => setShowComposer(false)} aria-label="Fechar">×</button></div><div className="composer-user"><span className="quick-avatar">L</span><div><strong>Licinhosz.bb</strong><small>Compartilhando com a comunidade</small></div></div><form onSubmit={(event) => { event.preventDefault(); publishPost(); }}><textarea autoFocus value={composerText} onChange={(event) => setComposerText(event.target.value)} maxLength={1000} placeholder="O que você quer compartilhar hoje?" aria-label="Texto da publicação" /><div className="composer-footer"><span>{composerText.length}/1000</span><button className="primary-button" type="submit" disabled={!composerText.trim()}>Publicar agora ↗</button></div><p className="composer-note">Nesta etapa, você já pode publicar texto no feed desta sessão. Fotos, vídeos e salvamento permanente entram na integração de backend.</p></form></section></div>}
+      {showComposer && <div className="composer-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) setShowComposer(false); }}><section className="composer-modal" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-title-row"><div><p className="eyebrow">SUA VOZ, SEU ESPAÇO</p><h2 id="composer-title">Criar publicação</h2></div><button className="composer-close" onClick={() => setShowComposer(false)} aria-label="Fechar">×</button></div><div className="composer-user"><span className="quick-avatar">L</span><div><strong>Licinhosz.bb</strong><small>Compartilhando com a comunidade</small></div></div><form onSubmit={(event) => { event.preventDefault(); publishPost(); }}><textarea autoFocus value={composerText} onChange={(event) => setComposerText(event.target.value)} maxLength={1000} placeholder="O que você quer compartilhar hoje?" aria-label="Texto da publicação" /><div className="composer-footer"><span>{composerText.length}/1000</span><button className="primary-button" type="submit" disabled={!composerText.trim()}>Publicar agora ↗</button></div><p className="composer-note">Nesta etapa, publicações de texto e suas interações ficam salvas neste aparelho. Sincronização entre dispositivos, fotos e vídeos serão conectados nas próximas etapas.</p></form></section></div>}
 
       <nav className="bottom-nav" aria-label="Navegação principal">
         {navigation.map((item) => (
