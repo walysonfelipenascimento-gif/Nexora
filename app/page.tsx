@@ -88,6 +88,7 @@ const initialPosts: Post[] = [
 
 const navigation = [
   { id: "inicio", label: "Início", icon: "⌂" },
+  { id: "reels", label: "Reels", icon: "▶" },
   { id: "explorar", label: "Explorar", icon: "⌕" },
   { id: "criar", label: "Criar", icon: "+" },
   { id: "oportunidades", label: "Oportunidades", icon: "◇" },
@@ -131,6 +132,11 @@ export default function Home() {
   }
 
   function handleNavigation(tab: string) {
+    if (tab === "reels") {
+      window.location.href = "/reels";
+      return;
+    }
+
     if (tab === "criar") {
       alert("A publicação de fotos e vídeos será implementada na próxima etapa.");
       return;
