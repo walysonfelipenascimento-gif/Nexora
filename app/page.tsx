@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 type FeedPost = {
   id: number;
@@ -16,7 +16,9 @@ type FeedPost = {
   verified?: boolean;
 };
 
-const stories = [
+type StoryItem = { name: string; own?: boolean; verified?: boolean; image: string; mediaType?: "image" | "video"; caption?: string; id?: string };
+
+const initialStories: StoryItem[] = [
   { name: "Adicionar", own: true, image: "" },
   { name: "Camila", verified: true, image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&h=180&fit=crop&crop=faces" },
   { name: "Ramo_22", verified: true, image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=180&h=180&fit=crop&crop=faces" },
@@ -55,8 +57,14 @@ export default function Home() {
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerText, setComposerText] = useState("");
-  const [activeStory, setActiveStory] = useState<(typeof stories)[number] | null>(null);
+  const [stories, setStories] = useState<StoryItem[]>(initialStories);
+  const [activeStory, setActiveStory] = useState<StoryItem | null>(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(1);
+  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
+  const [storyPreview, setStoryPreview] = useState("");
+  const [storyFile, setStoryFile] = useState<File | null>(null);
+  const [storyCaption, setStoryCaption] = useState("");
+  const storyInputRef = useRef<HTMLInputElement>(null);
   const [notice, setNotice] = useState("");
 
   function publish() {
@@ -99,7 +107,7 @@ export default function Home() {
 
       <section className="stories-rail" aria-label="Stories">
         {stories.map((story) => (
-          <button className="story" key={story.name} onClick={() => { if (story.own) setComposerOpen(true); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
+          <button className="story" key={story.name} onClick={() => { if (story.own) setStoryComposerOpen(true); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
             <span className={`story-ring ${story.own ? "story-own" : ""}`}>
               {story.own ? <span className="story-plus">＋</span> : <img src={story.image} alt="" />}
             </span>
@@ -150,7 +158,9 @@ export default function Home() {
 
       {notice && <div className="toast" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Fechar aviso">×</button></div>}
 
-      {activeStory && <div className="story-overlay" onClick={event => { if (event.target === event.currentTarget) setActiveStory(null); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`}><div className="story-progress"><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name} <small>· agora</small></strong><button onClick={() => setActiveStory(null)} aria-label="Fechar">×</button></header><img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt="" /><button className="story-hit story-hit-prev" aria-label="Story anterior" onClick={() => { const next = Math.max(1, activeStoryIndex - 1); setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><button className="story-hit story-hit-next" aria-label="Próximo Story" onClick={() => { const next = activeStoryIndex >= stories.length - 1 ? 1 : activeStoryIndex + 1; setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><div className="story-bottom-bubbles" aria-label="Navegar entre Stories">{stories.slice(1).map((story, index) => <button key={story.name} className={`story-bubble ${stories.indexOf(story) === activeStoryIndex ? "active" : ""}`} onClick={() => { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); }}><span><img src={story.image} alt="" /></span><small>{story.name}</small></button>)}</div></section></div>}
+      {activeStory && <div className="story-overlay" onClick={event => { if (event.target === event.currentTarget) setActiveStory(null); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`}><div className="story-progress"><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name} <small>· agora</small></strong><button onClick={() => setActiveStory(null)} aria-label="Fechar">×</button></header>{activeStory.mediaType === "video" ? <video className="story-full-image" src={activeStory.image} autoPlay playsInline /> : <img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt={activeStory.caption || `Story de ${activeStory.name}`} />}{activeStory.caption && <p className="story-caption">{activeStory.caption}</p>}<button className="story-hit story-hit-prev" aria-label="Story anterior" onClick={() => { const next = Math.max(1, activeStoryIndex - 1); setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><button className="story-hit story-hit-next" aria-label="Próximo Story" onClick={() => { const next = activeStoryIndex >= stories.length - 1 ? 1 : activeStoryIndex + 1; setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><div className="story-bottom-bubbles" aria-label="Navegar entre Stories">{stories.filter(item => !item.own || item.image).map(story => <button key={story.id || story.name} className={`story-bubble ${story.name === activeStory.name ? "active" : ""}`} onClick={() => { const index = stories.indexOf(story); setActiveStoryIndex(index); setActiveStory(story); }}><span><img src={story.image} alt="" /></span><small>{story.name}</small></button>)}</div></section></div>}
+
+      {storyComposerOpen && <div className="overlay story-composer-overlay" onClick={event => { if (event.target === event.currentTarget) setStoryComposerOpen(false); }}><section className="composer story-composer" role="dialog" aria-modal="true" aria-labelledby="story-composer-title"><header><div><small>NEXORA · STORIES</small><h2 id="story-composer-title">Criar Story</h2></div><button onClick={() => setStoryComposerOpen(false)} aria-label="Fechar">×</button></header><input ref={storyInputRef} className="story-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) { setNotice("Escolha uma foto ou vídeo."); return; } if (file.size > 50 * 1024 * 1024) { setNotice("O arquivo deve ter até 50 MB."); return; } setStoryFile(file); setStoryPreview(URL.createObjectURL(file)); }} /><button className="story-media-picker" onClick={() => storyInputRef.current?.click()}>{storyPreview ? (storyFile?.type.startsWith("video/") ? <video src={storyPreview} muted playsInline /> : <img src={storyPreview} alt="Prévia do Story" />) : <span><b>＋</b>Escolher foto ou vídeo</span>}</button><textarea value={storyCaption} onChange={event => setStoryCaption(event.target.value)} maxLength={180} placeholder="Adicione uma legenda (opcional)..." /><footer><span>{storyCaption.length}/180</span><button disabled={!storyFile || !storyPreview} onClick={() => { if (!storyFile || !storyPreview) return; const ownStory: StoryItem = { name: "Licinhosz.bb", own: true, image: storyPreview, mediaType: storyFile.type.startsWith("video/") ? "video" : "image", caption: storyCaption.trim(), id: `local-${Date.now()}` }; setStories(current => [current[0], ownStory, ...current.slice(1).filter(item => !item.own || !item.image)]); setActiveStoryIndex(1); setActiveStory(ownStory); setStoryComposerOpen(false); setStoryFile(null); setStoryPreview(""); setStoryCaption(""); setNotice("Story publicado nesta sessão do navegador."); }}>Publicar Story ↗</button></footer><p>O Story fica nesta sessão do navegador; a sincronização entre contas será conectada ao backend na etapa de persistência.</p></section></div>}
 
       {composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><header><div><small>NEXORA · SUA COMUNIDADE</small><h2 id="composer-title">Criar publicação</h2></div><button onClick={() => setComposerOpen(false)} aria-label="Fechar">×</button></header><textarea value={composerText} onChange={event => setComposerText(event.target.value)} maxLength={1000} placeholder="Compartilhe algo com o mundo..." /><footer><span>{composerText.length}/1000</span><button disabled={!composerText.trim()} onClick={publish}>Publicar ↗</button></footer><p>Esta primeira etapa é uma demonstração visual; publicações e interações ainda não são sincronizadas com outras contas.</p></section></div>}
 
