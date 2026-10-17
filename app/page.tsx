@@ -20,6 +20,7 @@ type Post = {
   likes: number;
   liked: boolean;
   comments: string[];
+  isOwn?: boolean;
 };
 
 const stories: Story[] = [
@@ -99,6 +100,12 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("inicio");
   const [openComments, setOpenComments] = useState<number | null>(null);
   const [drafts, setDrafts] = useState<Record<number, string>>({});
+  const [activeFeed, setActiveFeed] = useState<"for-you" | "following">("for-you");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showComposer, setShowComposer] = useState(false);
+  const [composerText, setComposerText] = useState("");
+  const [savedPosts, setSavedPosts] = useState<number[]>([]);
+  const [followedUsers, setFollowedUsers] = useState<string[]>(["marianacosta"]);
 
   function toggleLike(postId: number) {
     setPosts((current) =>
@@ -130,18 +137,43 @@ export default function Home() {
     setDrafts((current) => ({ ...current, [postId]: "" }));
   }
 
+  function publishPost() {
+    const caption = composerText.trim();
+    if (!caption) return;
+    const newPost: Post = {
+      id: Date.now(),
+      name: "Licinhosz.bb",
+      username: "licinhosz.bb",
+      avatar: "",
+      image: "",
+      location: "Na Nexora",
+      caption,
+      likes: 0,
+      liked: false,
+      comments: [],
+      isOwn: true,
+    };
+    setPosts((current) => [newPost, ...current]);
+    setComposerText("");
+    setShowComposer(false);
+    setActiveTab("inicio");
+    setActiveFeed("for-you");
+  }
+
   function handleNavigation(tab: string) {
     if (tab === "criar") {
-      alert("A publicação de fotos e vídeos será implementada na próxima etapa.");
+      setShowComposer(true);
       return;
     }
-
     setActiveTab(tab);
-
-    if (tab === "perfil") {
-      alert("Os perfis pessoais serão conectados na próxima etapa.");
-    }
   }
+
+  const visiblePosts = posts.filter((post) => {
+    const query = searchQuery.trim().toLocaleLowerCase("pt-BR");
+    const matchesSearch = !query || `${post.name} ${post.username} ${post.caption} ${post.location}`.toLocaleLowerCase("pt-BR").includes(query);
+    const matchesFeed = activeFeed === "for-you" || post.isOwn || followedUsers.includes(post.username);
+    return matchesSearch && matchesFeed;
+  });
 
   return (
     <main className="nexora-app">
@@ -161,12 +193,10 @@ export default function Home() {
           </button>
           <button
             className="icon-button"
-            aria-label="Notificações"
-            onClick={() =>
-              alert("As notificações serão implementadas na próxima etapa.")
-            }
+            aria-label="Criar publicação"
+            onClick={() => setShowComposer(true)}
           >
-            ♡
+            ＋
           </button>
         </div>
       </header>
@@ -226,20 +256,26 @@ export default function Home() {
                 <p className="eyebrow">FEITO PARA DESCOBRIR</p>
                 <h1>Seu feed</h1>
               </div>
-              <span className="live-indicator">
-                <span /> Descubra novidades
-              </span>
+              <span className="live-indicator"><span /> Comunidade em movimento</span>
             </section>
 
+            <div className="feed-tools">
+              <label className="feed-search"><span>⌕</span><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Buscar pessoas, ideias e publicações" aria-label="Buscar no feed" /></label>
+              <div className="feed-switch" role="group" aria-label="Tipo de feed">
+                <button className={activeFeed === "for-you" ? "selected" : ""} onClick={() => setActiveFeed("for-you")}>Para você</button>
+                <button className={activeFeed === "following" ? "selected" : ""} onClick={() => setActiveFeed("following")}>Seguindo</button>
+              </div>
+            </div>
+
+            <button className="quick-composer" onClick={() => setShowComposer(true)}>
+              <span className="quick-avatar">L</span><span>Compartilhe uma ideia com a comunidade...</span><strong>＋</strong>
+            </button>
+
             <div className="posts-list">
-              {posts.map((post) => (
+              {visiblePosts.map((post) => (
                 <article className="post-card" key={post.id}>
                   <div className="post-header">
-                    <img
-                      className="avatar"
-                      src={post.avatar}
-                      alt={`Foto de ${post.name}`}
-                    />
+                    {post.avatar ? <img className="avatar" src={post.avatar} alt={`Foto de ${post.name}`} /> : <span className="avatar avatar-fallback">{post.name.charAt(0)}</span>}
 
                     <div className="post-author">
                       <strong>{post.name}</strong>
@@ -248,22 +284,13 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <button
-                      className="more-button"
-                      aria-label="Mais opções"
-                      onClick={() =>
-                        alert("As opções de denúncia e bloqueio serão implementadas na próxima etapa.")
-                      }
-                    >
-                      ⋯
-                    </button>
+                    <div className="post-header-actions">
+                      {!post.isOwn && <button className={`follow-button ${followedUsers.includes(post.username) ? "is-following" : ""}`} onClick={() => setFollowedUsers((current) => current.includes(post.username) ? current.filter((name) => name !== post.username) : [...current, post.username])}>{followedUsers.includes(post.username) ? "Seguindo" : "Seguir"}</button>}
+                      <button className="more-button" aria-label="Mais opções" onClick={() => setSavedPosts((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id])}>{savedPosts.includes(post.id) ? "◆" : "⋯"}</button>
+                    </div>
                   </div>
 
-                  <img
-                    className="post-image"
-                    src={post.image}
-                    alt={`Publicação de ${post.name}`}
-                  />
+                  {post.image ? <img className="post-image" src={post.image} alt={`Publicação de ${post.name}`} /> : <div className="text-post-visual"><span>✦ NEXORA</span><p>{post.caption}</p><small>Uma ideia compartilhada pela comunidade</small></div>}
 
                   <div className="post-content">
                     <div className="post-actions">
@@ -287,15 +314,8 @@ export default function Home() {
                         ◯
                       </button>
 
-                      <button
-                        className="action-button"
-                        aria-label="Compartilhar"
-                        onClick={() =>
-                          alert("O compartilhamento será implementado na próxima etapa.")
-                        }
-                      >
-                        ↗
-                      </button>
+                      <button className={`action-button ${savedPosts.includes(post.id) ? "liked" : ""}`} aria-label={savedPosts.includes(post.id) ? "Remover dos salvos" : "Salvar publicação"} onClick={() => setSavedPosts((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id])}>{savedPosts.includes(post.id) ? "◆" : "◇"}</button>
+                      <button className="action-button" aria-label="Compartilhar" onClick={() => { if (typeof navigator !== "undefined" && navigator.share) { navigator.share({ title: `Nexora · @${post.username}`, text: post.caption }).catch(() => undefined); } else if (typeof navigator !== "undefined" && navigator.clipboard) { navigator.clipboard.writeText(post.caption).then(() => alert("Texto da publicação copiado!")).catch(() => alert(post.caption)); } else { alert(post.caption); } }}>↗</button>
 
                       <span className="post-action-spacer" />
 
@@ -354,11 +374,17 @@ export default function Home() {
               ))}
             </div>
 
-            <p className="demo-notice">
-              Você está visualizando publicações demonstrativas. Elas ainda não
-              representam usuários reais da Nexora.
-            </p>
+            {visiblePosts.length === 0 && <div className="no-results"><span>⌕</span><h2>Nada por aqui ainda</h2><p>Tente outra busca ou publique a primeira ideia com esse tema.</p><button className="primary-button" onClick={() => { setSearchQuery(""); setActiveFeed("for-you"); }}>Limpar filtros</button></div>}
+            <p className="demo-notice">As publicações de exemplo são demonstrativas. Novos posts criados nesta sessão aparecem no feed, mas ainda não ficam salvos em uma conta ou banco de dados.</p>
           </>
+        ) : activeTab === "explorar" ? (
+          <section className="explore-section">
+            <p className="eyebrow">DESCUBRA ALGO NOVO</p><h1>Explore a Nexora</h1><p className="explore-intro">Encontre conversas, criadores e ideias que combinam com você.</p>
+            <label className="feed-search explore-search"><span>⌕</span><input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="O que você quer descobrir?" aria-label="Buscar publicações" /></label>
+            <div className="explore-chips"><button onClick={() => setSearchQuery("")}>✦ Em alta</button><button onClick={() => setSearchQuery("fotografia")}>▧ Fotografia</button><button onClick={() => setSearchQuery("oportunidades")}>↗ Oportunidades</button><button onClick={() => setSearchQuery("ideias")}>◇ Ideias</button></div>
+            <div className="explore-grid">{visiblePosts.map((post) => <button className="explore-card" key={post.id} onClick={() => { setActiveTab("inicio"); setActiveFeed("for-you"); }}><span className="explore-card-art">{post.image ? <img src={post.image} alt="" /> : <span>✦</span>}</span><strong>{post.caption}</strong><small>@{post.username}</small></button>)}</div>
+            {visiblePosts.length === 0 && <div className="no-results"><h2>Sem resultados ainda</h2><p>Experimente outra palavra-chave.</p></div>}
+          </section>
         ) : (
           <section className="empty-section">
             <div className="empty-icon">
@@ -385,6 +411,8 @@ export default function Home() {
           </section>
         )}
       </section>
+
+      {showComposer && <div className="composer-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) setShowComposer(false); }}><section className="composer-modal" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-title-row"><div><p className="eyebrow">SUA VOZ, SEU ESPAÇO</p><h2 id="composer-title">Criar publicação</h2></div><button className="composer-close" onClick={() => setShowComposer(false)} aria-label="Fechar">×</button></div><div className="composer-user"><span className="quick-avatar">L</span><div><strong>Licinhosz.bb</strong><small>Compartilhando com a comunidade</small></div></div><form onSubmit={(event) => { event.preventDefault(); publishPost(); }}><textarea autoFocus value={composerText} onChange={(event) => setComposerText(event.target.value)} maxLength={1000} placeholder="O que você quer compartilhar hoje?" aria-label="Texto da publicação" /><div className="composer-footer"><span>{composerText.length}/1000</span><button className="primary-button" type="submit" disabled={!composerText.trim()}>Publicar agora ↗</button></div><p className="composer-note">Nesta etapa, você já pode publicar texto no feed desta sessão. Fotos, vídeos e salvamento permanente entram na integração de backend.</p></form></section></div>}
 
       <nav className="bottom-nav" aria-label="Navegação principal">
         {navigation.map((item) => (
