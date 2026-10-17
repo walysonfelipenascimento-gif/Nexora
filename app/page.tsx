@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/nexora/supabase-client";
 import { calculateProfileStats, filterFeedPosts, toggleListItem } from "../lib/nexora/feed-utils";
 import type { Post, Story } from "../lib/nexora/types";
 import { initialPosts, navigation, stories } from "../lib/nexora/demo-data";
@@ -18,6 +19,67 @@ export default function Home() {
   const [savedPosts, setSavedPosts] = useState<number[]>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>(["marianacosta"]);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
+  const [databaseFeedLoaded, setDatabaseFeedLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!supabase) return;
+    let cancelled = false;
+
+    async function loadPublicFeed() {
+      const { data, error } = await supabase!
+        .from("posts")
+        .select("id, caption, image_url, created_at, profiles!posts_user_id_fkey(username, display_name, avatar_url)")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error || !data?.length || cancelled) return;
+
+      const rows = data as unknown as Array<{
+        id: string;
+        caption: string;
+        image_url: string | null;
+        created_at: string;
+        profiles: { username: string; display_name: string; avatar_url: string | null } | Array<{ username: string; display_name: string; avatar_url: string | null }> | null;
+      }>;
+      const ids = rows.map((row) => row.id);
+      const [likesResult, commentsResult] = await Promise.all([
+        supabase!.from("likes").select("post_id").in("post_id", ids),
+        supabase!.from("comments").select("post_id, body").in("post_id", ids).order("created_at", { ascending: true }),
+      ]);
+      if (cancelled) return;
+
+      const likeCounts = new Map<string, number>();
+      (likesResult.data ?? []).forEach((like: { post_id: string }) => {
+        likeCounts.set(like.post_id, (likeCounts.get(like.post_id) ?? 0) + 1);
+      });
+      const commentsByPost = new Map<string, string[]>();
+      (commentsResult.data ?? []).forEach((comment: { post_id: string; body: string }) => {
+        commentsByPost.set(comment.post_id, [...(commentsByPost.get(comment.post_id) ?? []), comment.body]);
+      });
+
+      const databasePosts: Post[] = rows.map((row) => {
+        const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+        const username = profile?.username || "pessoa-nexora";
+        return {
+          id: row.id,
+          name: profile?.display_name || username,
+          username,
+          avatar: profile?.avatar_url || "",
+          image: row.image_url || "",
+          location: "Na Nexora",
+          caption: row.caption,
+          likes: likeCounts.get(row.id) ?? 0,
+          liked: false,
+          comments: commentsByPost.get(row.id) ?? [],
+        };
+      });
+      setPosts(databasePosts);
+      setDatabaseFeedLoaded(true);
+    }
+
+    void loadPublicFeed();
+    return () => { cancelled = true; };
+  }, []);
 
   function toggleLike(postId: number) {
     setPosts((current) =>
@@ -264,7 +326,7 @@ export default function Home() {
             </div>
 
             {visiblePosts.length === 0 && <div className="no-results"><span>⌕</span><h2>Nada por aqui ainda</h2><p>Tente outra busca ou publique a primeira ideia com esse tema.</p><button className="primary-button" onClick={() => { setSearchQuery(""); setActiveFeed("for-you"); }}>Limpar filtros</button></div>}
-            <p className="demo-notice">As publicações de exemplo são demonstrativas. Novos posts criados nesta sessão aparecem no feed, mas ainda não ficam salvos em uma conta ou banco de dados.</p>
+            <p className="demo-notice">{databaseFeedLoaded ? "Feed carregado do banco de dados da Nexora. Publicar e interagir ainda depende da etapa de autenticação." : "As publicações de exemplo são demonstrativas. O feed real será exibido quando houver publicações no banco; publicar e interagir com persistência depende da etapa de autenticação."}</p>
           </>
         ) : activeTab === "explorar" ? (
           <section className="explore-section">
