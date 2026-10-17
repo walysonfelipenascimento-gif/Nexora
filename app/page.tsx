@@ -61,6 +61,16 @@ export default function Home() {
   const [activeStory, setActiveStory] = useState<StoryItem | null>(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(1);
   const [isStoryPaused, setIsStoryPaused] = useState(false);
+  const [likedStories, setLikedStories] = useState<string[]>([]);
+  const [storyReactions, setStoryReactions] = useState<Record<string, string>>({});
+  const [storyCommentsOpen, setStoryCommentsOpen] = useState(false);
+  const [storyCommentDraft, setStoryCommentDraft] = useState("");
+  const [storyComments, setStoryComments] = useState<Record<string, string[]>>({});
+  const [showStoryReactions, setShowStoryReactions] = useState(false);
+  const [showStoryHeart, setShowStoryHeart] = useState(false);
+  const lastStoryTapRef = useRef(0);
+  const reactionHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reactionHeldRef = useRef(false);
   const storyVideoRef = useRef<HTMLVideoElement>(null);
   const [storyComposerOpen, setStoryComposerOpen] = useState(false);
   const [storyPreview, setStoryPreview] = useState("");
@@ -108,6 +118,70 @@ export default function Home() {
 
   function toggleStoryPlayback() {
     setIsStoryPaused(current => !current);
+  }
+
+  function currentStoryKey() {
+    return activeStory?.id || activeStory?.name || "story";
+  }
+
+  function toggleStoryLike(reaction?: string) {
+    const key = currentStoryKey();
+    if (reaction) {
+      setStoryReactions(current => ({ ...current, [key]: reaction }));
+      setLikedStories(current => current.includes(key) ? current : [...current, key]);
+    } else {
+      setLikedStories(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key]);
+      if (likedStories.includes(key)) setStoryReactions(current => { const next = { ...current }; delete next[key]; return next; });
+    }
+    setShowStoryReactions(false);
+  }
+
+  function startReactionHold() {
+    reactionHeldRef.current = false;
+    if (reactionHoldRef.current) window.clearTimeout(reactionHoldRef.current);
+    reactionHoldRef.current = window.setTimeout(() => {
+      reactionHeldRef.current = true;
+      setShowStoryReactions(true);
+    }, 420);
+  }
+
+  function endReactionHold() {
+    if (reactionHoldRef.current) window.clearTimeout(reactionHoldRef.current);
+    reactionHoldRef.current = null;
+  }
+
+  function handleStoryMediaTap(event: React.MouseEvent<HTMLElement>) {
+    const target = event.target as HTMLElement;
+    if (target.closest("button, input, textarea")) return;
+    const now = Date.now();
+    if (now - lastStoryTapRef.current < 320) {
+      setShowStoryHeart(true);
+      toggleStoryLike();
+      window.setTimeout(() => setShowStoryHeart(false), 850);
+      lastStoryTapRef.current = 0;
+      return;
+    }
+    lastStoryTapRef.current = now;
+  }
+
+  function addStoryComment(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = storyCommentDraft.trim();
+    if (!value) return;
+    const key = currentStoryKey();
+    setStoryComments(current => ({ ...current, [key]: [...(current[key] || []), value] }));
+    setStoryCommentDraft("");
+  }
+
+  function shareStory() {
+    const text = activeStory?.caption ? `Story de ${activeStory.name}: ${activeStory.caption}` : `Veja este Story de ${activeStory?.name} na Nexora!`;
+    if (navigator.share) {
+      void navigator.share({ title: "Nexora · Story", text, url: window.location.href }).catch(() => undefined);
+    } else if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(`${text} ${window.location.href}`).then(() => setNotice("Link do Story copiado para compartilhar.")).catch(() => setNotice("Não foi possível copiar o link neste navegador."));
+    } else {
+      setNotice("Compartilhamento não disponível neste navegador.");
+    }
   }
 
   useEffect(() => {
@@ -212,7 +286,7 @@ export default function Home() {
 
       {notice && <div className="toast" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Fechar aviso">×</button></div>}
 
-      {activeStory && <div className="story-overlay" onClick={event => { if (event.target === event.currentTarget) closeStoryViewer(); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`}><div key={activeStory.id || activeStory.name} className={`story-progress ${isStoryPaused ? "is-paused" : ""}`}><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name} <small>· agora</small></strong><button className="story-pause-button" onClick={toggleStoryPlayback} aria-label={isStoryPaused ? "Continuar Story" : "Pausar Story"} title={isStoryPaused ? "Continuar" : "Pausar"}>{isStoryPaused ? "▶" : "Ⅱ"}</button><button onClick={closeStoryViewer} aria-label="Fechar">×</button></header>{activeStory.mediaType === "video" ? <video ref={storyVideoRef} className="story-full-image" src={activeStory.image} autoPlay={!isStoryPaused} playsInline onClick={toggleStoryPlayback} onEnded={goNextStory} /> : <img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt={activeStory.caption || `Story de ${activeStory.name}`} />}{isStoryPaused && <button className="story-resume-overlay" onClick={toggleStoryPlayback} aria-label="Continuar Story">▶</button>}{activeStory.caption && <p className="story-caption">{activeStory.caption}</p>}<button className="story-hit story-hit-prev" aria-label="Story anterior — tocar à esquerda" onClick={goPreviousStory} /><button className="story-hit story-hit-next" aria-label="Próximo Story — tocar à direita" onClick={goNextStory} /><div className="story-bottom-bubbles" aria-label="Navegar entre Stories">{stories.filter(item => !item.own || item.image).map(story => <button key={story.id || story.name} className={`story-bubble ${story.name === activeStory.name && story.image === activeStory.image ? "active" : ""}`} onClick={() => { const index = stories.indexOf(story); setActiveStoryIndex(index); setActiveStory(story); setIsStoryPaused(false); }}><span><img src={story.image} alt="" /></span><small>{story.name}</small></button>)}</div></section></div>}
+      {activeStory && <div className="story-overlay" onClick={event => { if (event.target === event.currentTarget) closeStoryViewer(); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`} onClick={handleStoryMediaTap}><div key={activeStory.id || activeStory.name} className={`story-progress ${isStoryPaused ? "is-paused" : ""}`}><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name} <small>· agora</small></strong><button className="story-pause-button" onClick={toggleStoryPlayback} aria-label={isStoryPaused ? "Continuar Story" : "Pausar Story"} title={isStoryPaused ? "Continuar" : "Pausar"}>{isStoryPaused ? "▶" : "Ⅱ"}</button><button onClick={closeStoryViewer} aria-label="Fechar">×</button></header>{activeStory.mediaType === "video" ? <video ref={storyVideoRef} className="story-full-image" src={activeStory.image} autoPlay={!isStoryPaused} playsInline onClick={event => { event.stopPropagation(); toggleStoryPlayback(); }} onEnded={goNextStory} /> : <img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt={activeStory.caption || `Story de ${activeStory.name}`} />}{showStoryHeart && <div className="story-heart-burst" aria-hidden="true">❤️</div>}{isStoryPaused && <button className="story-resume-overlay" onClick={toggleStoryPlayback} aria-label="Continuar Story">▶</button>}{activeStory.caption && <p className="story-caption">{activeStory.caption}</p>}<button className="story-hit story-hit-prev" aria-label="Story anterior" onClick={goPreviousStory} /><button className="story-hit story-hit-next" aria-label="Próximo Story" onClick={goNextStory} /><aside className="story-action-rail" aria-label="Interações do Story"><div className="story-reaction-anchor">{showStoryReactions && <div className="story-reaction-picker" role="group" aria-label="Escolha uma reação">{["🫦","🤌","😍","🔥","🫶"].map(emoji => <button key={emoji} onClick={() => toggleStoryLike(emoji)} aria-label={`Reagir com ${emoji}`}>{emoji}</button>)}</div>}<button className={`story-action-button ${likedStories.includes(currentStoryKey()) ? "liked" : ""}`} aria-label="Curtir Story; segure para escolher emoji" onPointerDown={startReactionHold} onPointerUp={endReactionHold} onPointerLeave={endReactionHold} onContextMenu={event => { event.preventDefault(); setShowStoryReactions(true); }} onClick={event => { event.stopPropagation(); if (reactionHeldRef.current) { reactionHeldRef.current = false; return; } toggleStoryLike(); }}><span className="story-action-icon">{storyReactions[currentStoryKey()] || (likedStories.includes(currentStoryKey()) ? "❤️" : "♡")}</span><small>{likedStories.includes(currentStoryKey()) ? "Curtido" : "Curtir"}</small></button></div><button className="story-action-button" aria-label="Comentar Story" onClick={event => { event.stopPropagation(); setStoryCommentsOpen(true); }}><span className="story-action-icon">▢</span><small>Comentar</small></button><button className="story-action-button" aria-label="Compartilhar Story" onClick={event => { event.stopPropagation(); shareStory(); }}><span className="story-action-icon">↗</span><small>Enviar</small></button></aside><div className="story-bottom-bubbles" aria-label="Navegar entre Stories">{stories.filter(item => !item.own || item.image).map(story => <button key={story.id || story.name} className={`story-bubble ${story.name === activeStory.name && story.image === activeStory.image ? "active" : ""}`} onClick={event => { event.stopPropagation(); const index = stories.indexOf(story); setActiveStoryIndex(index); setActiveStory(story); setIsStoryPaused(false); setShowStoryReactions(false); }}><span><img src={story.image} alt="" /></span><small>{story.name}</small></button>)}</div>{storyCommentsOpen && <div className="story-comments-backdrop" onClick={event => { event.stopPropagation(); if (event.target === event.currentTarget) setStoryCommentsOpen(false); }}><section className="story-comments-sheet" role="dialog" aria-modal="true" aria-label="Comentários do Story"><header><div><strong>Comentários</strong><small>Converse com respeito, do seu jeito</small></div><button onClick={() => setStoryCommentsOpen(false)} aria-label="Fechar comentários">×</button></header><div className="story-comments-list">{(storyComments[currentStoryKey()] || []).length ? (storyComments[currentStoryKey()] || []).map((comment, index) => <p key={index}><span className="story-comment-avatar">L</span><span><strong>Licinhosz.bb</strong>{comment}</span></p>) : <div className="story-comments-empty"><span>✦</span><strong>Comece a conversa</strong><small>Seja a primeira pessoa a comentar neste Story.</small></div>}</div><form onSubmit={addStoryComment}><span className="story-comment-avatar">L</span><input autoFocus value={storyCommentDraft} onChange={event => setStoryCommentDraft(event.target.value)} placeholder="Adicione um comentário..." aria-label="Adicionar comentário" maxLength={300} /><button type="submit" disabled={!storyCommentDraft.trim()}>Enviar</button></form></section></div>}</section></div>}
 
 {storyComposerOpen && <div className="overlay story-composer-overlay" onClick={event => { if (event.target === event.currentTarget) setStoryComposerOpen(false); }}><section className="composer story-composer" role="dialog" aria-modal="true" aria-labelledby="story-composer-title"><header><div><small>NEXORA · STORIES</small><h2 id="story-composer-title">Criar Story</h2></div><button onClick={() => setStoryComposerOpen(false)} aria-label="Fechar">×</button></header><input ref={storyInputRef} className="story-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) { setNotice("Escolha uma foto ou vídeo."); return; } if (file.size > 50 * 1024 * 1024) { setNotice("O arquivo deve ter até 50 MB."); return; } setStoryFile(file); setStoryPreview(URL.createObjectURL(file)); }} /><button className="story-media-picker" onClick={() => storyInputRef.current?.click()}>{storyPreview ? (storyFile?.type.startsWith("video/") ? <video src={storyPreview} muted playsInline /> : <img src={storyPreview} alt="Prévia do Story" />) : <span><b>＋</b>Escolher foto ou vídeo</span>}</button><textarea value={storyCaption} onChange={event => setStoryCaption(event.target.value)} maxLength={180} placeholder="Adicione uma legenda (opcional)..." /><footer><span>{storyCaption.length}/180</span><button disabled={!storyFile || !storyPreview} onClick={() => { if (!storyFile || !storyPreview) return; const ownStory: StoryItem = { name: "Licinhosz.bb", own: true, image: storyPreview, mediaType: storyFile.type.startsWith("video/") ? "video" : "image", caption: storyCaption.trim(), id: `local-${Date.now()}` }; setStories(current => [current[0], ownStory, ...current.slice(1).filter(item => !item.own || !item.image)]); setActiveStoryIndex(1); setActiveStory(ownStory); setStoryComposerOpen(false); setStoryFile(null); setStoryPreview(""); setStoryCaption(""); setNotice("Story publicado nesta sessão do navegador."); }}>Publicar Story ↗</button></footer><p>O Story fica nesta sessão do navegador; a sincronização entre contas será conectada ao backend na etapa de persistência.</p></section></div>}
 
