@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { getSupabaseBrowserClient } from "../../lib/supabase/client";
 
 type Mode = "login" | "signup";
 
 export default function EntrarPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -84,7 +86,8 @@ export default function EntrarPage() {
 
         if (data.session && data.user) {
           await ensureProfile(data.user);
-          setMessage("Conta criada! Você já está conectado. Pode voltar para a Nexora.");
+          setMessage("Conta criada! Bem-vindo à Nexora.");
+          router.push("/");
         } else {
           setMessage("Quase lá! Confira seu e-mail para confirmar a conta. Depois, volte aqui e entre na Nexora.");
         }
@@ -96,7 +99,8 @@ export default function EntrarPage() {
 
         if (signInError) throw signInError;
         if (data.user) await ensureProfile(data.user);
-        setMessage("Login realizado! Sua sessão está ativa neste dispositivo.");
+        setMessage("Login realizado! Bem-vindo de volta.");
+        router.push("/");
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Não foi possível concluir. Tente novamente.");
@@ -107,6 +111,20 @@ export default function EntrarPage() {
 
   return (
     <main className="auth-page">
+      <div className="auth-layout">
+        <aside className="auth-hero" aria-label="Conheça a Nexora">
+          <div className="auth-hero-brand">
+            <img src="/nexora-logo.svg" alt="" />
+            <span>Nexora</span>
+          </div>
+          <div className="auth-hero-copy">
+            <span className="auth-hero-kicker"><span className="auth-hero-dot" /> SUA PRÓXIMA CONEXÃO COMEÇA AQUI</span>
+            <h2>O seu mundo.<br /><span>Novas possibilidades.</span></h2>
+            <p>Uma nova forma de compartilhar momentos, descobrir criadores, conectar marcas e encontrar oportunidades.</p>
+            <div className="auth-hero-pills"><span>✦ Comunidade</span><span>◎ Criadores</span><span>↗ Oportunidades</span></div>
+          </div>
+          <div className="auth-hero-footer"><span>FEITA PARA CONECTAR</span><span>© NEXORA</span></div>
+        </aside>
       <section className="auth-card">
         <Link href="/" className="auth-brand" aria-label="Voltar para a Nexora">
           <img src="/nexora-logo.svg" alt="" />
@@ -157,8 +175,9 @@ export default function EntrarPage() {
         </form>
 
         <p className="auth-footnote">Ao continuar, você concorda em usar a plataforma com respeito e responsabilidade.</p>
-        <Link href="/" className="auth-back">← Voltar para o feed</Link>
+        <Link href="/" className="auth-back">← Voltar para a página inicial</Link>
       </section>
+      </div>
     </main>
   );
 }
