@@ -170,7 +170,14 @@ export default function EntrarPage() {
         router.push("/");
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Não foi possível concluir. Tente novamente.");
+      const detail = caught instanceof Error ? caught.message : "";
+      if (mode === "login" && /invalid login credentials|email not confirmed/i.test(detail)) {
+        setError(/email not confirmed/i.test(detail)
+          ? "Seu e-mail ainda não foi confirmado. Abra a mensagem enviada pela Nexora ou use a opção de reenviar confirmação ao criar conta."
+          : "E-mail ou senha não conferem. Confira se está usando o e-mail cadastrado. Se esqueceu a senha, toque em “Esqueci minha senha” para receber um link de recuperação.");
+      } else {
+        setError(detail || "Não foi possível concluir. Tente novamente.");
+      }
     } finally {
       setBusy(false);
     }
