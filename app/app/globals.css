@@ -196,3 +196,104 @@ img { display: block; max-width: 100%; }
 .auth-forgot{align-self:flex-end;margin-top:1px;padding:5px 0;border:0;background:transparent;color:#9bd5ff;font-size:12px;font-weight:700;cursor:pointer}
 .auth-forgot:disabled{opacity:.55;cursor:wait}
 @media(max-width:420px){.auth-password-toggle{right:7px;padding:0 7px}}
+
+
+/* Nexora visual refresh — premium, responsive and mobile-first */
+:root {
+  --background: #070912;
+  --surface: #0e1321;
+  --surface-raised: #141b2c;
+  --text: #f7f8ff;
+  --muted: #98a5c0;
+  --line: rgba(166, 190, 255, .13);
+  --blue: #46d9ff;
+  --violet: #8565ff;
+  --magenta: #e45bea;
+}
+body {
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(38, 115, 210, .13), transparent 36rem),
+    radial-gradient(ellipse at 90% 12%, rgba(153, 67, 228, .10), transparent 32rem),
+    #070912;
+}
+.topbar {
+  height: 74px;
+  border-bottom-color: rgba(157, 184, 255, .12);
+  background: rgba(7, 9, 18, .82);
+}
+.brand { font-size: 20px; letter-spacing: 1.4px; }
+.brand > span {
+  background: linear-gradient(95deg, #f8fbff 15%, #75e4ff 52%, #bd8bff 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.brand-symbol { filter: drop-shadow(0 0 15px #4f8dff42); }
+.welcome-banner {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  width: min(100% - 32px, 1050px); min-height: 260px; margin: 24px auto 0;
+  padding: clamp(24px, 4vw, 44px);
+  border: 1px solid rgba(144, 170, 255, .19); border-radius: 28px;
+  background: linear-gradient(115deg, rgba(15, 29, 52, .97), rgba(17, 17, 39, .94) 58%, rgba(39, 18, 56, .84));
+  box-shadow: 0 25px 80px #0003, inset 0 1px #ffffff0b;
+}
+.welcome-banner:before {
+  content: ""; position: absolute; z-index: -1; inset: 0;
+  background: radial-gradient(ellipse at 75% 45%, #3968d32b, transparent 42%), linear-gradient(115deg, transparent 55%, #a44cff0b);
+}
+.welcome-copy { position: relative; z-index: 2; max-width: 610px; }
+.welcome-kicker { display: inline-flex; align-items: center; gap: 9px; color: #a9caff; font-size: 9px; font-weight: 850; letter-spacing: 1.8px; }
+.welcome-pulse { width: 7px; height: 7px; border-radius: 50%; background: #4be4cb; box-shadow: 0 0 13px #4be4cbad; }
+.welcome-copy h1 { margin: 20px 0 13px; font-size: clamp(31px, 4.4vw, 49px); line-height: 1.04; letter-spacing: -2px; font-weight: 850; }
+.welcome-copy h1 span { background: linear-gradient(95deg, #5ee6ff 0%, #7e9bff 50%, #d38aff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.welcome-copy p { max-width: 440px; margin: 0; color: #aab7d0; font-size: 13px; line-height: 1.8; }
+.welcome-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 21px; }
+.welcome-tags span { padding: 8px 11px; border: 1px solid #b5caff22; border-radius: 999px; background: #ffffff07; color: #d9e3f9; font-size: 10px; font-weight: 700; backdrop-filter: blur(12px); }
+.welcome-art { position: relative; flex: 0 0 clamp(145px, 23vw, 245px); display: grid; place-items: center; aspect-ratio: 1; }
+.welcome-art > img { position: relative; z-index: 1; width: 66%; border-radius: 25%; filter: drop-shadow(0 0 34px #527bff55); animation: nexora-float 5s ease-in-out infinite; }
+.art-orbit { position: absolute; width: 88%; aspect-ratio: 1; border: 1px solid #87a5ff2b; border-radius: 50%; transform: rotate(-25deg) scaleY(.48); }
+.orbit-two { width: 110%; transform: rotate(55deg) scaleY(.48); border-color: #d47cff28; }
+.art-spark { position: absolute; z-index: 2; color: #8eeaff; text-shadow: 0 0 18px #6ddfff; }
+.spark-one { top: 15%; right: 11%; font-size: 24px; }
+.spark-two { bottom: 19%; left: 7%; color: #d4a1ff; font-size: 29px; }
+@keyframes nexora-float { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+.feed-container { width: min(100% - 32px, 680px); }
+.stories-section { padding-top: 25px; }
+.section-heading h2 { font-size: 17px; }
+.story-ring { box-shadow: 0 0 20px #6b6aff13; }
+.feed-heading { padding-top: 30px; }
+.feed-heading h1 { font-size: clamp(28px, 5vw, 35px); }
+.post-card { border-color: rgba(160, 183, 255, .15); border-radius: 23px; background: linear-gradient(150deg, #111827, #0b0f1b 76%); box-shadow: 0 18px 50px #00025; transition: border-color .2s, transform .2s, box-shadow .2s; }
+.post-card:hover { border-color: rgba(103, 180, 255, .28); box-shadow: 0 22px 55px #0003; }
+.post-header { min-height: 76px; padding: 15px 17px; }
+.avatar { width: 44px; height: 44px; flex-basis: 44px; border: 2px solid #7f83ff55; padding: 2px; }
+.post-author strong { font-size: 13px; }
+.post-author span { font-size: 11px; }
+.post-image { aspect-ratio: 4 / 4.15; max-height: 720px; }
+.post-content { padding: 14px 17px 18px; }
+.action-button { width: 37px; height: 37px; font-size: 27px; }
+.action-button.liked { text-shadow: 0 0 18px #ff60916e; }
+.bottom-nav { border-top-color: rgba(157, 184, 255, .14); background: rgba(7, 9, 18, .88); }
+.nav-item.active { color: #68dcff; }
+.nav-item.active .nav-icon { text-shadow: 0 0 18px #4bcfff7a; }
+.icon-button { width: 42px; height: 42px; border: 1px solid #ffffff0b; background: #ffffff05; }
+.icon-button:hover { border-color: #68cfff3d; background: #68cfff0c; }
+.empty-icon { box-shadow: 0 0 40px #765fff1b; }
+.primary-button { background: linear-gradient(105deg, #50dfff, #8e83ff 62%, #d66eea); }
+@media (min-width: 900px) {
+  .welcome-banner { margin-top: 30px; }
+  .feed-container { width: min(100% - 48px, 680px); }
+  .posts-list { gap: 24px; }
+}
+@media (max-width: 560px) {
+  .welcome-banner { width: calc(100% - 22px); min-height: 0; margin-top: 12px; padding: 23px 20px; border-radius: 22px; }
+  .welcome-copy { max-width: 100%; }
+  .welcome-copy h1 { margin-top: 16px; font-size: clamp(29px, 8vw, 38px); letter-spacing: -1.5px; }
+  .welcome-copy p { max-width: 290px; font-size: 12px; }
+  .welcome-kicker { font-size: 8px; letter-spacing: 1.1px; }
+  .welcome-art { position: absolute; right: -32px; bottom: -27px; width: 145px; opacity: .28; }
+  .welcome-tags { gap: 6px; margin-top: 16px; }
+  .welcome-tags span { padding: 7px 9px; font-size: 9px; }
+  .feed-container { width: calc(100% - 22px); }
+  .post-card { border-radius: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .welcome-art > img { animation: none; } }
