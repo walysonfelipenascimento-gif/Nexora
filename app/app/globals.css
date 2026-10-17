@@ -108,3 +108,16 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 .story-caption{position:absolute;z-index:4;left:18px;right:18px;bottom:calc(100px + env(safe-area-inset-bottom));margin:0;padding:12px 14px;border-radius:14px;background:#08031277;backdrop-filter:blur(10px);font-size:15px;line-height:1.4;text-shadow:0 2px 8px #000}
 .story-hit{touch-action:manipulation}
 .story-viewer video.story-full-image{background:#07020d}
+
+
+/* Story playback controls and timed progress */
+.story-overlay .story-progress{overflow:hidden}
+.story-overlay .story-progress span{width:0;animation:nexora-story-progress 6s linear forwards}
+.story-overlay .story-progress.is-paused span{animation-play-state:paused}
+@keyframes nexora-story-progress{from{width:0}to{width:100%}}
+.story-overlay .story-viewer header .story-pause-button{display:grid;place-items:center;width:36px;height:36px;border:1px solid #ffffff35;border-radius:50%;background:#10091e88;color:#fff;font-size:16px;font-weight:800;backdrop-filter:blur(12px)}
+.story-resume-overlay{position:absolute;z-index:7;top:50%;left:50%;display:grid;place-items:center;width:68px;height:68px;transform:translate(-50%,-50%);border:1px solid #ffffff70;border-radius:50%;background:#10091e99;color:#fff;font-size:25px;backdrop-filter:blur(14px);box-shadow:0 8px 28px #0006}
+.story-overlay .story-hit{z-index:4}
+.story-overlay .story-caption{z-index:6}
+.story-overlay .story-bottom-bubbles{z-index:9}
+@media(prefers-reduced-motion:reduce){.story-overlay .story-progress span{animation-duration:6s}}
