@@ -106,6 +106,7 @@ export default function Home() {
   const [composerText, setComposerText] = useState("");
   const [savedPosts, setSavedPosts] = useState<number[]>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>(["marianacosta"]);
+  const [activeStory, setActiveStory] = useState<Story | null>(null);
 
   function toggleLike(postId: number) {
     setPosts((current) =>
@@ -215,13 +216,7 @@ export default function Home() {
                   <button
                     className="story"
                     key={story.name}
-                    onClick={() =>
-                      alert(
-                        story.own
-                          ? "A criação de stories será implementada na próxima etapa."
-                          : `O story de ${story.name} será disponibilizado quando os perfis estiverem conectados.`
-                      )
-                    }
+                    onClick={() => setActiveStory(story)}
                   >
                     <div
                       className={`story-ring ${story.own ? "own-story" : ""}`}
@@ -411,6 +406,8 @@ export default function Home() {
           </section>
         )}
       </section>
+
+      {activeStory && <div className="story-viewer-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) setActiveStory(null); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`} style={{backgroundImage: `linear-gradient(180deg,#10091555,#10091508 45%,#100915d9),url(${activeStory.own ? "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=900&h=1500&fit=crop" : activeStory.image.replace("w=160&h=160","w=900&h=1500")})`}}><div className="story-progress"><span /></div><header className="story-viewer-header"><img src={activeStory.image || "/nexora-logo.svg"} alt="" /><div><strong>{activeStory.own ? "Seu story" : activeStory.name}</strong><small>{activeStory.own ? "Agora mesmo" : "há 12 min"}</small></div><button onClick={() => setActiveStory(null)} aria-label="Fechar story">×</button></header><div className="story-viewer-bottom"><label><input placeholder="Adicionar um comentário..." aria-label="Adicionar comentário" /><button onClick={() => alert("Os comentários de stories serão salvos quando a conta estiver conectada.")}>Enviar</button></label><button className="story-heart" onClick={() => alert("Curtida registrada nesta demonstração.")} aria-label="Curtir story">♡</button></div></section></div>}
 
       {showComposer && <div className="composer-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) setShowComposer(false); }}><section className="composer-modal" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-title-row"><div><p className="eyebrow">SUA VOZ, SEU ESPAÇO</p><h2 id="composer-title">Criar publicação</h2></div><button className="composer-close" onClick={() => setShowComposer(false)} aria-label="Fechar">×</button></div><div className="composer-user"><span className="quick-avatar">L</span><div><strong>Licinhosz.bb</strong><small>Compartilhando com a comunidade</small></div></div><form onSubmit={(event) => { event.preventDefault(); publishPost(); }}><textarea autoFocus value={composerText} onChange={(event) => setComposerText(event.target.value)} maxLength={1000} placeholder="O que você quer compartilhar hoje?" aria-label="Texto da publicação" /><div className="composer-footer"><span>{composerText.length}/1000</span><button className="primary-button" type="submit" disabled={!composerText.trim()}>Publicar agora ↗</button></div><p className="composer-note">Nesta etapa, você já pode publicar texto no feed desta sessão. Fotos, vídeos e salvamento permanente entram na integração de backend.</p></form></section></div>}
 
