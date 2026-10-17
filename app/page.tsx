@@ -7,6 +7,15 @@ import { calculateProfileStats, filterFeedPosts, toggleListItem } from "../lib/n
 import type { Post, Story } from "../lib/nexora/types";
 import { initialPosts, navigation, stories } from "../lib/nexora/demo-data";
 
+type Opportunity = { id: string; category: string; title: string; brand: string; description: string; kind: string; color: string; };
+
+const opportunities: Opportunity[] = [
+  { id: "creator-campaign", category: "Campanhas", title: "Campanha para criadores digitais", brand: "Nexora Creators", description: "Conecte seu conteúdo a marcas e participe de campanhas criativas.", kind: "Parceria", color: "pink" },
+  { id: "brand-partnership", category: "Parcerias", title: "Encontre marcas para colaborar", brand: "Conexões de marca", description: "Apresente seu estilo, construa relações e descubra parcerias alinhadas ao seu público.", kind: "Colaboração", color: "violet" },
+  { id: "digital-services", category: "Serviços", title: "Mostre seus serviços digitais", brand: "Nexora Serviços", description: "Crie oportunidades para divulgar edição, design, produção de conteúdo e outros talentos.", kind: "Serviços", color: "blue" },
+  { id: "community-project", category: "Comunidade", title: "Participe de projetos da comunidade", brand: "Nexora Community", description: "Descubra projetos colaborativos e conheça pessoas com interesses parecidos.", kind: "Comunidade", color: "gold" },
+];
+
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [activeTab, setActiveTab] = useState("inicio");
@@ -19,7 +28,7 @@ export default function Home() {
   const [savedPosts, setSavedPosts] = useState<Array<string | number>>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>(["marianacosta"]);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
-  const [databaseFeedLoaded, setDatabaseFeedLoaded] = useState(false);
+  const [databaseFeedLoaded, setDatabaseFeedLoaded] = useState(false);\n  const [savedOpportunities, setSavedOpportunities] = useState<string[]>([]);\n  const [opportunityFilter, setOpportunityFilter] = useState("Todas");\n  const [opportunityQuery, setOpportunityQuery] = useState("");
 
   useEffect(() => {
     if (!supabase) return;
@@ -335,6 +344,23 @@ export default function Home() {
             <div className="explore-chips"><button onClick={() => setSearchQuery("")}>✦ Em alta</button><button onClick={() => setSearchQuery("fotografia")}>▧ Fotografia</button><button onClick={() => setSearchQuery("oportunidades")}>↗ Oportunidades</button><button onClick={() => setSearchQuery("ideias")}>◇ Ideias</button></div>
             <div className="explore-grid">{visiblePosts.map((post) => <button className="explore-card" key={post.id} onClick={() => { setActiveTab("inicio"); setActiveFeed("for-you"); }}><span className="explore-card-art">{post.image ? <img src={post.image} alt="" /> : <span>✦</span>}</span><strong>{post.caption}</strong><small>@{post.username}</small></button>)}</div>
             {visiblePosts.length === 0 && <div className="no-results"><h2>Sem resultados ainda</h2><p>Experimente outra palavra-chave.</p></div>}
+          </section>
+        ) : activeTab === "oportunidades" ? (
+          <section className="opportunities-page">
+            <div className="opportunities-hero">
+              <span className="opportunities-kicker">NEXORA · CONEXÕES QUE MOVEM</span>
+              <div className="opportunities-orbit" aria-hidden="true"><span>✦</span><i>↗</i><b>Ｎ</b></div>
+              <h1>Seu próximo passo começa com uma conexão.</h1>
+              <p>Descubra caminhos para criadores, marcas, serviços digitais e projetos da comunidade.</p>
+              <button className="opportunities-hero-button" onClick={() => { setOpportunityFilter("Campanhas"); document.getElementById("opportunity-list")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>Explorar oportunidades <span>↗</span></button>
+              <div className="opportunities-hero-stats"><span><strong>01</strong> Descubra</span><span><strong>02</strong> Conecte-se</span><span><strong>03</strong> Desenvolva</span></div>
+            </div>
+            <div className="opportunities-heading"><div><p className="eyebrow">ABRA NOVAS PORTAS</p><h2>Oportunidades para você</h2></div><span className="opportunities-count">{opportunities.length} categorias demonstrativas</span></div>
+            <label className="feed-search opportunity-search"><span>⌕</span><input value={opportunityQuery} onChange={(event) => setOpportunityQuery(event.target.value)} placeholder="Buscar campanhas, marcas, serviços..." aria-label="Buscar oportunidades" /></label>
+            <div className="opportunity-filters">{["Todas", "Campanhas", "Parcerias", "Serviços", "Comunidade"].map((filter) => <button key={filter} className={opportunityFilter === filter ? "selected" : ""} onClick={() => setOpportunityFilter(filter)}>{filter}</button>)}</div>
+            <div className="opportunity-list" id="opportunity-list">{opportunities.filter((item) => (opportunityFilter === "Todas" || item.category === opportunityFilter) && (item.title + " " + item.brand + " " + item.description + " " + item.category).toLocaleLowerCase("pt-BR").includes(opportunityQuery.toLocaleLowerCase("pt-BR").trim())).map((item) => <article className="opportunity-card" key={item.id}><div className={`opportunity-art ${item.color}`}><span className="opportunity-art-mark">{item.color === "pink" ? "✦" : item.color === "violet" ? "∞" : item.color === "blue" ? "↗" : "◇"}</span><span className="opportunity-art-label">{item.kind}</span></div><div className="opportunity-card-content"><span className="opportunity-brand">{item.brand}</span><h3>{item.title}</h3><p>{item.description}</p><div className="opportunity-card-actions"><button className="opportunity-details" onClick={() => alert("Esta oportunidade é uma demonstração visual. As candidaturas e parcerias reais serão ativadas quando o sistema de contas e oportunidades for integrado.")}>Ver detalhes <span>↗</span></button><button className={`opportunity-save ${savedOpportunities.includes(item.id) ? "saved" : ""}`} onClick={() => setSavedOpportunities((current) => toggleListItem(current, item.id))} aria-label={savedOpportunities.includes(item.id) ? "Remover oportunidade salva" : "Salvar oportunidade"}>{savedOpportunities.includes(item.id) ? "◆" : "◇"}</button></div></div></article>)}</div>
+            {opportunities.filter((item) => (opportunityFilter === "Todas" || item.category === opportunityFilter) && (item.title + " " + item.brand + " " + item.description + " " + item.category).toLocaleLowerCase("pt-BR").includes(opportunityQuery.toLocaleLowerCase("pt-BR").trim())).length === 0 && <div className="no-results"><h2>Nenhuma oportunidade encontrada</h2><p>Tente outro termo ou escolha uma categoria diferente.</p><button className="primary-button" onClick={() => { setOpportunityFilter("Todas"); setOpportunityQuery(""); }}>Limpar filtros</button></div>}
+            <p className="demo-notice">As oportunidades acima são exemplos de interface. Inscrições, mensagens a marcas e candidaturas ainda não estão conectadas a um sistema real.</p>
           </section>
         ) : activeTab === "perfil" ? (
           <section className="profile-reference">
