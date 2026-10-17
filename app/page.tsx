@@ -163,6 +163,12 @@ export default function Home() {
       return;
     }
     lastStoryTapRef.current = now;
+    const x = event.clientX / window.innerWidth;
+    mediaTapTimerRef.current = window.setTimeout(() => {
+      if (x < 0.38) goPreviousStory();
+      else if (x < 0.80) goNextStory();
+      lastStoryTapRef.current = 0;
+    }, 320);
   }
 
   function handleStoryVideoTap(event: React.MouseEvent<HTMLVideoElement>) {
