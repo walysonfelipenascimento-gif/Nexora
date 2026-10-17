@@ -536,3 +536,79 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
  .chat-emoji-tray-full{position:absolute;left:0;right:0;bottom:55px;width:100%;max-height:45dvh;z-index:10}
  .chat-emoji-tray-full>div{max-height:calc(45dvh - 62px)}
 }
+
+
+/* Nexora — formatos reais dos balões: formas distintas sem quebrar texto ou mídia */
+.chat-message-line{min-width:0;width:100%;max-width:100%}
+.chat-message-line .chat-bubble{
+  box-sizing:border-box;min-width:0;max-width:min(88%,620px);
+  white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;
+  border-radius:18px 18px 18px 5px;
+}
+.chat-message-line.mine .chat-bubble{border-radius:18px 18px 5px 18px}
+.chat-message-line .chat-bubble.chat-bubble-style-0{
+  border-radius:18px 18px 18px 5px!important;
+  background:linear-gradient(135deg,rgba(8,127,186,.96),rgba(107,56,204,.94))!important;
+  border:1px solid rgba(101,220,255,.34)!important;
+}
+.chat-message-line.mine .chat-bubble.chat-bubble-style-0{border-radius:18px 18px 5px 18px!important}
+.chat-message-line .chat-bubble.chat-bubble-style-1{
+  border-radius:22px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(255,255,255,.065))!important;
+  border:1px solid rgba(255,255,255,.26)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.12)!important;
+  backdrop-filter:blur(18px) saturate(145%)!important;-webkit-backdrop-filter:blur(18px) saturate(145%)!important;
+}
+.chat-message-line .chat-bubble.chat-bubble-style-2{
+  border-radius:7px!important;background:#222735!important;
+  border:1px solid rgba(180,193,220,.12)!important;box-shadow:none!important;
+}
+.chat-message-line .chat-bubble.chat-bubble-style-3{
+  border-radius:24px!important;background:linear-gradient(135deg,#0f766e,#4338ca)!important;
+  border:1px solid rgba(116,255,229,.24)!important;
+}
+.chat-message-line .chat-bubble.chat-bubble-style-4{
+  border-radius:20px 20px 20px 6px!important;background:linear-gradient(135deg,#9d174d,#6b21a8)!important;
+  border:1px solid rgba(255,160,221,.28)!important;box-shadow:0 6px 20px rgba(145,32,139,.17)!important;
+}
+.chat-message-line.mine .chat-bubble.chat-bubble-style-4{border-radius:20px 20px 6px 20px!important}
+.chat-message-line .chat-bubble.chat-bubble-style-5{
+  border-radius:7px 22px 7px 22px!important;background:linear-gradient(135deg,#c2410c,#be185d)!important;
+  border:1px solid rgba(255,193,125,.3)!important;
+}
+.chat-message-line .chat-bubble.chat-bubble-style-6{
+  border-radius:20px 20px 5px 20px!important;background:linear-gradient(135deg,#065f46,#047857)!important;
+  border:1px solid rgba(110,255,184,.25)!important;
+}
+.chat-message-line.mine .chat-bubble.chat-bubble-style-6{border-radius:20px 20px 20px 5px!important}
+.chat-message-line .chat-bubble.chat-bubble-style-7{
+  border-radius:17px 17px 17px 4px!important;background:linear-gradient(135deg,#0c4a6e,#0369a1)!important;
+  border:1px solid rgba(125,211,252,.3)!important;box-shadow:0 4px 14px rgba(3,105,161,.2)!important;
+}
+.chat-message-line.mine .chat-bubble.chat-bubble-style-7{border-radius:17px 17px 4px 17px!important}
+.chat-message-line .chat-bubble.chat-bubble-style-8{
+  border-radius:26px 26px 26px 10px!important;background:linear-gradient(135deg,#6d28d9,#a855f7)!important;
+  border:1px solid rgba(221,190,255,.32)!important;box-shadow:0 7px 20px rgba(109,40,217,.18)!important;
+}
+.chat-message-line.mine .chat-bubble.chat-bubble-style-8{border-radius:26px 26px 10px 26px!important}
+.chat-message-line .chat-bubble.chat-bubble-style-9{
+  border-radius:11px!important;background:linear-gradient(135deg,#343a46,#11151d)!important;
+  border:1px solid rgba(220,228,244,.18)!important;box-shadow:0 2px 5px rgba(0,0,0,.12)!important;
+}
+/* Miniaturas no seletor reproduzem tanto o formato quanto a paleta do balão */
+.chat-bubble-style-choice>span{box-sizing:border-box;flex:0 0 74px;min-width:0;max-width:74px;overflow:hidden}
+.chat-bubble-style-choice .chat-bubble-style-sample-0{border-radius:13px 13px 13px 4px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-1{border-radius:22px!important;border:1px solid #ffffff70}
+.chat-bubble-style-choice .chat-bubble-style-sample-2{border-radius:5px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-3{border-radius:999px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-4{border-radius:16px 16px 16px 4px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-5{border-radius:5px 17px 5px 17px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-6{border-radius:16px 16px 4px 16px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-7{border-radius:14px 14px 14px 3px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-8{border-radius:22px 22px 22px 8px!important}
+.chat-bubble-style-choice .chat-bubble-style-sample-9{border-radius:8px!important}
+@media(max-width:520px){
+ .chat-message-line .chat-bubble{max-width:min(88%,620px)!important}
+ .chat-bubble-style-choice>span{flex-basis:56px;max-width:56px}
+}
+@media(prefers-reduced-motion:reduce){.chat-bubble{transition:none!important}}
