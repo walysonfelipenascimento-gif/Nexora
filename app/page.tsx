@@ -2,26 +2,8 @@
 "use client";
 
 import { useState } from "react";
-
-type Story = {
-  name: string;
-  image: string;
-  own?: boolean;
-};
-
-type Post = {
-  id: number;
-  name: string;
-  username: string;
-  avatar: string;
-  image: string;
-  location: string;
-  caption: string;
-  likes: number;
-  liked: boolean;
-  comments: string[];
-  isOwn?: boolean;
-};
+import { calculateProfileStats, filterFeedPosts, toggleListItem } from "../lib/nexora/feed-utils";
+import type { Post, Story } from "../lib/nexora/types";
 
 const stories: Story[] = [
   {
@@ -169,12 +151,8 @@ export default function Home() {
     setActiveTab(tab);
   }
 
-  const visiblePosts = posts.filter((post) => {
-    const query = searchQuery.trim().toLocaleLowerCase("pt-BR");
-    const matchesSearch = !query || `${post.name} ${post.username} ${post.caption} ${post.location}`.toLocaleLowerCase("pt-BR").includes(query);
-    const matchesFeed = activeFeed === "for-you" || post.isOwn || followedUsers.includes(post.username);
-    return matchesSearch && matchesFeed;
-  });
+  const visiblePosts = filterFeedPosts(posts, searchQuery, activeFeed, followedUsers);
+  const profileStats = calculateProfileStats(posts, followedUsers, savedPosts);
 
   return (
     <main className="nexora-app">
@@ -267,8 +245,8 @@ export default function Home() {
                     </div>
 
                     <div className="post-header-actions">
-                      {!post.isOwn && <button className={`follow-button ${followedUsers.includes(post.username) ? "is-following" : ""}`} onClick={() => setFollowedUsers((current) => current.includes(post.username) ? current.filter((name) => name !== post.username) : [...current, post.username])}>{followedUsers.includes(post.username) ? "Seguindo" : "Seguir"}</button>}
-                      <button className="more-button" aria-label="Mais opções" onClick={() => setSavedPosts((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id])}>{savedPosts.includes(post.id) ? "◆" : "⋯"}</button>
+                      {!post.isOwn && <button className={`follow-button ${followedUsers.includes(post.username) ? "is-following" : ""}`} onClick={() => setFollowedUsers((current) => toggleListItem(current, post.username))}>{followedUsers.includes(post.username) ? "Seguindo" : "Seguir"}</button>}
+                      <button className="more-button" aria-label="Mais opções" onClick={() => setSavedPosts((current) => toggleListItem(current, post.id))}>{savedPosts.includes(post.id) ? "◆" : "⋯"}</button>
                     </div>
                   </div>
 
@@ -373,7 +351,7 @@ export default function Home() {
               <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop" alt="Foto de perfil demonstrativa" />
               <div className="profile-name-block"><h1>Licinhosz.bb</h1><p>@licinhosz.bb</p><div className="profile-buttons"><button onClick={() => alert("A edição de perfil será conectada na próxima etapa.")}>Editar perfil</button><button onClick={() => alert("Mensagens serão conectadas na próxima etapa.")}>Mensagem</button></div></div>
             </div>
-            <div className="profile-stats"><div><strong>{posts.filter((post) => post.isOwn).length.toLocaleString("pt-BR")}</strong><span>Posts seus</span></div><div><strong>{followedUsers.length.toLocaleString("pt-BR")}</strong><span>Seguindo</span></div><div><strong>{savedPosts.length.toLocaleString("pt-BR")}</strong><span>Salvos</span></div><div><strong>{posts.reduce((sum, post) => sum + post.likes, 0).toLocaleString("pt-BR")}</strong><span>Curtidas no feed</span></div></div>
+            <div className="profile-stats"><div><strong>{profileStats.ownPosts.toLocaleString("pt-BR")}</strong><span>Posts seus</span></div><div><strong>{profileStats.following.toLocaleString("pt-BR")}</strong><span>Seguindo</span></div><div><strong>{profileStats.saved.toLocaleString("pt-BR")}</strong><span>Salvos</span></div><div><strong>{profileStats.feedLikes.toLocaleString("pt-BR")}</strong><span>Curtidas no feed</span></div></div>
             <div className="profile-bio"><p>🚀 Criador digital | Construindo conexões</p><p>🌐 Conectando pessoas, marcas e oportunidades</p><p>✨ Bem-vindo ao meu espaço na Nexora</p></div>
             <div className="profile-grid-tabs"><span>▦ Publicações</span><span>▣ Vídeos</span><span>♡ Curtidas</span><span>▢ Salvos</span></div>
             <div className="profile-post-grid">{posts.filter(post => post.image).map(post => <button key={post.id} onClick={() => setActiveTab("inicio")}><img src={post.image} alt={post.caption} /></button>)}</div>
