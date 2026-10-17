@@ -459,3 +459,22 @@ body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 .profile-post-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.profile-post-grid button{aspect-ratio:1;border:0;border-radius:11px;overflow:hidden;padding:0;background:#21142b}.profile-post-grid img{width:100%;height:100%;object-fit:cover}
 @media(min-width:700px){.nexora-app{margin:20px auto;min-height:calc(100dvh - 40px);border:1px solid #ffffff2b;border-radius:34px}.bottom-nav{bottom:30px!important}}
 @media(max-width:500px){.nexora-app{width:100%;box-shadow:none}.feed-container{width:calc(100% - 22px)!important}.profile-reference{margin-top:12px}}
+
+
+/* Visualizador vertical de Stories inspirado na tela central da referência */
+.story-viewer-backdrop{position:fixed;z-index:100;inset:0;display:grid;place-items:center;padding:14px;background:#08050bc9;backdrop-filter:blur(12px)}
+.story-viewer{position:relative;width:min(100%,390px);height:min(84dvh,760px);min-height:470px;border:1px solid #ffffff24;border-radius:34px;overflow:hidden;background-color:#1b1023;background-size:cover;background-position:center;box-shadow:0 25px 80px #0009}
+.story-progress{position:absolute;top:12px;left:13px;right:13px;height:3px;border-radius:9px;background:#ffffff55;overflow:hidden}
+.story-progress span{display:block;width:36%;height:100%;border-radius:9px;background:#fff}
+.story-viewer-header{position:absolute;top:25px;left:15px;right:13px;display:flex;align-items:center;gap:9px;color:#fff}
+.story-viewer-header img{width:35px;height:35px;object-fit:cover;border-radius:50%;border:1px solid #f2aaff}
+.story-viewer-header div{display:flex;flex-direction:column;gap:3px;flex:1}
+.story-viewer-header strong{font-size:12px}.story-viewer-header small{font-size:9px;color:#ead9ef}
+.story-viewer-header>button{width:35px;height:35px;border:0;border-radius:50%;background:#120a1a66;color:#fff;font-size:27px}
+.story-viewer-bottom{position:absolute;left:14px;right:14px;bottom:16px;display:flex;align-items:center;gap:9px}
+.story-viewer-bottom label{display:flex;align-items:center;gap:7px;flex:1;min-width:0;height:44px;padding:0 12px;border:1px solid #ffffff72;border-radius:999px;background:#20152266;backdrop-filter:blur(15px)}
+.story-viewer-bottom input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#fff;font-size:11px}
+.story-viewer-bottom input::placeholder{color:#f0e2f4}
+.story-viewer-bottom label button{border:0;background:transparent;color:#fff;font-size:10px;font-weight:700}
+.story-heart{width:44px;height:44px;border:1px solid #ffffff60;border-radius:50%;background:#28152f99;color:#fff;font-size:26px}
+@media(max-width:500px){.story-viewer-backdrop{padding:0}.story-viewer{width:100%;height:100dvh;min-height:0;border:0;border-radius:0}}
