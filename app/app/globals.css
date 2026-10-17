@@ -427,3 +427,35 @@ body{background:radial-gradient(ellipse at 50% 0%,#42104f 0%,#1b0e28 48%,#0d0b12
 @media(min-width:760px){.feed-container{width:min(100% - 48px,470px)!important}.topbar{padding-inline:max(24px,calc((100% - 470px)/2))}}
 @media(max-width:560px){.topbar{height:68px;padding:0 17px}.feed-container{width:calc(100% - 22px)!important}.stories-section{padding-top:18px}.post-card{border-radius:21px!important}.post-image{aspect-ratio:4/4.1!important}.bottom-nav{bottom:max(10px,env(safe-area-inset-bottom));width:calc(100% - 28px)!important;height:59px!important}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+
+/* Correção estrutural baseada na referência: fundo lavanda + app escuro */
+html,body{background:#e9b8f6!important}
+body{background:radial-gradient(ellipse at 48% 5%,#f6d7ff 0%,#e9b8f6 57%,#d9a0ed 100%)!important;color:#fff}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:repeating-radial-gradient(ellipse at 15% 20%,transparent 0 115px,#bd68d31e 116px 118px,transparent 119px 235px)}
+.nexora-app{width:min(100%,470px);min-height:100dvh;margin:0 auto;position:relative;background:linear-gradient(155deg,#281131 0%,#160f1d 40%,#100e15 100%);box-shadow:0 20px 70px #5d286c55;overflow:hidden}
+.topbar{background:linear-gradient(110deg,#32103f,#1c1127)!important;padding:0 18px;border-bottom:1px solid #ffffff14}
+.brand>span{font-size:20px;letter-spacing:-.5px}
+.icon-button{background:linear-gradient(145deg,#6c2587,#271330)!important;border-color:#d18bdf55!important;box-shadow:0 0 15px #c238ed1c}
+.feed-container{width:calc(100% - 28px)!important;padding-bottom:100px}
+.stories-section{padding-top:20px}
+.section-heading span{color:#c9aecf}
+.story-ring{background:linear-gradient(135deg,#fa49da,#9229d8 55%,#281831)!important}
+.post-card{background:linear-gradient(145deg,#291932,#21152a)!important;border:1px solid #ffffff12!important;border-radius:22px!important;box-shadow:0 12px 25px #07030c4d!important}
+.post-header{background:linear-gradient(180deg,#180c20e8,#180c2060 80%,transparent)}
+.post-content{background:linear-gradient(100deg,#281731,#2b1934)!important}
+.post-image{aspect-ratio:4/4.05!important}
+.bottom-nav{background:linear-gradient(110deg,#36203ef5,#211722f5)!important;border:1px solid #ffffff2b!important;box-shadow:0 10px 30px #0007!important}
+.nav-item:nth-child(3){background:linear-gradient(145deg,#ed3bf2,#a123e9)!important}
+.profile-reference{position:relative;overflow:hidden;margin-top:15px;padding:18px 14px 20px;border:1px solid #ffffff16;border-radius:24px;background:linear-gradient(145deg,#2a1733,#1a121f 75%);box-shadow:0 18px 40px #0004}
+.profile-identity{display:flex;align-items:center;gap:12px}
+.profile-identity>img{width:83px;height:83px;flex:0 0 83px;object-fit:cover;border-radius:22px;border:1px solid #e9aaff4d}
+.profile-name-block{min-width:0;flex:1}.profile-name-block h1{margin:0 0 4px;font-size:16px}.verified-dot{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;background:#d746f2;color:white;font-size:9px}
+.profile-name-block>p{margin:0 0 10px;color:#c8afcf;font-size:10px}.profile-buttons{display:flex;gap:6px}.profile-buttons button{min-height:28px;padding:0 11px;border:1px solid #ffffff29;border-radius:999px;background:#ffffff08;color:#fff;font-size:9px;font-weight:700}
+.profile-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:17px;padding:16px 4px;border:1px solid #ffffff15;border-radius:18px;background:#ffffff05;text-align:center}
+.profile-stats>div{display:flex;flex-direction:column;gap:5px;min-width:0;border-right:1px solid #ffffff0c}.profile-stats>div:last-child{border:0}.profile-stats strong{font-size:13px}.profile-stats span{font-size:9px;color:#c5b1cb}
+.profile-bio{padding:12px 4px 9px}.profile-bio p{margin:7px 0;color:#e9dbea;font-size:10px;line-height:1.4}
+.profile-grid-tabs{display:flex;justify-content:space-between;gap:5px;padding:13px 0;border-top:1px solid #ffffff17;color:#e7d4eb;font-size:10px}
+.profile-post-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.profile-post-grid button{aspect-ratio:1;border:0;border-radius:11px;overflow:hidden;padding:0;background:#21142b}.profile-post-grid img{width:100%;height:100%;object-fit:cover}
+@media(min-width:700px){.nexora-app{margin:20px auto;min-height:calc(100dvh - 40px);border:1px solid #ffffff2b;border-radius:34px}.bottom-nav{bottom:30px!important}}
+@media(max-width:500px){.nexora-app{width:100%;box-shadow:none}.feed-container{width:calc(100% - 22px)!important}.profile-reference{margin-top:12px}}
