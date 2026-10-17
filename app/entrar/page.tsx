@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "../../lib/supabase/client";
 
 type Mode = "login" | "signup";
 
