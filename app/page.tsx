@@ -56,6 +56,7 @@ export default function Home() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerText, setComposerText] = useState("");
   const [activeStory, setActiveStory] = useState<(typeof stories)[number] | null>(null);
+  const [activeStoryIndex, setActiveStoryIndex] = useState(1);
   const [notice, setNotice] = useState("");
 
   function publish() {
@@ -98,7 +99,7 @@ export default function Home() {
 
       <section className="stories-rail" aria-label="Stories">
         {stories.map((story) => (
-          <button className="story" key={story.name} onClick={() => story.own ? setComposerOpen(true) : setActiveStory(story)}>
+          <button className="story" key={story.name} onClick={() => { if (story.own) setComposerOpen(true); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
             <span className={`story-ring ${story.own ? "story-own" : ""}`}>
               {story.own ? <span className="story-plus">＋</span> : <img src={story.image} alt="" />}
             </span>
@@ -149,7 +150,7 @@ export default function Home() {
 
       {notice && <div className="toast" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Fechar aviso">×</button></div>}
 
-      {activeStory && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setActiveStory(null); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`}><div className="story-progress"><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name}</strong><button onClick={() => setActiveStory(null)} aria-label="Fechar">×</button></header><img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt="" /></section></div>}
+      {activeStory && <div className="story-overlay" onClick={event => { if (event.target === event.currentTarget) setActiveStory(null); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`}><div className="story-progress"><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name} <small>· agora</small></strong><button onClick={() => setActiveStory(null)} aria-label="Fechar">×</button></header><img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt="" /><button className="story-hit story-hit-prev" aria-label="Story anterior" onClick={() => { const next = Math.max(1, activeStoryIndex - 1); setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><button className="story-hit story-hit-next" aria-label="Próximo Story" onClick={() => { const next = activeStoryIndex >= stories.length - 1 ? 1 : activeStoryIndex + 1; setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><div className="story-bottom-bubbles" aria-label="Navegar entre Stories">{stories.slice(1).map((story, index) => <button key={story.name} className={`story-bubble ${stories.indexOf(story) === activeStoryIndex ? "active" : ""}`} onClick={() => { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); }}><span><img src={story.image} alt="" /></span><small>{story.name}</small></button>)}</div></section></div>}
 
       {composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><header><div><small>NEXORA · SUA COMUNIDADE</small><h2 id="composer-title">Criar publicação</h2></div><button onClick={() => setComposerOpen(false)} aria-label="Fechar">×</button></header><textarea value={composerText} onChange={event => setComposerText(event.target.value)} maxLength={1000} placeholder="Compartilhe algo com o mundo..." /><footer><span>{composerText.length}/1000</span><button disabled={!composerText.trim()} onClick={publish}>Publicar ↗</button></footer><p>Esta primeira etapa é uma demonstração visual; publicações e interações ainda não são sincronizadas com outras contas.</p></section></div>}
 
