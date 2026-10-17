@@ -69,8 +69,8 @@ export default function Home() {
   const [showStoryReactions, setShowStoryReactions] = useState(false);
   const [showStoryHeart, setShowStoryHeart] = useState(false);
   const lastStoryTapRef = useRef(0);
-  const mediaTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const reactionHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mediaTapTimerRef = useRef<number | null>(null);
+  const reactionHoldRef = useRef<number | null>(null);
   const reactionHeldRef = useRef(false);
   const storyVideoRef = useRef<HTMLVideoElement>(null);
   const [storyComposerOpen, setStoryComposerOpen] = useState(false);
