@@ -215,3 +215,33 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 @keyframes emoji-fire-glow{0%{opacity:.12;filter:brightness(.8)}100%{opacity:.28;filter:brightness(1.35)}}
 @keyframes emoji-fire-drift{0%{transform:translateY(0)}100%{transform:translateY(-22px)}}
 @media(prefers-reduced-motion:reduce){.chat-wallpaper-19:before,.chat-wallpaper-19:after{animation:none}}
+
+
+/* Wallpaper collection refresh — richer artwork and readable chat contrast */
+.chat-wallpaper-0{background-image:radial-gradient(ellipse at 50% 0%,#24243355,transparent 48%),linear-gradient(180deg,#07070c,#020203)!important}
+.chat-wallpaper-1{background-image:radial-gradient(ellipse at 22% 12%,#67ffd077,transparent 38%),radial-gradient(ellipse at 77% 20%,#a65dff77,transparent 42%),linear-gradient(160deg,#031b25,#07564e 55%,#090c23)!important}
+.chat-wallpaper-2{background-image:linear-gradient(165deg,transparent 38%,#172b3d 39% 48%,transparent 49%),linear-gradient(155deg,transparent 45%,#3d8e9a 46% 55%,transparent 56%),linear-gradient(180deg,#80c5e7 0%,#24445c 48%,#071624 100%)!important}
+.chat-wallpaper-3{background-image:radial-gradient(ellipse at 25% 35%,#fa62df66,transparent 32%),radial-gradient(ellipse at 75% 60%,#713cff88,transparent 40%),linear-gradient(140deg,#09051b,#35106a,#100720)!important}
+.chat-wallpaper-4{background-image:radial-gradient(ellipse at 20% 100%,#00d9ff66,transparent 35%),radial-gradient(ellipse at 90% 0%,#ec22ff66,transparent 40%),linear-gradient(135deg,#050b20,#15245a 55%,#10051c)!important}
+.chat-wallpaper-5{background-image:radial-gradient(ellipse at 50% 100%,#008cc977,transparent 50%),repeating-linear-gradient(170deg,transparent 0 30px,#37d9ff13 31px 33px),linear-gradient(180deg,#031126,#064c72 65%,#010712)!important}
+.chat-wallpaper-6{background-image:radial-gradient(circle at 50% 38%,#ffe6a2 0 7%,#ff8c68 8% 18%,transparent 19%),linear-gradient(180deg,#39235d,#d44f85 52%,#ffac65 72%,#30204b)!important}
+.chat-wallpaper-7{background-image:radial-gradient(circle at 25% 30%,#fff 0 1px,transparent 2px),radial-gradient(circle at 75% 70%,#78dfff 0 1px,transparent 2px),radial-gradient(ellipse at 55% 45%,#3b5cff77,transparent 42%),linear-gradient(145deg,#020617,#111b58,#08051d)!important;background-size:29px 29px,37px 37px,auto,auto!important}
+.chat-wallpaper-8{background-image:radial-gradient(ellipse at 50% 100%,#20bd7755,transparent 48%),linear-gradient(80deg,#061b19 0 12%,transparent 13% 25%,#0b2b26 26% 38%,transparent 39% 54%,#061b19 55% 65%,transparent 66%),linear-gradient(180deg,#071b25,#12513d,#030c0b)!important}
+.chat-wallpaper-9{background-image:repeating-linear-gradient(105deg,transparent 0 15px,#b8e8ff19 16px 17px),linear-gradient(90deg,#101728,#334b69 45%,#171329)!important}
+.chat-wallpaper-10{background-image:radial-gradient(ellipse at 25% 30%,#ff5fb466,transparent 24%),radial-gradient(ellipse at 70% 60%,#b6268a66,transparent 32%),linear-gradient(135deg,#1d0825,#5b164e,#130c2b)!important}
+.chat-wallpaper-11{background-image:radial-gradient(ellipse at 50% 50%,#a6f8ff77,transparent 28%),conic-gradient(from 30deg at 50% 50%,#092743,#48d5ff,#3446a7,#e5ffff,#092743)!important}
+.chat-wallpaper-12{background-image:radial-gradient(ellipse at 80% 15%,#e8c7ff66,transparent 32%),linear-gradient(135deg,#211936,#7561a8 55%,#d6a9e7)!important}
+.chat-wallpaper-13{background-image:radial-gradient(ellipse at 25% 0%,#3effb677,transparent 40%),radial-gradient(ellipse at 80% 35%,#00d7b455,transparent 36%),linear-gradient(160deg,#031d25,#07594d,#081329)!important}
+.chat-wallpaper-14{background-image:radial-gradient(ellipse at 50% 100%,#ffcf4766,transparent 42%),radial-gradient(ellipse at 30% 65%,#ff421c88,transparent 35%),linear-gradient(150deg,#14071d,#6b1737,#180912)!important}
+.chat-wallpaper-15{background-image:conic-gradient(from 45deg at 50% 50%,#00cfff,#663cff,#ff3cb8,#ffad45,#00cfff)!important}
+.chat-wallpaper-16{background-image:radial-gradient(ellipse at 50% 15%,#e6d9c566,transparent 32%),linear-gradient(155deg,#1a1a29,#686275 55%,#b18d9a)!important}
+.chat-wallpaper-17{background-image:radial-gradient(ellipse at 50% 48%,#ff168c55,transparent 35%),linear-gradient(135deg,#13091f,#5c0a55,#171047)!important}
+.chat-wallpaper-0,.chat-wallpaper-1,.chat-wallpaper-2,.chat-wallpaper-3,.chat-wallpaper-4,.chat-wallpaper-5,.chat-wallpaper-6,.chat-wallpaper-7,.chat-wallpaper-8,.chat-wallpaper-9,.chat-wallpaper-10,.chat-wallpaper-11,.chat-wallpaper-12,.chat-wallpaper-13,.chat-wallpaper-14,.chat-wallpaper-15,.chat-wallpaper-16,.chat-wallpaper-17{background-size:cover!important;background-attachment:local}
+.chat-wallpaper-18{position:relative;isolation:isolate;background-color:#020203!important;background-image:radial-gradient(ellipse at 15% 100%,#ff3c0830,transparent 35%),radial-gradient(ellipse at 85% 100%,#ff7a0027,transparent 32%),linear-gradient(180deg,#030304,#070305 68%,#160603)!important;overflow:hidden}
+.chat-wallpaper-18:before{content:"🔥　😏　👄　🥵　😈　👄　🔥　😮‍💨";position:absolute;z-index:0;inset:0;display:block;pointer-events:none;opacity:.25;color:#ff7544;font-size:22px;line-height:3.15;letter-spacing:1px;white-space:normal;overflow-wrap:normal;word-break:keep-all;text-align:center;text-shadow:0 0 7px #ff3d16,0 0 17px #ff6a00,0 0 29px #ff2500;background:repeating-linear-gradient(to bottom,transparent 0 50px,#ff5a171c 51px 53px,transparent 54px 86px);animation:nexora-cheeky-fire 3.8s ease-in-out infinite alternate}
+.chat-wallpaper-18:after{content:"🔥　👄　😏　🥵　😈　👄　🔥";position:absolute;z-index:0;inset:0;display:block;padding-top:32px;pointer-events:none;color:#ffb16b;font-size:17px;line-height:4.7;letter-spacing:2px;text-align:center;overflow:hidden;opacity:.18;text-shadow:0 0 8px #ff3000,0 0 20px #ff6400;animation:nexora-emoji-drift 9s linear infinite}
+.chat-wallpaper-18>*{position:relative;z-index:1}
+.chat-wallpaper-19{background-image:radial-gradient(circle at 20% 25%,#d5b4ff33,transparent 18%),radial-gradient(circle at 80% 65%,#7e62ff33,transparent 22%),linear-gradient(135deg,#0a1731,#273a70,#642f91)!important}
+@keyframes nexora-cheeky-fire{0%{opacity:.16;filter:brightness(.8)}100%{opacity:.31;filter:brightness(1.3)}}
+@keyframes nexora-emoji-drift{0%{transform:translateY(0)}100%{transform:translateY(-25px)}}
+@media(prefers-reduced-motion:reduce){.chat-wallpaper-18:before,.chat-wallpaper-18:after{animation:none}}
