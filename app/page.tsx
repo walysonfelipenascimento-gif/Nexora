@@ -81,7 +81,7 @@ export default function Home() {
     return () => { cancelled = true; };
   }, []);
 
-  function toggleLike(postId: number) {
+  function toggleLike(postId: string | number) {
     setPosts((current) =>
       current.map((post) =>
         post.id === postId
