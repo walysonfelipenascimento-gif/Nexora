@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { getSupabaseBrowserClient } from "../../lib/supabase/client";
@@ -19,6 +19,17 @@ export default function EntrarPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "USER_UPDATED")) {
+        router.replace("/");
+      }
+    });
+    return () => listener.subscription.unsubscribe();
+  }, [router]);
 
   async function ensureProfile(user: { id: string; email?: string; user_metadata?: Record<string, unknown> }) {
     const supabase = getSupabaseBrowserClient();
@@ -50,6 +61,34 @@ export default function EntrarPage() {
       display_name: metadataName.slice(0, 80),
     });
     if (insertError) throw insertError;
+  }
+
+  async function handleResendConfirmation() {
+    setError("");
+    setMessage("");
+    if (!email.trim()) {
+      setError("Digite seu e-mail para enviarmos a confirmação.");
+      return;
+    }
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setError("A conexão da Nexora ainda não está disponível. Tente novamente em instantes.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: { emailRedirectTo: window.location.origin + "/entrar" },
+      });
+      if (resendError) throw resendError;
+      setMessage("Se houver uma confirmação pendente para esse e-mail, enviaremos uma nova mensagem. Confira também o spam.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Não foi possível reenviar agora. Aguarde um pouco e tente novamente.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handlePasswordReset() {
@@ -106,6 +145,7 @@ export default function EntrarPage() {
               username: normalizedUsername,
               display_name: displayName.trim() || normalizedUsername,
             },
+            emailRedirectTo: window.location.origin + "/entrar",
           },
         });
 
@@ -116,7 +156,7 @@ export default function EntrarPage() {
           setMessage("Conta criada! Bem-vindo à Nexora.");
           router.push("/");
         } else {
-          setMessage("Quase lá! Confira seu e-mail para confirmar a conta. Depois, volte aqui e entre na Nexora.");
+          setMessage("Cadastro iniciado! Abra o e-mail de confirmação enviado pela Nexora e toque em Confirmar conta. Depois, você voltará para a Nexora. Confira também Spam/Promoções. Se não chegar, use “Reenviar confirmação” abaixo.");
         }
       } else {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -196,6 +236,7 @@ export default function EntrarPage() {
             <button className="auth-password-toggle" type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? "Ocultar" : "Mostrar"}</button>
           </div>
           {mode === "login" && <button className="auth-forgot" type="button" onClick={handlePasswordReset} disabled={busy}>Esqueci minha senha</button>}
+          {mode === "signup" && message.includes("Cadastro iniciado!") && <button className="auth-forgot" type="button" onClick={handleResendConfirmation} disabled={busy}>Reenviar confirmação</button>}
 
           {error && <p className="auth-feedback error" role="alert">{error}</p>}
           {message && <p className="auth-feedback success" role="status">{message}</p>}
