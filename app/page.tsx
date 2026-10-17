@@ -10,13 +10,13 @@ import { initialPosts, navigation, stories } from "../lib/nexora/demo-data";
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [activeTab, setActiveTab] = useState("inicio");
-  const [openComments, setOpenComments] = useState<number | null>(null);
-  const [drafts, setDrafts] = useState<Record<number, string>>({});
+  const [openComments, setOpenComments] = useState<string | number | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [activeFeed, setActiveFeed] = useState<"for-you" | "following">("for-you");
   const [searchQuery, setSearchQuery] = useState("");
   const [showComposer, setShowComposer] = useState(false);
   const [composerText, setComposerText] = useState("");
-  const [savedPosts, setSavedPosts] = useState<number[]>([]);
+  const [savedPosts, setSavedPosts] = useState<Array<string | number>>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>(["marianacosta"]);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
   const [databaseFeedLoaded, setDatabaseFeedLoaded] = useState(false);
