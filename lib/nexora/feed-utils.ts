@@ -31,7 +31,7 @@ export function toggleListItem<T>(items: T[], item: T): T[] {
 export function calculateProfileStats(
   posts: Post[],
   followedUsers: string[],
-  savedPostIds: number[],
+  savedPostIds: Array<string | number>,
 ): ProfileStats {
   return {
     ownPosts: posts.filter((post) => post.isOwn).length,
