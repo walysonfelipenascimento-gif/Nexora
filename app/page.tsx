@@ -95,7 +95,7 @@ export default function Home() {
     );
   }
 
-  function addComment(postId: number) {
+  function addComment(postId: string | number) {
     const text = (drafts[postId] || "").trim();
 
     if (!text) return;
