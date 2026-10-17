@@ -180,7 +180,7 @@ export default function Home() {
       <header className="topbar">
         <div className="brand">
           <img className="brand-symbol" src="/nexora-logo.svg" alt="Nexora" />
-          <span>Nexora</span>
+          <span>Community</span>
         </div>
 
         <div className="topbar-actions">
@@ -201,19 +201,6 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="welcome-banner">
-        <div className="welcome-copy">
-          <span className="welcome-kicker"><span className="welcome-pulse" /> SUA PRÓXIMA CONEXÃO COMEÇA AQUI</span>
-          <h1>Um mundo de ideias.<br /><span>Novas conexões.</span></h1>
-          <p>Conectando pessoas, marcas e oportunidades em um só lugar.</p>
-          <div className="welcome-tags"><span>✦ Criadores</span><span>↗ Marcas</span><span>◇ Oportunidades</span></div>
-        </div>
-        <div className="welcome-art" aria-hidden="true">
-          <div className="art-orbit orbit-one"></div><div className="art-orbit orbit-two"></div>
-          <img src="/nexora-logo.svg" alt="" />
-          <span className="art-spark spark-one">✦</span><span className="art-spark spark-two">✧</span>
-        </div>
-      </section>
       <section className="feed-container">
         {activeTab === "inicio" ? (
           <>
