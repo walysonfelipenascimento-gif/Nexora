@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type FeedPost = {
   id: number;
@@ -60,6 +60,8 @@ export default function Home() {
   const [stories, setStories] = useState<StoryItem[]>(initialStories);
   const [activeStory, setActiveStory] = useState<StoryItem | null>(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(1);
+  const [isStoryPaused, setIsStoryPaused] = useState(false);
+  const storyVideoRef = useRef<HTMLVideoElement>(null);
   const [storyComposerOpen, setStoryComposerOpen] = useState(false);
   const [storyPreview, setStoryPreview] = useState("");
   const [storyFile, setStoryFile] = useState<File | null>(null);
@@ -80,6 +82,58 @@ export default function Home() {
     setNotice("Publicação adicionada nesta demonstração visual.");
     window.setTimeout(() => setNotice(""), 2800);
   }
+
+  function goToStory(index: number) {
+    if (stories.length <= 1) return;
+    const firstStoryIndex = stories.findIndex(item => !item.own || Boolean(item.image));
+    const safeFirst = firstStoryIndex < 0 ? 0 : firstStoryIndex;
+    const nextIndex = index < safeFirst ? stories.length - 1 : index >= stories.length ? safeFirst : index;
+    setActiveStoryIndex(nextIndex);
+    setActiveStory(stories[nextIndex]);
+    setIsStoryPaused(false);
+  }
+
+  function goNextStory() {
+    goToStory(activeStoryIndex + 1);
+  }
+
+  function goPreviousStory() {
+    goToStory(activeStoryIndex - 1);
+  }
+
+  function closeStoryViewer() {
+    setActiveStory(null);
+    setIsStoryPaused(false);
+  }
+
+  function toggleStoryPlayback() {
+    setIsStoryPaused(current => !current);
+  }
+
+  useEffect(() => {
+    if (!activeStory || isStoryPaused || activeStory.mediaType === "video") return;
+    const timer = window.setTimeout(() => goNextStory(), 6000);
+    return () => window.clearTimeout(timer);
+  }, [activeStory, activeStoryIndex, isStoryPaused, stories]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!activeStory) return;
+      if (event.key === "ArrowRight") { event.preventDefault(); goNextStory(); }
+      else if (event.key === "ArrowLeft") { event.preventDefault(); goPreviousStory(); }
+      else if (event.key === " " || event.key === "k") { event.preventDefault(); toggleStoryPlayback(); }
+      else if (event.key === "Escape") closeStoryViewer();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeStory, activeStoryIndex, stories]);
+
+  useEffect(() => {
+    const video = storyVideoRef.current;
+    if (!video) return;
+    if (isStoryPaused) video.pause();
+    else if (activeStory?.mediaType === "video") void video.play().catch(() => undefined);
+  }, [activeStory, isStoryPaused]);
 
   function addComment(id: number) {
     const value = (drafts[id] || "").trim();
@@ -158,9 +212,9 @@ export default function Home() {
 
       {notice && <div className="toast" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Fechar aviso">×</button></div>}
 
-      {activeStory && <div className="story-overlay" onClick={event => { if (event.target === event.currentTarget) setActiveStory(null); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`}><div className="story-progress"><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name} <small>· agora</small></strong><button onClick={() => setActiveStory(null)} aria-label="Fechar">×</button></header>{activeStory.mediaType === "video" ? <video className="story-full-image" src={activeStory.image} autoPlay playsInline /> : <img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt={activeStory.caption || `Story de ${activeStory.name}`} />}{activeStory.caption && <p className="story-caption">{activeStory.caption}</p>}<button className="story-hit story-hit-prev" aria-label="Story anterior" onClick={() => { const next = Math.max(1, activeStoryIndex - 1); setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><button className="story-hit story-hit-next" aria-label="Próximo Story" onClick={() => { const next = activeStoryIndex >= stories.length - 1 ? 1 : activeStoryIndex + 1; setActiveStoryIndex(next); setActiveStory(stories[next]); }} /><div className="story-bottom-bubbles" aria-label="Navegar entre Stories">{stories.filter(item => !item.own || item.image).map(story => <button key={story.id || story.name} className={`story-bubble ${story.name === activeStory.name ? "active" : ""}`} onClick={() => { const index = stories.indexOf(story); setActiveStoryIndex(index); setActiveStory(story); }}><span><img src={story.image} alt="" /></span><small>{story.name}</small></button>)}</div></section></div>}
+      {activeStory && <div className="story-overlay" onClick={event => { if (event.target === event.currentTarget) closeStoryViewer(); }}><section className="story-viewer" role="dialog" aria-modal="true" aria-label={`Story de ${activeStory.name}`}><div key={activeStory.id || activeStory.name} className={`story-progress ${isStoryPaused ? "is-paused" : ""}`}><span /></div><header><img src={activeStory.image} alt="" /><strong>{activeStory.name} <small>· agora</small></strong><button className="story-pause-button" onClick={toggleStoryPlayback} aria-label={isStoryPaused ? "Continuar Story" : "Pausar Story"} title={isStoryPaused ? "Continuar" : "Pausar"}>{isStoryPaused ? "▶" : "Ⅱ"}</button><button onClick={closeStoryViewer} aria-label="Fechar">×</button></header>{activeStory.mediaType === "video" ? <video ref={storyVideoRef} className="story-full-image" src={activeStory.image} autoPlay={!isStoryPaused} playsInline onClick={toggleStoryPlayback} onEnded={goNextStory} /> : <img className="story-full-image" src={activeStory.image.replace("w=180&h=180", "w=900&h=1500")} alt={activeStory.caption || `Story de ${activeStory.name}`} />}{isStoryPaused && <button className="story-resume-overlay" onClick={toggleStoryPlayback} aria-label="Continuar Story">▶</button>}{activeStory.caption && <p className="story-caption">{activeStory.caption}</p>}<button className="story-hit story-hit-prev" aria-label="Story anterior — tocar à esquerda" onClick={goPreviousStory} /><button className="story-hit story-hit-next" aria-label="Próximo Story — tocar à direita" onClick={goNextStory} /><div className="story-bottom-bubbles" aria-label="Navegar entre Stories">{stories.filter(item => !item.own || item.image).map(story => <button key={story.id || story.name} className={`story-bubble ${story.name === activeStory.name && story.image === activeStory.image ? "active" : ""}`} onClick={() => { const index = stories.indexOf(story); setActiveStoryIndex(index); setActiveStory(story); setIsStoryPaused(false); }}><span><img src={story.image} alt="" /></span><small>{story.name}</small></button>)}</div></section></div>}
 
-      {storyComposerOpen && <div className="overlay story-composer-overlay" onClick={event => { if (event.target === event.currentTarget) setStoryComposerOpen(false); }}><section className="composer story-composer" role="dialog" aria-modal="true" aria-labelledby="story-composer-title"><header><div><small>NEXORA · STORIES</small><h2 id="story-composer-title">Criar Story</h2></div><button onClick={() => setStoryComposerOpen(false)} aria-label="Fechar">×</button></header><input ref={storyInputRef} className="story-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) { setNotice("Escolha uma foto ou vídeo."); return; } if (file.size > 50 * 1024 * 1024) { setNotice("O arquivo deve ter até 50 MB."); return; } setStoryFile(file); setStoryPreview(URL.createObjectURL(file)); }} /><button className="story-media-picker" onClick={() => storyInputRef.current?.click()}>{storyPreview ? (storyFile?.type.startsWith("video/") ? <video src={storyPreview} muted playsInline /> : <img src={storyPreview} alt="Prévia do Story" />) : <span><b>＋</b>Escolher foto ou vídeo</span>}</button><textarea value={storyCaption} onChange={event => setStoryCaption(event.target.value)} maxLength={180} placeholder="Adicione uma legenda (opcional)..." /><footer><span>{storyCaption.length}/180</span><button disabled={!storyFile || !storyPreview} onClick={() => { if (!storyFile || !storyPreview) return; const ownStory: StoryItem = { name: "Licinhosz.bb", own: true, image: storyPreview, mediaType: storyFile.type.startsWith("video/") ? "video" : "image", caption: storyCaption.trim(), id: `local-${Date.now()}` }; setStories(current => [current[0], ownStory, ...current.slice(1).filter(item => !item.own || !item.image)]); setActiveStoryIndex(1); setActiveStory(ownStory); setStoryComposerOpen(false); setStoryFile(null); setStoryPreview(""); setStoryCaption(""); setNotice("Story publicado nesta sessão do navegador."); }}>Publicar Story ↗</button></footer><p>O Story fica nesta sessão do navegador; a sincronização entre contas será conectada ao backend na etapa de persistência.</p></section></div>}
+{storyComposerOpen && <div className="overlay story-composer-overlay" onClick={event => { if (event.target === event.currentTarget) setStoryComposerOpen(false); }}><section className="composer story-composer" role="dialog" aria-modal="true" aria-labelledby="story-composer-title"><header><div><small>NEXORA · STORIES</small><h2 id="story-composer-title">Criar Story</h2></div><button onClick={() => setStoryComposerOpen(false)} aria-label="Fechar">×</button></header><input ref={storyInputRef} className="story-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) { setNotice("Escolha uma foto ou vídeo."); return; } if (file.size > 50 * 1024 * 1024) { setNotice("O arquivo deve ter até 50 MB."); return; } setStoryFile(file); setStoryPreview(URL.createObjectURL(file)); }} /><button className="story-media-picker" onClick={() => storyInputRef.current?.click()}>{storyPreview ? (storyFile?.type.startsWith("video/") ? <video src={storyPreview} muted playsInline /> : <img src={storyPreview} alt="Prévia do Story" />) : <span><b>＋</b>Escolher foto ou vídeo</span>}</button><textarea value={storyCaption} onChange={event => setStoryCaption(event.target.value)} maxLength={180} placeholder="Adicione uma legenda (opcional)..." /><footer><span>{storyCaption.length}/180</span><button disabled={!storyFile || !storyPreview} onClick={() => { if (!storyFile || !storyPreview) return; const ownStory: StoryItem = { name: "Licinhosz.bb", own: true, image: storyPreview, mediaType: storyFile.type.startsWith("video/") ? "video" : "image", caption: storyCaption.trim(), id: `local-${Date.now()}` }; setStories(current => [current[0], ownStory, ...current.slice(1).filter(item => !item.own || !item.image)]); setActiveStoryIndex(1); setActiveStory(ownStory); setStoryComposerOpen(false); setStoryFile(null); setStoryPreview(""); setStoryCaption(""); setNotice("Story publicado nesta sessão do navegador."); }}>Publicar Story ↗</button></footer><p>O Story fica nesta sessão do navegador; a sincronização entre contas será conectada ao backend na etapa de persistência.</p></section></div>}
 
       {composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><header><div><small>NEXORA · SUA COMUNIDADE</small><h2 id="composer-title">Criar publicação</h2></div><button onClick={() => setComposerOpen(false)} aria-label="Fechar">×</button></header><textarea value={composerText} onChange={event => setComposerText(event.target.value)} maxLength={1000} placeholder="Compartilhe algo com o mundo..." /><footer><span>{composerText.length}/1000</span><button disabled={!composerText.trim()} onClick={publish}>Publicar ↗</button></footer><p>Esta primeira etapa é uma demonstração visual; publicações e interações ainda não são sincronizadas com outras contas.</p></section></div>}
 
