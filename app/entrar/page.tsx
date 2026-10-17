@@ -13,6 +13,7 @@ export default function EntrarPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,6 +52,32 @@ export default function EntrarPage() {
     if (insertError) throw insertError;
   }
 
+  async function handlePasswordReset() {
+    setError("");
+    setMessage("");
+    if (!email.trim()) {
+      setError("Digite seu e-mail acima para receber o link de redefinição de senha.");
+      return;
+    }
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setError("A conexão da Nexora ainda não está disponível. Tente novamente em instantes.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin + "/entrar",
+      });
+      if (resetError) throw resetError;
+      setMessage("Se esse e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Não foi possível enviar as instruções. Tente novamente.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -66,9 +93,9 @@ export default function EntrarPage() {
 
     try {
       if (mode === "signup") {
-        const normalizedUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "_");
-        if (normalizedUsername.length < 3 || normalizedUsername.length > 30) {
-          throw new Error("Escolha um nome de usuário de 3 a 30 caracteres, usando letras, números ou _.");
+        const normalizedUsername = username.trim().toLowerCase();
+        if (!/^[a-z0-9_.]{3,30}$/.test(normalizedUsername) || normalizedUsername.startsWith(".") || normalizedUsername.endsWith(".") || normalizedUsername.includes("..")) {
+          throw new Error("Escolha um nome de usuário de 3 a 30 caracteres, usando letras, números, ponto ou _.");
         }
 
         const { data, error: signUpError } = await supabase.auth.signUp({
@@ -125,14 +152,14 @@ export default function EntrarPage() {
           </div>
           <div className="auth-hero-footer"><span>FEITA PARA CONECTAR</span><span>© NEXORA</span></div>
         </aside>
-      <section className="auth-card">
+      <section className="auth-card" aria-labelledby="auth-title">
         <Link href="/" className="auth-brand" aria-label="Voltar para a Nexora">
           <img src="/nexora-logo.svg" alt="" />
           <span>Nexora</span>
         </Link>
 
         <p className="eyebrow">SUA PRÓXIMA CONEXÃO COMEÇA AQUI</p>
-        <h1>{mode === "login" ? "Que bom ter você de volta." : "Crie seu espaço."}</h1>
+        <h1 id="auth-title">{mode === "login" ? "Que bom ter você de volta." : "Crie seu espaço."}</h1>
         <p className="auth-description">
           {mode === "login"
             ? "Entre para continuar conectado à comunidade Nexora."
@@ -156,7 +183,7 @@ export default function EntrarPage() {
 
               <label htmlFor="username">Nome de usuário</label>
               <input id="username" autoComplete="username" minLength={3} maxLength={30} required value={username} onChange={(event) => setUsername(event.target.value)} placeholder="ex.: walyson_bb" />
-              <span className="auth-hint">Use de 3 a 30 caracteres. Letras, números e _.</span>
+              <span className="auth-hint">Use de 3 a 30 caracteres: letras, números, ponto ou _. Sem espaços.</span>
             </>
           )}
 
@@ -164,7 +191,11 @@ export default function EntrarPage() {
           <input id="email" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="voce@exemplo.com" />
 
           <label htmlFor="password">Senha</label>
-          <input id="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Pelo menos 8 caracteres" />
+          <div className="auth-password-wrap">
+            <input id="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Pelo menos 8 caracteres" />
+            <button className="auth-password-toggle" type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? "Ocultar" : "Mostrar"}</button>
+          </div>
+          {mode === "login" && <button className="auth-forgot" type="button" onClick={handlePasswordReset} disabled={busy}>Esqueci minha senha</button>}
 
           {error && <p className="auth-feedback error" role="alert">{error}</p>}
           {message && <p className="auth-feedback success" role="status">{message}</p>}
