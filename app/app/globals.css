@@ -170,3 +170,17 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 .story-overlay .story-viewer{cursor:default}
 .story-overlay .story-full-image{cursor:pointer;touch-action:pan-y}
 .story-overlay .story-action-rail{touch-action:manipulation}
+
+/* Nexora Stories: feedbacks rápidos, suaves e não bloqueantes */
+.story-action-button[aria-label="Comentar Story"] .story-action-icon{border-color:#b96cff72;background:linear-gradient(145deg,#32164cbb,#0b0619a8);box-shadow:0 5px 18px #8c2bd42b;color:#f5dfff;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.story-action-button[aria-label="Comentar Story"]:active .story-action-icon{transform:scale(.91);border-color:#e8baff;background:#572477bb;box-shadow:0 0 0 4px #b54aff18}
+.story-action-button[aria-label="Comentar Story"] small{color:#f5eaff;text-shadow:0 1px 5px #000c}
+.story-floating-reaction{position:absolute;z-index:9;left:50%;top:58%;pointer-events:none;font-size:clamp(56px,17vw,94px);line-height:1;filter:drop-shadow(0 6px 18px #0008);transform:translate(-50%,-50%);animation:story-floating-rise 2.2s cubic-bezier(.16,.7,.28,1) both}
+@keyframes story-floating-rise{0%{opacity:0;transform:translate(-50%,8px) scale(.55) rotate(-10deg)}18%{opacity:1;transform:translate(-50%,-10px) scale(1.12) rotate(5deg)}42%{opacity:.96;transform:translate(-50%,-32px) scale(1) rotate(0)}100%{opacity:0;transform:translate(-50%,-110px) scale(.82) rotate(4deg)}}
+.story-quick-comment{position:absolute;z-index:10;left:14px;bottom:100px;display:flex;align-items:center;gap:9px;max-width:min(78%,360px);padding:10px 13px 10px 9px;border:1px solid #ffffff20;border-radius:18px;background:linear-gradient(110deg,#10091ebf,#21102bc9);box-shadow:0 8px 28px #0004;backdrop-filter:blur(14px);pointer-events:none;animation:story-quick-comment-in 2.4s ease both}
+.story-quick-comment-avatar{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border:1px solid #c46aff85;border-radius:50%;background:linear-gradient(135deg,#62269a,#151020);font-size:11px;font-weight:800;color:#fff}
+.story-quick-comment>span:last-child{display:flex;min-width:0;flex-direction:column;gap:3px}
+.story-quick-comment strong{font-size:11px;color:#e8c7ff}
+.story-quick-comment small{display:-webkit-box;overflow:hidden;color:#fff;font-size:12px;line-height:1.35;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+@keyframes story-quick-comment-in{0%{opacity:0;transform:translateY(10px) scale(.97)}12%{opacity:1;transform:translateY(0) scale(1)}72%{opacity:.92}100%{opacity:0;transform:translateY(-9px) scale(.98)}}
+@media(max-width:430px){.story-quick-comment{left:10px;bottom:92px;max-width:calc(100% - 92px);padding:8px 10px 8px 8px}.story-floating-reaction{top:57%}}
