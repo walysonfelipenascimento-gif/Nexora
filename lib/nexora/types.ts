@@ -5,7 +5,7 @@ export type Story = {
 };
 
 export type Post = {
-  id: number;
+  id: string | number;
   name: string;
   username: string;
   avatar: string;
