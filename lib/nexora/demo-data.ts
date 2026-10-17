@@ -1,6 +1,6 @@
 import type { Post, Story } from "./types";
 
-const stories: Story[] = [
+export const stories: Story[] = [
   {
     name: "Seu story",
     image: "",
@@ -28,7 +28,7 @@ const stories: Story[] = [
   },
 ];
 
-const initialPosts: Post[] = [
+export const initialPosts: Post[] = [
   {
     id: 1,
     name: "Mariana Costa",
@@ -64,7 +64,7 @@ const initialPosts: Post[] = [
   },
 ];
 
-const navigation = [
+export const navigation = [
   { id: "inicio", label: "Início", icon: "⌂" },
   { id: "explorar", label: "Explorar", icon: "⌕" },
   { id: "criar", label: "Criar", icon: "+" },
