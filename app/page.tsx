@@ -228,6 +228,16 @@ export default function Home() {
       <section className="feed-container">
         {activeTab === "inicio" ? (
           <>
+            <section className="nexora-welcome">
+              <div className="welcome-orb welcome-orb-one" aria-hidden="true" />
+              <div className="welcome-orb welcome-orb-two" aria-hidden="true" />
+              <div className="welcome-topline"><span className="welcome-mark">N</span><span>SEU MUNDO. SUAS CONEXÕES.</span><span className="welcome-live"><i /> AO VIVO</span></div>
+              <p className="welcome-kicker">BEM-VINDO À NEXORA</p>
+              <h1>Ideias que aproximam.<br /><em>Conexões que movem.</em></h1>
+              <p className="welcome-copy">Descubra pessoas, acompanhe criadores e encontre novas oportunidades em um só lugar.</p>
+              <div className="welcome-actions"><button onClick={() => setShowComposer(true)} className="welcome-primary">＋ Compartilhar ideia</button><button onClick={() => setActiveTab("explorar")} className="welcome-secondary">Explorar comunidade <span>↗</span></button></div>
+              <div className="welcome-footer"><span><b>01</b> Descobrir</span><span><b>02</b> Conectar</span><span><b>03</b> Crescer</span></div>
+            </section>
             <section className="stories-section">
               <div className="section-heading">
                 <h2>Stories</h2>
