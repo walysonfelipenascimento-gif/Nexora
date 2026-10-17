@@ -152,6 +152,7 @@ export default function Home() {
         </div>
 
         <div className="topbar-actions">
+          <a className="auth-top-link" href="/entrar">Entrar</a>
           <button
             className="icon-button"
             aria-label="Pesquisar"
