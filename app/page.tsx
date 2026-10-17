@@ -1,7 +1,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getSupabaseBrowserClient } from "../lib/supabase/client";
 
 type Story = {
   name: string;
@@ -95,6 +97,33 @@ const navigation = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+  const [authChecking, setAuthChecking] = useState(true);
+  useEffect(() => {
+    let active = true;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      router.replace("/entrar");
+      return () => { active = false; };
+    }
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!active) return;
+      if (error || !data.session) {
+        router.replace("/entrar");
+      } else {
+        setAuthChecking(false);
+      }
+    }).catch(() => {
+      if (active) router.replace("/entrar");
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) router.replace("/entrar");
+    });
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [router]);
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [activeTab, setActiveTab] = useState("inicio");
   const [openComments, setOpenComments] = useState<number | null>(null);
