@@ -135,3 +135,15 @@ img { display: block; max-width: 100%; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Nexora account screens */
+.auth-top-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:1px solid #5b9dff55;border-radius:13px;background:#17243b;color:#f4f7ff;font-size:13px;font-weight:750;white-space:nowrap}
+.auth-page{min-height:100dvh;display:grid;place-items:center;padding:24px 16px;background:radial-gradient(ellipse at 50% 0%,#202b5c,var(--background) 60%)}
+.auth-card{width:min(100%,460px);padding:clamp(22px,5vw,38px);border:1px solid var(--line);border-radius:24px;background:var(--surface);box-shadow:0 24px 70px #0005}
+.auth-brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:28px;font-size:20px;font-weight:850}.auth-brand img{width:42px;height:42px;border-radius:12px}
+.auth-card h1{margin:10px 0;font-size:clamp(27px,6vw,35px);line-height:1.12}.auth-description{margin:0 0 22px;color:var(--muted);font-size:14px;line-height:1.6}
+.auth-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;margin-bottom:20px;border:1px solid var(--line);border-radius:14px;background:var(--background)}
+.auth-switch button{border:0;border-radius:10px;padding:11px 8px;background:transparent;color:var(--muted);font-weight:700}.auth-switch button.selected{background:linear-gradient(110deg,#1679db,#7854d8);color:white}
+.auth-form{display:flex;flex-direction:column;gap:9px}.auth-form label{margin-top:5px;color:#e8ecfa;font-size:12px;font-weight:750}.auth-form input{width:100%;min-height:48px;border:1px solid #ffffff1c;border-radius:12px;padding:0 14px;background:#080c16;color:var(--text);font-size:14px}.auth-form input:focus{outline:2px solid #48baff;outline-offset:1px}.auth-hint{color:var(--muted);font-size:11px}
+.auth-submit{min-height:49px;margin-top:9px;border:0;border-radius:13px;background:linear-gradient(110deg,#1387e8,#7652e8);color:white;font-weight:800}.auth-submit:disabled{opacity:.65}.auth-feedback{margin:7px 0 0;padding:11px 12px;border-radius:11px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.auth-feedback.error{background:#ff686810;color:#ffb0b0}.auth-feedback.success{background:#4ad9a410;color:#9af0c8}.auth-footnote{margin:20px 0 12px;color:#8e9ab3;font-size:11px;line-height:1.6;text-align:center}.auth-back{display:block;color:#86cfff;font-size:12px;font-weight:700;text-align:center}
+@media(max-width:420px){.topbar{padding-left:12px;padding-right:12px}.auth-card{border-radius:20px}.auth-top-link{min-height:35px;padding:0 11px}}
