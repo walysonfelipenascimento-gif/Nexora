@@ -48,9 +48,10 @@ const demoReels: Reel[] = [
 const navItems = [
   { id: "inicio", label: "Início", icon: "⌂", href: "/" },
   { id: "reels", label: "Reels", icon: "▷", href: "/reels" },
+  { id: "explorar", label: "Explorar", icon: "⌕", href: "/?tab=explorar" },
   { id: "criar", label: "Criar", icon: "+", href: "/?action=create" },
-  { id: "mensagens", label: "Mensagens", icon: "⌁", href: "/?tab=messages" },
-  { id: "perfil", label: "Perfil", icon: "○", href: "/?tab=profile" },
+  { id: "oportunidades", label: "Oportunidades", icon: "◇", href: "/?tab=oportunidades" },
+  { id: "perfil", label: "Perfil", icon: "○", href: "/?tab=perfil" },
 ];
 
 function compactNumber(value: number) {
