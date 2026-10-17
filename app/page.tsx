@@ -28,7 +28,10 @@ export default function Home() {
   const [savedPosts, setSavedPosts] = useState<Array<string | number>>([]);
   const [followedUsers, setFollowedUsers] = useState<string[]>(["marianacosta"]);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
-  const [databaseFeedLoaded, setDatabaseFeedLoaded] = useState(false);\n  const [savedOpportunities, setSavedOpportunities] = useState<string[]>([]);\n  const [opportunityFilter, setOpportunityFilter] = useState("Todas");\n  const [opportunityQuery, setOpportunityQuery] = useState("");
+  const [databaseFeedLoaded, setDatabaseFeedLoaded] = useState(false);
+  const [savedOpportunities, setSavedOpportunities] = useState<string[]>([]);
+  const [opportunityFilter, setOpportunityFilter] = useState("Todas");
+  const [opportunityQuery, setOpportunityQuery] = useState("");
 
   useEffect(() => {
     if (!supabase) return;
