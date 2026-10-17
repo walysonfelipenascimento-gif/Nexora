@@ -91,7 +91,7 @@ const navigation = [
   { id: "inicio", label: "Início", icon: "⌂" },
   { id: "explorar", label: "Explorar", icon: "⌕" },
   { id: "criar", label: "Criar", icon: "+" },
-  { id: "oportunidades", label: "Oportunidades", icon: "✧" },
+  { id: "curtidas", label: "Curtidas", icon: "♡" },
   { id: "perfil", label: "Perfil", icon: "○" },
 ];
 
@@ -372,6 +372,19 @@ export default function Home() {
             <div className="explore-grid">{visiblePosts.map((post) => <button className="explore-card" key={post.id} onClick={() => { setActiveTab("inicio"); setActiveFeed("for-you"); }}><span className="explore-card-art">{post.image ? <img src={post.image} alt="" /> : <span>✦</span>}</span><strong>{post.caption}</strong><small>@{post.username}</small></button>)}</div>
             {visiblePosts.length === 0 && <div className="no-results"><h2>Sem resultados ainda</h2><p>Experimente outra palavra-chave.</p></div>}
           </section>
+        ) : activeTab === "perfil" ? (
+          <section className="profile-reference">
+            <div className="profile-identity">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&h=240&fit=crop" alt="Foto de perfil demonstrativa" />
+              <div className="profile-name-block"><h1>Licinhosz.bb <span className="verified-dot">✓</span></h1><p>@licinhosz.bb</p><div className="profile-buttons"><button onClick={() => alert("A edição de perfil será conectada na próxima etapa.")}>Editar perfil</button><button onClick={() => alert("Mensagens serão conectadas na próxima etapa.")}>Mensagem</button></div></div>
+            </div>
+            <div className="profile-stats"><div><strong>{posts.length.toLocaleString("pt-BR")}</strong><span>Posts</span></div><div><strong>1,4 M</strong><span>Seguidores</span></div><div><strong>2,3 M</strong><span>Visualizações</span></div><div><strong>{posts.reduce((sum, post) => sum + post.likes, 0).toLocaleString("pt-BR")}</strong><span>Curtidas</span></div></div>
+            <div className="profile-bio"><p>🚀 Criador digital | Construindo conexões</p><p>🌐 Conectando pessoas, marcas e oportunidades</p><p>✨ Bem-vindo ao meu espaço na Nexora</p></div>
+            <div className="profile-grid-tabs"><span>▦ Publicações</span><span>▣ Vídeos</span><span>♡ Curtidas</span><span>▢ Salvos</span></div>
+            <div className="profile-post-grid">{posts.filter(post => post.image).map(post => <button key={post.id} onClick={() => setActiveTab("inicio")}><img src={post.image} alt={post.caption} /></button>)}</div>
+          </section>
+        ) : activeTab === "curtidas" ? (
+          <section className="empty-section"><div className="empty-icon">♡</div><p className="eyebrow">COMMUNITY</p><h1>Suas curtidas</h1><p>As publicações que você curtir aparecerão nesta área quando sua conta estiver conectada.</p><button className="primary-button" onClick={() => setActiveTab("inicio")}>Voltar à comunidade</button></section>
         ) : (
           <section className="empty-section">
             <div className="empty-icon">
