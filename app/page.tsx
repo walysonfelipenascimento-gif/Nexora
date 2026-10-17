@@ -40,7 +40,7 @@ const chatWallpapers = [
   { name: "Prisma", preview: "conic-gradient(from 45deg at 50% 50%,#00cfff,#663cff,#ff3cb8,#ffad45,#00cfff)" },
   { name: "Areia lunar", preview: "radial-gradient(ellipse at 50% 15%,#e6d9c588,transparent 32%),linear-gradient(155deg,#1a1a29,#686275 55%,#b18d9a)" },
   { name: "Coração neon", preview: "radial-gradient(ellipse at 50% 48%,#ff168c66,transparent 35%),linear-gradient(135deg,#13091f,#5c0a55,#171047)" },
-  { name: "😏 Emojis atrevidos 🔥", preview: "radial-gradient(ellipse at 50% 100%,#ff3d0828,transparent 52%),linear-gradient(180deg,#080607,#020203 70%,#160704)" },
+  { name: "Brilho de âmbar", preview: "radial-gradient(ellipse at 50% 100%,#ff9b3d44,transparent 48%),radial-gradient(ellipse at 25% 70%,#ff5b3030,transparent 35%),linear-gradient(180deg,#100b13,#080609 70%,#211007)" },
   { name: "✨ Chuva de emojis", preview: "radial-gradient(circle at 20% 25%,#d5b4ff88,transparent 18%),radial-gradient(circle at 80% 65%,#7e62ff88,transparent 22%),linear-gradient(135deg,#0a1731,#273a70,#642f91)" }
 ];
 
@@ -134,6 +134,7 @@ export default function Home() {
   const [chatThreads, setChatThreads] = useState<ChatThread[]>(initialChats);
   const [chatDetail, setChatDetail] = useState<"chat" | "media" | "profile" | "settings" | "wallpaper">("chat");
   const [chatWallpaperById, setChatWallpaperById] = useState<Record<string, number>>({});
+  const [chatStorageReady, setChatStorageReady] = useState(false);
   const [wallpaperApplyTo, setWallpaperApplyTo] = useState<"me" | "both">("me");
   const [chatMuted, setChatMuted] = useState(false);
   const [chatReadReceipts, setChatReadReceipts] = useState(true);
@@ -147,6 +148,39 @@ export default function Home() {
   const [notesDraft, setNotesDraft] = useState("");
   const [myNote, setMyNote] = useState("");
   const [noteStyle, setNoteStyle] = useState(0);
+  useEffect(() => {
+    try {
+      const savedWallpapers = window.localStorage.getItem("nexora-chat-wallpapers-v1");
+      const savedThreads = window.localStorage.getItem("nexora-chat-threads-v1");
+      const savedSettings = window.localStorage.getItem("nexora-chat-settings-v1");
+      if (savedWallpapers) {
+        const parsed = JSON.parse(savedWallpapers) as Record<string, number>;
+        const safe: Record<string, number> = {};
+        Object.entries(parsed).forEach(([id, index]) => { if (typeof index === "number" && Number.isInteger(index) && index >= 0 && index < chatWallpapers.length) safe[id] = index; });
+        setChatWallpaperById(safe);
+      }
+      if (savedThreads) {
+        const parsed = JSON.parse(savedThreads) as ChatThread[];
+        if (Array.isArray(parsed)) setChatThreads(parsed.filter(chat => chat && typeof chat.id === "string" && Array.isArray(chat.messages)));
+      }
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings) as { muted?: boolean; readReceipts?: boolean; saveMedia?: boolean; groupOnlyAdmins?: boolean };
+        if (typeof parsed.muted === "boolean") setChatMuted(parsed.muted);
+        if (typeof parsed.readReceipts === "boolean") setChatReadReceipts(parsed.readReceipts);
+        if (typeof parsed.saveMedia === "boolean") setChatSaveMedia(parsed.saveMedia);
+        if (typeof parsed.groupOnlyAdmins === "boolean") setGroupOnlyAdmins(parsed.groupOnlyAdmins);
+      }
+    } catch { /* dados locais inválidos não devem impedir a abertura das conversas */ }
+    setChatStorageReady(true);
+  }, []);
+  useEffect(() => {
+    if (!chatStorageReady) return;
+    try {
+      window.localStorage.setItem("nexora-chat-wallpapers-v1", JSON.stringify(chatWallpaperById));
+      window.localStorage.setItem("nexora-chat-threads-v1", JSON.stringify(chatThreads));
+      window.localStorage.setItem("nexora-chat-settings-v1", JSON.stringify({ muted: chatMuted, readReceipts: chatReadReceipts, saveMedia: chatSaveMedia, groupOnlyAdmins }));
+    } catch { setNotice("O navegador não permitiu salvar as preferências localmente."); }
+  }, [chatStorageReady, chatWallpaperById, chatThreads, chatMuted, chatReadReceipts, chatSaveMedia, groupOnlyAdmins]);
   const activeChat = chatThreads.find(chat => chat.id === activeChatId) || null;
   const filteredChats = chatThreads.filter(chat => chat.name.toLowerCase().includes(chatSearch.toLowerCase()) || chat.preview.toLowerCase().includes(chatSearch.toLowerCase()));
   function openChat(chatId: string) {
