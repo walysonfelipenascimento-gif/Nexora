@@ -68,6 +68,6 @@ export const navigation = [
   { id: "inicio", label: "Início", icon: "⌂" },
   { id: "explorar", label: "Explorar", icon: "⌕" },
   { id: "criar", label: "Criar", icon: "+" },
-  { id: "curtidas", label: "Curtidas", icon: "♡" },
+  { id: "oportunidades", label: "Oportunidades", icon: "↗" },
   { id: "perfil", label: "Perfil", icon: "○" },
 ];
