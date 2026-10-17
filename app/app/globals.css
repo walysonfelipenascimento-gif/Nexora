@@ -432,3 +432,60 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 .wallpaper-done-button{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 15px;margin:0 0 16px;border:1px solid #3286b7;border-radius:13px;background:linear-gradient(100deg,#152d55,#25103d);color:#f7f2ff;font-size:12px;font-weight:700;box-shadow:0 5px 20px #087dff16}
 .wallpaper-done-button span{color:#4ce2ff;font-size:17px}
 @media(max-width:420px){.wallpaper-preview-live{min-height:160px}.settings-navigation-row{padding:11px}.settings-row-copy small{max-width:190px}}
+
+
+/* Nexora Conversation QA pass — fix wallpaper cascade, scrolling and mobile composer */
+.chat-messages{
+  position:relative;isolation:isolate;flex:1 1 auto;min-height:0;min-width:0;
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;
+  background-color:#080b14!important;background-attachment:scroll!important;
+  background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:rgba(95,177,235,.32) transparent;
+}
+.chat-messages[class*="chat-wallpaper-"]{
+  background-image:linear-gradient(rgba(4,8,17,.18),rgba(4,8,17,.30)),var(--chat-wallpaper)!important;
+}
+.chat-messages.chat-wallpaper-0{
+  background-image:radial-gradient(ellipse at 50% 0%,rgba(45,55,80,.16),transparent 48%),linear-gradient(180deg,#080b14,#05070d)!important;
+}
+.chat-messages.chat-wallpaper-18{
+  background-image:radial-gradient(ellipse at 50% 100%,rgba(255,155,61,.13),transparent 48%),radial-gradient(ellipse at 25% 70%,rgba(255,91,48,.09),transparent 35%),linear-gradient(180deg,#100b13,#080609 70%,#211007)!important;
+}
+.chat-messages.chat-wallpaper-18:before,.chat-messages.chat-wallpaper-18:after,
+.chat-messages.chat-wallpaper-19:before,.chat-messages.chat-wallpaper-19:after{
+  position:absolute!important;inset:0!important;pointer-events:none!important;animation:none!important;filter:none!important;
+}
+.chat-messages.chat-wallpaper-18:before,.chat-messages.chat-wallpaper-18:after{content:none!important;display:none!important}
+.chat-messages.chat-wallpaper-19{
+  background-image:radial-gradient(circle at 20% 25%,rgba(213,180,255,.18),transparent 18%),radial-gradient(circle at 80% 65%,rgba(126,98,255,.2),transparent 22%),linear-gradient(135deg,#0a1731,#273a70,#342050)!important;
+}
+.chat-messages.chat-wallpaper-19:before{
+  content:"✦　✨　✧　💜　✦　🌙　✧　✨　✦"!important;display:block!important;
+  z-index:0!important;opacity:.16!important;color:#e8dfff!important;font-size:17px!important;
+  line-height:3.4!important;letter-spacing:4px!important;word-break:normal!important;
+  overflow-wrap:normal!important;text-align:center!important;background:none!important;
+}
+.chat-messages.chat-wallpaper-19:after{content:none!important;display:none!important}
+.chat-messages .chat-message-line,.chat-messages .chat-read-receipt{position:relative;z-index:1}
+.chat-messages .chat-bubble{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.chat-composer{flex:0 0 auto;z-index:3;padding-bottom:calc(12px + env(safe-area-inset-bottom));}
+.chat-input-wrap input{min-width:0;min-height:40px}
+.chat-send:focus-visible,.chat-add:focus-visible,.messages-head-action:focus-visible,
+.chat-setting-row:focus-visible,.wallpaper-choice:focus-visible,.wallpaper-done-button:focus-visible{
+  outline:2px solid #54e5ff!important;outline-offset:3px!important;
+}
+.wallpaper-preview-live{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+.wallpaper-choice>span{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+@media(max-width:520px){
+  .messages-app{height:100dvh;min-height:0}
+  .messages-topbar{flex:0 0 auto;padding-top:calc(10px + env(safe-area-inset-top))}
+  .chat-thread-topline{flex:0 0 auto}
+  .chat-messages{padding:14px 11px!important;gap:12px!important}
+  .chat-composer{padding-left:10px!important;padding-right:10px!important}
+  .chat-add,.chat-send{width:40px!important;height:40px!important;flex-basis:40px!important}
+  .wallpaper-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  .wallpaper-choice>span{height:94px!important;min-height:94px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .chat-messages:before,.chat-messages:after{animation:none!important}
+}
