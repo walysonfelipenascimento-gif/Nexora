@@ -613,3 +613,29 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#f6dfff 0%,#e9b8f6 55
 @media(min-width:760px){.nexora-app{margin:20px auto!important;min-height:calc(100dvh - 40px)!important;border:1px solid #ffffff30!important;border-radius:34px!important}.feed-container{width:calc(100% - 30px)!important}.topbar{padding-inline:18px!important}.bottom-nav{bottom:30px!important}}
 @media(max-width:560px){.nexora-app{width:100%!important;min-height:100dvh!important;border-radius:0!important}.feed-container{width:calc(100% - 22px)!important}.post-card{border-radius:21px!important}.post-image{aspect-ratio:4/4.05!important}.bottom-nav{bottom:max(10px,env(safe-area-inset-bottom))!important;width:calc(100% - 28px)!important;height:59px!important}.opportunities-hero h1{max-width:230px!important}.opportunities-orbit{width:76px!important;height:76px!important;right:15px!important}}
 @media(prefers-reduced-motion:reduce){.stories-section,.feed-heading,.feed-tools,.quick-composer,.posts-list,.explore-section,.opportunities-page,.empty-section{animation:none!important}}
+
+
+/* Etapa visual: abertura premium da Nexora, com hierarquia e contraste evidentes */
+.nexora-welcome{position:relative;isolation:isolate;overflow:hidden;margin:8px 0 25px;padding:22px 19px 17px;border:1px solid #b35bdf65;border-radius:27px;background:radial-gradient(ellipse at 95% 5%,#e842f04a,transparent 36%),radial-gradient(ellipse at 0% 100%,#3e65ff32,transparent 48%),linear-gradient(135deg,#20102d 0%,#171126 52%,#241039 100%);box-shadow:0 18px 48px #09030f73,inset 0 1px #ffffff16}
+.nexora-welcome:before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(115deg,transparent 20%,#ffffff04 48%,transparent 72%);pointer-events:none}
+.welcome-orb{position:absolute;z-index:-1;border-radius:50%;pointer-events:none;filter:blur(1px)}
+.welcome-orb-one{width:155px;height:155px;right:-54px;top:55px;border:1px solid #e77dff50;box-shadow:0 0 0 16px #d63df00b,0 0 0 32px #d63df008}
+.welcome-orb-two{width:95px;height:95px;right:1px;top:84px;border:1px solid #7b6dff55;background:radial-gradient(circle at 30% 25%,#f05be82b,transparent 65%)}
+.welcome-topline{display:flex;align-items:center;gap:8px;position:relative}
+.welcome-mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid #f2b2ff80;border-radius:10px;background:linear-gradient(145deg,#f04cde,#7b3cf4);box-shadow:0 0 22px #c442ff50;color:white;font-size:17px;font-weight:950;font-style:italic}
+.welcome-topline>span:nth-child(2){font-size:8px;font-weight:900;letter-spacing:1.45px;color:#e7c8f5}
+.welcome-live{display:flex;align-items:center;gap:5px;margin-left:auto;padding:6px 8px;border:1px solid #72e5bb38;border-radius:999px;color:#a7f4d6;font-size:7px;font-weight:900;letter-spacing:.8px}
+.welcome-live i{width:5px;height:5px;border-radius:50%;background:#6ef0b5;box-shadow:0 0 9px #6ef0b5}
+.welcome-kicker{margin:25px 0 9px!important;color:#f29cf7!important;font-size:9px!important;font-weight:900!important;letter-spacing:2px!important}
+.nexora-welcome h1{position:relative;max-width:340px;margin:0!important;color:#fff!important;font-size:clamp(27px,7vw,36px)!important;line-height:1.06!important;font-weight:850!important;letter-spacing:-1.45px!important}
+.nexora-welcome h1 em{font-style:normal;background:linear-gradient(90deg,#ffb4f4,#d68cff 52%,#8fa5ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.welcome-copy{position:relative;max-width:285px;margin:13px 0 17px!important;color:#d4c0e1!important;font-size:11px!important;line-height:1.75!important}
+.welcome-actions{position:relative;display:flex;flex-wrap:wrap;gap:8px}
+.welcome-actions button{min-height:39px;padding:0 12px;border-radius:12px;font-size:9px;font-weight:850}
+.welcome-primary{border:1px solid #f2b0ff66;background:linear-gradient(110deg,#ec45dd,#8c3ef3);color:#fff;box-shadow:0 7px 20px #b73fe53a}
+.welcome-secondary{border:1px solid #ffffff25;background:#ffffff08;color:#f2e4fa}
+.welcome-secondary span{margin-left:5px;color:#f4a4ff}
+.welcome-footer{display:flex;gap:16px;margin-top:21px;padding-top:13px;border-top:1px solid #ffffff17}
+.welcome-footer span{display:flex;align-items:center;gap:6px;color:#c8b3d6;font-size:8px;font-weight:700}
+.welcome-footer b{color:#f3a4ff;font-size:9px}
+@media(min-width:760px){.nexora-welcome{padding:27px 27px 20px}.welcome-copy{max-width:360px}.welcome-actions button{min-height:42px}}
