@@ -36,15 +36,8 @@ const initialPosts: FeedPost[] = [
     id: 2, name: "Anjala Rodry", username: "anjalarodry",
     avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&crop=faces",
     image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1100&h=1000&fit=crop&crop=faces",
-    caption: "Color outside the lines. Your next chapter starts with you.",
+    caption: "Your vibe is your signature. Let the world see your colors.",
     likes: 982, comments: 214, shares: 87, saved: 63, verified: true
-  },
-  {
-    id: 3, name: "Licinhosz.bb", username: "licinhosz.bb",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces",
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1100&h=1000&fit=crop&crop=faces",
-    caption: "Conectando pessoas, marcas e oportunidades. ✦ #Nexora",
-    likes: 427, comments: 58, shares: 32, saved: 19
   }
 ];
 
