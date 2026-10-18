@@ -17,32 +17,16 @@ type Reel = {
 };
 
 const demoReels: Reel[] = [
-  {
-    id: 1,
-    user: "nexora.criadores",
-    name: "Nexora Criadores",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop",
-    caption: "Um respiro no meio da correria. 🌅 Qual foi seu momento favorito de hoje?",
-    song: "Som original · Nexora",
-    likes: 12840,
-    comments: 836,
-    shares: 294,
-    video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-    tint: "sunset",
-  },
-  {
-    id: 2,
-    user: "mundosempressa",
-    name: "Mundo sem pressa",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop",
-    caption: "Pequenos detalhes, grandes histórias. 💫 Salve para assistir de novo.",
-    song: "Vibe leve · áudio demonstrativo",
-    likes: 9732,
-    comments: 421,
-    shares: 182,
-    video: "https://www.w3schools.com/html/mov_bbb.mp4",
-    tint: "violet",
-  },
+  { id: 1, user: "risadadodia", name: "Risada do Dia", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop", caption: "POV: você fala “só vou descansar 5 minutinhos” e acorda em outra dimensão 😂", song: "Comédia cotidiana · áudio demo", likes: 28400, comments: 1840, shares: 927, video: "https://videos.pexels.com/video-files/3129671/3129671-hd_1080_1920_25fps.mp4", tint: "sunset" },
+  { id: 2, user: "mundosempressa", name: "Mundo sem pressa", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop", caption: "Um lugar tão surreal que parece outro planeta. Você visitaria? 🌋", song: "Natureza em foco · áudio demo", likes: 19300, comments: 742, shares: 1260, video: "https://videos.pexels.com/video-files/854982/854982-hd_1080_1920_25fps.mp4", tint: "violet" },
+  { id: 3, user: "memes.da.nexa", name: "Memes da Nexa", avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&h=120&fit=crop", caption: "Eu ensaiando a resposta perfeita… e na hora falando “pois é né” 🤡", song: "Humor de milhões · áudio demo", likes: 36200, comments: 2310, shares: 3100, video: "https://videos.pexels.com/video-files/3195394/3195394-hd_1080_1920_25fps.mp4", tint: "violet" },
+  { id: 4, user: "rotas.secretas", name: "Rotas Secretas", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&h=120&fit=crop", caption: "Uma lagoa escondida entre montanhas. Salva esse destino para sonhar depois. 💎", song: "Diário de viagem · áudio demo", likes: 15700, comments: 598, shares: 1830, video: "https://videos.pexels.com/video-files/855028/855028-hd_1080_1920_25fps.mp4", tint: "sunset" },
+  { id: 5, user: "vida.real.ofc", name: "Vida Real", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=120&h=120&fit=crop", caption: "Quando a pessoa diz “não estou com fome” e começa a comer do seu prato 😭🍟", song: "Expectativa x realidade · áudio demo", likes: 42100, comments: 3050, shares: 2870, video: "https://videos.pexels.com/video-files/857195/857195-hd_1080_1920_25fps.mp4", tint: "violet" },
+  { id: 6, user: "planeta.incrivel", name: "Planeta Incrível", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop", caption: "A natureza caprichou nesse cenário. Parece até um papel de parede vivo. 🌌", song: "Natureza relaxante · áudio demo", likes: 22100, comments: 914, shares: 2430, video: "https://videos.pexels.com/video-files/856857/856857-hd_1080_1920_25fps.mp4", tint: "sunset" },
+  { id: 7, user: "sinceramente.eu", name: "Sinceramente", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop", caption: "Eu: hoje vou dormir cedo. Também eu às 02:47: pesquisando coisas aleatórias 😂", song: "Pensamentos da madrugada · áudio demo", likes: 33700, comments: 1980, shares: 1680, video: "https://videos.pexels.com/video-files/853889/853889-hd_1080_1920_25fps.mp4", tint: "violet" },
+  { id: 8, user: "fora.do.mapa", name: "Fora do Mapa", avatar: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=120&h=120&fit=crop", caption: "Uma trilha, um horizonte infinito e zero vontade de voltar pra rotina. 🏞️", song: "Aventura pelo mundo · áudio demo", likes: 18900, comments: 667, shares: 1520, video: "https://videos.pexels.com/video-files/857251/857251-hd_1080_1920_25fps.mp4", tint: "sunset" },
+  { id: 9, user: "caos.organizado", name: "Caos Organizado", avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&h=120&fit=crop", caption: "A confiança que eu tenho antes de abrir a câmera frontal sem querer 💀", song: "Humor sem contexto · áudio demo", likes: 29800, comments: 1420, shares: 2140, video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", tint: "violet" },
+  { id: 10, user: "nexora.criadores", name: "Nexora Criadores", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=120&h=120&fit=crop", caption: "Seu lembrete de hoje: você merece uma pausa e um momento bom. 💜", song: "Som original · Nexora", likes: 12840, comments: 836, shares: 294, video: "https://www.w3schools.com/html/mov_bbb.mp4", tint: "sunset" },
 ];
 
 const navItems = [
@@ -98,7 +82,7 @@ export default function ReelsPage() {
     1: ["Que paz esse vídeo! 💜", "Precisava ver isso hoje ✨"],
     2: ["Amei a energia!", "Mais vídeos assim, por favor 💙"],
   });
-  const touchStart = useRef<number | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);\n  const lastWheelMove = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const reel = demoReels[index];
 
@@ -146,7 +130,7 @@ export default function ReelsPage() {
         .reels-mark { display:grid; place-items:center; width:32px; height:32px; border-radius:11px; font-size:20px; font-weight:900; background:linear-gradient(140deg,#49e5ff,#8b65ff 60%,#e05cff); box-shadow:0 0 22px #7764ff60; }
         .reels-top-label { font-size:12px; color:#d8d8e8; border:1px solid #ffffff24; background:#10111caa; border-radius:20px; padding:8px 11px; backdrop-filter:blur(12px); }
         .reel-stage { position:relative; width:100%; height:100%; max-width:560px; margin:auto; overflow:hidden; background:#12121d; }
-        .reel-video { width:100%; height:100%; object-fit:cover; background:#12121d; }
+        .reel-video { width:100%; height:100%; object-fit:cover; background:#12121d; touch-action:pan-x; }
         .reel-vignette { position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,#0008 0%,transparent 20%,transparent 43%,#05050a24 55%,#05050be8 100%); }
         .reel-top-controls { position:absolute; top:76px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:center; }
         .glass-chip { display:flex; gap:7px; align-items:center; border:1px solid #ffffff26; border-radius:99px; padding:8px 11px; color:white; background:#08091470; backdrop-filter:blur(16px); font-size:11px; font-weight:750; }
@@ -168,7 +152,7 @@ export default function ReelsPage() {
         .reel-audio { display:flex; align-items:center; gap:8px; font-size:11px; color:#f1efff; min-width:0; }
         .reel-audio span:last-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .reel-progress { position:absolute; bottom:calc(81px + env(safe-area-inset-bottom)); left:15px; right:15px; height:3px; background:#ffffff52; border-radius:9px; overflow:hidden; }
-        .reel-progress-fill { height:100%; width:38%; background:linear-gradient(90deg,#4de6ff,#9b6bff,#f06bce); border-radius:9px; }
+        .reel-progress-fill { height:100%; width:38%; background:linear-gradient(90deg,#4de6ff,#9b6bff,#f06bce); border-radius:9px; transition:width .25s ease; }
         .reels-nav { position:absolute; z-index:10; bottom:0; left:0; right:0; min-height:68px; padding:8px 6px calc(7px + env(safe-area-inset-bottom)); display:flex; justify-content:space-around; align-items:center; background:#080910ed; border-top:1px solid #ffffff13; backdrop-filter:blur(22px); }
         .reels-nav-item { display:flex; flex:1; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#a5a6b8; font-size:10px; font-weight:650; }
         .reels-nav-icon { width:35px; height:29px; display:grid; place-items:center; font-size:22px; border-radius:11px; }
@@ -229,7 +213,7 @@ export default function ReelsPage() {
           <p className="reel-caption">{reel.caption}</p>
           <div className="reel-audio"><span><UiIcon name="music" size={14} /></span><span>{reel.song}</span><span>·</span><span>{index + 1}/{demoReels.length}</span></div>
         </div>
-        <div className="reel-progress"><div className="reel-progress-fill" /></div>
+        <div className="reel-progress"><div className="reel-progress-fill" style={{ width: `${((index + 1) / demoReels.length) * 100}%` }} /></div>
       </section>
 
       <nav className="reels-nav" aria-label="Navegação principal">
