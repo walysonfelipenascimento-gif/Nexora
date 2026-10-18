@@ -271,7 +271,7 @@ export default function Home() {
       if (savedBubbleStyles) {
         const parsed = JSON.parse(savedBubbleStyles) as Record<string, number>;
         const safe: Record<string, number> = {};
-        Object.entries(parsed).forEach(([id, index]) => { if (typeof index === "number" && Number.isInteger(index) && index >= 0 && index < chatBubbleStyles.length) safe[id] = index; });
+        Object.entries(parsed).forEach(([id, index]) => { if (typeof index === "number" && Number.isInteger(index) && index >= 0 && index < 10) safe[id] = index; });
         setChatBubbleStyleById(safe);
       }
       if (savedThreads) {
