@@ -88,10 +88,10 @@ const extraMessages: Partial<Record<NexoraLanguage, Record<string, string>>> = {
 
 const profileMessages: Record<NexoraLanguage, Record<string, string>> = {
   "pt-BR": { send: "Enviar", profilePosts: "Publicações", profileReels: "Reels", profilePreferences: "Preferências", profileReposts: "Republicados", repost: "Republicar", reposted: "Republicado", comments: "Comentários" },
-  "en-US": { send: "Send", profilePosts: "Posts", profileReels: "Reels", profilePreferences: "Preferences", profileReposts: "Reposts", repost: "Reposten", reposted: "Gerepost", comments: "Reacties", repost: "Reposten", reposted: "Repostet", comments: "Kommentare", repost: "Repost", reposted: "Reposted", comments: "Comments" },
+  "en-US": { send: "Send", profilePosts: "Posts", profileReels: "Reels", profilePreferences: "Preferences", profileReposts: "Reposts", repost: "Repost", reposted: "Reposted", comments: "Comments" },
   es: { send: "Enviar", profilePosts: "Publicaciones", profileReels: "Reels", profilePreferences: "Preferencias", profileReposts: "Republicaciones", repost: "Republicar", reposted: "Republicado", comments: "Comentarios" },
   fr: { send: "Envoyer", profilePosts: "Publications", profileReels: "Reels", profilePreferences: "Préférences", profileReposts: "Republications", repost: "Republier", reposted: "Republicé", comments: "Commentaires" },
-  de: { send: "Senden", profilePosts: "Beiträge", profileReels: "Reels", profilePreferences: "Einstellungen", profileReposts: "Reposts" },
+  de: { send: "Senden", profilePosts: "Beiträge", profileReels: "Reels", profilePreferences: "Einstellungen", profileReposts: "Reposts", repost: "Erneut posten", reposted: "Erneut gepostet", comments: "Kommentare" },
   it: { send: "Invia", profilePosts: "Post", profileReels: "Reels", profilePreferences: "Preferenze", profileReposts: "Ripubblicati", repost: "Ripubblica", reposted: "Ripubblicato", comments: "Commenti" },
   ja: { send: "送信", profilePosts: "投稿", profileReels: "リール", profilePreferences: "設定", profileReposts: "再投稿", repost: "再投稿", reposted: "再投稿済み", comments: "コメント" },
   ko: { send: "보내기", profilePosts: "게시물", profileReels: "릴스", profilePreferences: "환경설정", profileReposts: "재게시", repost: "다시 게시", reposted: "다시 게시됨", comments: "댓글" },
@@ -107,13 +107,12 @@ const profileMessages: Record<NexoraLanguage, Record<string, string>> = {
   th: { send: "ส่ง", profilePosts: "โพสต์", profileReels: "รีลส์", profilePreferences: "การตั้งค่า", profileReposts: "รีโพสต์", repost: "รีโพสต์", reposted: "รีโพสต์แล้ว", comments: "ความคิดเห็น" },
   vi: { send: "Gửi", profilePosts: "Bài viết", profileReels: "Reels", profilePreferences: "Tùy chọn", profileReposts: "Đăng lại", repost: "Đăng lại", reposted: "Đã đăng lại", comments: "Bình luận" },
   fil: { send: "Ipadala", profilePosts: "Mga post", profileReels: "Reels", profilePreferences: "Mga kagustuhan", profileReposts: "Mga repost", repost: "I-repost", reposted: "Na-repost", comments: "Mga komento" },
-  nl: { send: "Verzenden", profilePosts: "Berichten", profileReels: "Reels", profilePreferences: "Voorkeuren", profileReposts: "Reposts" },
+  nl: { send: "Verzenden", profilePosts: "Berichten", profileReels: "Reels", profilePreferences: "Voorkeuren", profileReposts: "Reposts", repost: "Opnieuw plaatsen", reposted: "Opnieuw geplaatst", comments: "Reacties" },
   pl: { send: "Wyślij", profilePosts: "Posty", profileReels: "Reels", profilePreferences: "Preferencje", profileReposts: "Udostępnione ponownie", repost: "Udostępnij ponownie", reposted: "Udostępniono ponownie", comments: "Komentarze" },
   uk: { send: "Надіслати", profilePosts: "Публікації", profileReels: "Reels", profilePreferences: "Налаштування", profileReposts: "Репости", repost: "Репост", reposted: "Поширено повторно", comments: "Коментарі" },
   sv: { send: "Skicka", profilePosts: "Inlägg", profileReels: "Reels", profilePreferences: "Inställningar", profileReposts: "Återpublicerat", repost: "Återpublicera", reposted: "Återpublicerat", comments: "Kommentarer" },
   sw: { send: "Tuma", profilePosts: "Machapisho", profileReels: "Reels", profilePreferences: "Mapendeleo", profileReposts: "Machapisho yaliyoshirikiwa tena", repost: "Shiriki tena", reposted: "Imeshirikiwa tena", comments: "Maoni" },
 };
-
 export function getSavedLanguage(): NexoraLanguage {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
   try {
