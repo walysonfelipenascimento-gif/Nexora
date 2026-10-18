@@ -112,6 +112,7 @@ export default function Home() {
   const [posts, setPosts] = useState(initialPosts);
   const [liked, setLiked] = useState<number[]>([]);
   const [saved, setSaved] = useState<number[]>([]);
+  const [reposted, setReposted] = useState<number[]>([]);
   const [following, setFollowing] = useState<string[]>([]);
   const [commentsOpen, setCommentsOpen] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, string[]>>({});
@@ -526,6 +527,9 @@ export default function Home() {
                 </button>
                 <button className="post-action" aria-label="Compartilhar" onClick={() => { if (navigator.share) void navigator.share({ title: `Nexora · @${post.username}`, text: post.caption }).catch(() => undefined); else { void navigator.clipboard?.writeText(post.caption); setNotice("Legenda copiada para compartilhar."); } }}>
                   <svg viewBox="0 0 24 24"><path d="m21 3-7.2 18-3.5-7.3L3 10.2 21 3Z"/><path d="m10.3 13.7 5-5"/></svg><span>{post.shares}</span>
+                </button>
+                <button className={`post-action ${reposted.includes(post.id) ? "is-reposted" : ""}`} aria-label={reposted.includes(post.id) ? "Desfazer republicação" : "Republicar publicação"} onClick={() => { setReposted(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id]); setNotice(reposted.includes(post.id) ? "Republicação removida desta demonstração." : "Publicação republicada no seu perfil nesta demonstração."); }}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg><span>{reposted.includes(post.id) ? "Republicado" : "Republicar"}</span>
                 </button>
                 <button className={`post-action bookmark-action ${saved.includes(post.id) ? "is-saved" : ""}`} aria-label="Salvar publicação" onClick={() => setSaved(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id])}>
                   <svg viewBox="0 0 24 24"><path d="M6 3.5h12v17l-6-4-6 4v-17Z"/></svg><span>{post.saved + (saved.includes(post.id) ? 1 : 0)}</span>
