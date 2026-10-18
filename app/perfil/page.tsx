@@ -424,7 +424,7 @@ export default function ProfilePage() {
           <div className="profile-avatar-row">
             <div className="profile-avatar"><div className="profile-avatar-inner" style={avatarData ? {backgroundImage:"url("+avatarData+")",backgroundSize:"cover",backgroundPosition:"center",fontSize:0} : undefined}>{avatarData ? "" : "👑"}</div></div>
             <div className="profile-identity-actions">
-              <button className="profile-btn" onClick={() => { setNoteDraft(note); setEditOpen(true); }}>Editar perfil</button><button className="profile-btn" onClick={() => setPreviewOpen(true)}>Prévia</button>
+              <button className="profile-btn" onClick={() => { setNoteDraft(note); setEditOpen(true); }}>{translate(uiLanguage, "editProfile")}</button><button className="profile-btn" onClick={() => setPreviewOpen(true)}>Prévia</button>
               <button className="profile-btn primary" onClick={() => { window.location.href = "/?action=create"; }}>＋ Criar</button>
             </div>
           </div>
@@ -435,8 +435,8 @@ export default function ProfilePage() {
           <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={item.startsWith("http://") || item.startsWith("https://") ? item : "https://" + item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace("https://","").replace("http://","")}</a>)}</div>}
           <div className="profile-stats">
             <div className="profile-stat"><strong>{posts.length}</strong><span>Publicações</span></div>
-            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("followers")} aria-label="Ver seguidores"><strong>1.000*</strong><span>Seguidores de teste</span></button></div>
-            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("following")} aria-label="Ver seguindo"><strong>0</strong><span>Seguindo</span></button></div>
+            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("followers")} aria-label={translate(uiLanguage, "viewFollowers")}><strong>1.000*</strong><span>{translate(uiLanguage, "testFollowers")}</span></button></div>
+            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("following")} aria-label={translate(uiLanguage, "viewFollowing")}><strong>0</strong><span>{translate(uiLanguage, "following")}</span></button></div>
           </div>
           <div style={{marginTop:-12,marginBottom:18,fontSize:9,color:"#8e91aa",textAlign:"center"}}>Demonstração · 1.000 seguidores fictícios para teste; nenhum é uma conta real.</div>
         </section>
@@ -500,7 +500,7 @@ export default function ProfilePage() {
         {!settingsDetail && <div className="settings-footer"><button className="profile-btn" onClick={()=>setSettingsOpen(false)}>{translate(uiLanguage, "settingsClose")}</button><button className="profile-btn primary" onClick={()=>{setSettingsOpen(false);setToast("Preferências locais mantidas.");}}>{translate(uiLanguage, "settingsDone")}</button></div>}
       </section></div>}
       {socialListOpen && <div className="profile-modal-backdrop" role="presentation" onClick={() => setSocialListOpen(null)}>
-        <section className="profile-modal" role="dialog" aria-modal="true" aria-label={socialListOpen === "followers" ? "Seguidores" : "Seguindo"} onClick={event => event.stopPropagation()}>
+        <section className="profile-modal" role="dialog" aria-modal="true" aria-label={socialListOpen === "followers" ? translate(uiLanguage, "followers") : translate(uiLanguage, "following")} onClick={event => event.stopPropagation()}>
           <header className="social-list-head">
             <button className="social-list-back" onClick={() => { setSocialListOpen(null); setSocialSearch(""); }} aria-label="Voltar">‹</button>
             <div style={{minWidth:0}}><div className="social-list-title">{socialListOpen === "followers" ? "Seguidores" : "Seguindo"}</div><div className="social-list-subtitle">@{profileUsername} · perfil de criador</div></div>
