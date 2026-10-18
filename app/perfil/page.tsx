@@ -1,3 +1,4 @@
+/* NEXORA_PROFILE_DEPLOY_SYNC: trigger Render auto-deploy for the verified profile settings fix. */
 "use client";
 
 import { useEffect, useState } from "react";
