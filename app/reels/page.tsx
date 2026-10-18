@@ -72,6 +72,8 @@ export default function ReelsPage() {
   const [index, setIndex] = useState(0);
   const [liked, setLiked] = useState<Record<number, boolean>>({});
   const [saved, setSaved] = useState<Record<number, boolean>>({});
+  const [reposted, setReposted] = useState<Record<number, boolean>>({});
+  const [toast, setToast] = useState("");
   const [following, setFollowing] = useState<Record<string, boolean>>({});
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -217,6 +219,7 @@ export default function ReelsPage() {
           <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
           <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + Math.max(0, (comments[reel.id]?.length || 0) - 2))}</small></button>
           <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "Salvo" : "Salvar"}</small></button>
+          <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { setReposted((v) => ({ ...v, [reel.id]: !v[reel.id] })); setToast(reposted[reel.id] ? "Republicação removida nesta demonstração." : "Reel republicado no seu perfil nesta demonstração."); }} aria-label={reposted[reel.id] ? "Desfazer republicação" : "Republicar Reel"}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? "Repostado" : "Republicar"}</small></button>
           <button className="reel-action" onClick={shareReel}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
           <button className="reel-action" onClick={() => setCreatorTools(true)} aria-label="Ferramentas do criador"><span className="reel-disc"><img src={reel.avatar} alt="" /></span><small>Criador</small></button>
         </aside>
@@ -234,6 +237,9 @@ export default function ReelsPage() {
       </section>
 
       <PrimaryNav active="reels" />
+
+      {toast && <div role="status" style={{position:"absolute",zIndex:30,left:"50%",bottom:"calc(95px + env(safe-area-inset-bottom))",transform:"translateX(-50%)",maxWidth:"90vw",padding:"11px 15px",borderRadius:14,border:"1px solid #9b6bff88",background:"#151326ee",color:"#fff",fontSize:12,boxShadow:"0 8px 30px #0008"}} onClick={() => setToast("")}>{toast}　×</div>}
+
 
       {commentsOpen && <div className="reels-overlay" onClick={() => { setCommentsOpen(false); setPaused(false); }}>
         <section className="reels-sheet" onClick={(event) => event.stopPropagation()}>
