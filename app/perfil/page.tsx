@@ -186,6 +186,7 @@ export default function ProfilePage() {
     "Reels": translate(uiLanguage, "profileReels"),
     "Preferências": translate(uiLanguage, "profilePreferences"),
     "Republicados": translate(uiLanguage, "profileReposts"),
+    "Marcados": "Marcados",
   };
   const [coverIndex, setCoverIndex] = useState(0);
   const [highlights, setHighlights] = useState<Highlight[]>(defaultHighlights);
