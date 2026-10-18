@@ -261,6 +261,7 @@ export default function ProfilePage() {
   const [likedPosts, setLikedPosts] = useState<number[]>([]);
   const [savedPosts, setSavedPosts] = useState<number[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<number, string[]>>({});
+  const [likedComments, setLikedComments] = useState<string[]>([]);
   const [commentDraft, setCommentDraft] = useState("");
   const [captionEdit, setCaptionEdit] = useState("");
   const [editingCaption, setEditingCaption] = useState(false);
@@ -287,6 +288,7 @@ export default function ProfilePage() {
       if (Array.isArray(data.likedPosts)) setLikedPosts(data.likedPosts.filter((id: unknown): id is number => typeof id === "number"));
       if (Array.isArray(data.savedPosts)) setSavedPosts(data.savedPosts.filter((id: unknown): id is number => typeof id === "number"));
       if (data.commentsByPost && typeof data.commentsByPost === "object") setCommentsByPost(data.commentsByPost);
+      if (Array.isArray(data.likedComments)) setLikedComments(data.likedComments.filter((id: unknown): id is string => typeof id === "string"));
       if (typeof data.coverIndex === "number") setCoverIndex(Math.max(0, Math.min(covers.length - 1, data.coverIndex)));
       if (data.prefs && typeof data.prefs === "object") setPrefs((p) => ({ ...p, ...data.prefs }));
       if (Array.isArray(data.videoTopics)) setVideoTopics(data.videoTopics.filter((topic: unknown): topic is string => typeof topic === "string" && ["Humor", "Música", "Games", "Lifestyle", "Tutoriais", "Esportes", "Beleza", "Comédia", "Tecnologia", "Educação"].includes(topic)));
@@ -324,6 +326,26 @@ export default function ProfilePage() {
       reader.readAsDataURL(file);
     });
   }
+
+  useEffect(() => {
+    if (!openedPost) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setOpenedPost(null); setCommentDraft(""); setEditingCaption(false); }
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        const list = posts.filter((post) => post.type === openedPost.type);
+        const index = list.findIndex((post) => post.id === openedPost.id);
+        if (list.length > 1 && index >= 0) {
+          const nextIndex = event.key === "ArrowRight" ? (index + 1) % list.length : (index - 1 + list.length) % list.length;
+          setOpenedPost(list[nextIndex]);
+          setCommentDraft("");
+          setEditingCaption(false);
+          setPostMenuId(null);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openedPost, posts]);
 
   function save(next: Record<string, unknown>) {
     try {
@@ -488,7 +510,7 @@ export default function ProfilePage() {
         .profile-viewer-action{display:inline-flex;align-items:center;gap:6px;padding:9px 11px;border-radius:999px;border:1px solid #ffffff20;background:#ffffff08;color:#f4f2ff;font-size:12px;font-weight:700}
         .profile-viewer-action.active{border-color:#8e75ff88;background:#8c6cff22;color:#d9d0ff}
         .profile-comment-list{display:grid;gap:9px;margin:12px 0;max-height:150px;overflow:auto}
-        .profile-comment-item{font-size:12px;line-height:1.5;color:#d7d6e7;padding:9px 11px;background:#ffffff06;border-radius:10px}
+        .profile-comment-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.5;color:#d7d6e7;padding:9px 11px;background:#ffffff06;border-radius:10px}.profile-comment-copy{min-width:0;flex:1;overflow-wrap:anywhere}.profile-comment-like,.profile-comment-delete{flex-shrink:0;border:0;background:transparent;color:#9c9db5;font-size:11px;padding:2px;cursor:pointer}.profile-comment-like.active{color:#ff5b9c}.profile-comment-delete{font-size:10px}.profile-comment-empty{font-size:12px;color:#9c9db5;padding:8px 2px}
         @media(max-width:420px){.profile-lower .profile-grid{gap:2px}.profile-tile-engagement{gap:7px;padding:7px 2px 5px;font-size:9px}.profile-viewer-media{max-height:55vh}.profile-viewer-media img,.profile-viewer-media video{max-height:55vh}}
 
         /* Barra de conteúdo inspirada no Instagram, com acabamento Nexora. */
@@ -669,7 +691,7 @@ export default function ProfilePage() {
         {postMenuId===openedPost.id && <div style={{display:"grid",gap:7,padding:10,marginBottom:12,borderRadius:12,border:"1px solid #ffffff18",background:"#ffffff06"}}>{openedPost.demoImage&&<small style={{color:"#9da0ba"}}>Conteúdo demonstrativo: opções de edição e exclusão não se aplicam a este exemplo.</small>}{!openedPost.demoImage&&<button className="profile-btn" onClick={()=>{setCaptionEdit(openedPost.title);setEditingCaption(true);setPostMenuId(null)}}>✎ Editar legenda</button>}<button className="profile-btn" onClick={()=>{const next=reposted.includes(String(openedPost.id))?reposted.filter(id=>id!==String(openedPost.id)):[...reposted,String(openedPost.id)];setReposted(next);save({reposted:next});setToast(next.includes(String(openedPost.id))?"Adicionado às republicações locais.":"Removido das republicações locais.")}}>⟳ {reposted.includes(String(openedPost.id))?"Remover republicação":"Republicar"}</button>{!openedPost.demoImage&&<button className="profile-btn" onClick={()=>{const next=posts.filter(item=>item.id!==openedPost.id);setPosts(next);save({posts:next});setOpenedPost(null);setToast("Conteúdo removido desta prévia local.")}}>Excluir da prévia</button>}</div>}
         {editingCaption && <div style={{marginBottom:12}}><label style={{fontSize:11,color:"#b8b7ce"}}>Editar legenda</label><textarea className="profile-input" rows={3} value={captionEdit} maxLength={500} onChange={e=>setCaptionEdit(e.target.value)}/><div className="profile-modal-actions"><button className="profile-btn" onClick={()=>setEditingCaption(false)}>Cancelar</button><button className="profile-btn primary" onClick={()=>{const next=posts.map(item=>item.id===openedPost.id?{...item,title:captionEdit.trim()||item.title}:item);setPosts(next);save({posts:next});setOpenedPost({...openedPost,title:captionEdit.trim()||openedPost.title});setEditingCaption(false);setToast("Legenda atualizada nesta prévia local.")}}>Salvar legenda</button></div></div>}
         <p style={openedPost.type==="reel"?{position:"absolute",left:16,right:84,bottom:70,zIndex:4,fontSize:14,lineHeight:1.5,margin:0,color:"#fff",textShadow:"0 2px 8px #000"}:{fontSize:13,lineHeight:1.55,margin:"8px 0",color:"#f1efff"}}><strong>@{profileUsername}</strong> {openedPost.title}</p>
-        {(commentsByPost[openedPost.id]||[]).length>0&&<div className="profile-comment-list" style={openedPost.type==="reel"?{position:"absolute",left:12,right:84,bottom:64,zIndex:5,maxHeight:"24dvh",padding:8,background:"#090910aa",backdropFilter:"blur(12px)",borderRadius:12}:undefined}>{(commentsByPost[openedPost.id]||[]).map((comment,index)=><div className="profile-comment-item" key={openedPost.id+"-"+index}><strong>@{profileUsername}</strong> {comment}</div>)}</div>}
+        {((commentsByPost[openedPost.id]||[]).length>0 || openedPost.type==="post")&&<div className="profile-comment-list" aria-label="Comentários" style={openedPost.type==="reel"?{position:"absolute",left:12,right:84,bottom:64,zIndex:5,maxHeight:"24dvh",padding:8,background:"#090910aa",backdropFilter:"blur(12px)",borderRadius:12}:undefined}>{(commentsByPost[openedPost.id]||[]).length===0&&openedPost.type==="post"&&<div className="profile-comment-empty">Ainda não há comentários. Seja a primeira pessoa a comentar.</div>}{(commentsByPost[openedPost.id]||[]).map((comment,index)=>{const commentKey=openedPost.id+"-"+index;return <div className="profile-comment-item" key={commentKey}><div className="profile-comment-copy"><strong>@{profileUsername}</strong> {comment}</div><button type="button" className={"profile-comment-like "+(likedComments.includes(commentKey)?"active":"")} aria-label={likedComments.includes(commentKey)?"Descurtir comentário":"Curtir comentário"} onClick={()=>{const next=likedComments.includes(commentKey)?likedComments.filter(id=>id!==commentKey):[...likedComments,commentKey];setLikedComments(next);save({likedComments:next});}}>{likedComments.includes(commentKey)?"♥":"♡"}</button><button type="button" className="profile-comment-delete" aria-label="Excluir comentário local" onClick={()=>{const nextComments={...commentsByPost,[openedPost.id]:(commentsByPost[openedPost.id]||[]).filter((_,i)=>i!==index)};setCommentsByPost(nextComments);save({commentsByPost:nextComments});const nextLikes=likedComments.filter(id=>id!==commentKey);setLikedComments(nextLikes);save({likedComments:nextLikes});setToast("Comentário removido deste dispositivo.");}}>Excluir</button></div>})}</div>}
         <form onSubmit={e=>{e.preventDefault();const value=commentDraft.trim();if(!value)return;const next={...commentsByPost,[openedPost.id]:[...(commentsByPost[openedPost.id]||[]),value]};setCommentsByPost(next);save({commentsByPost:next});setCommentDraft("");setToast("Comentário adicionado nesta prévia local.")}} style={openedPost.type==="reel"?{position:"absolute",left:12,right:12,bottom:"max(12px,env(safe-area-inset-bottom))",zIndex:6,display:"flex",gap:7,alignItems:"center",padding:8,borderRadius:16,background:"#090910dd",border:"1px solid #ffffff24",backdropFilter:"blur(14px)"}:{display:"flex",gap:7,alignItems:"center",marginTop:10}}><input className="profile-input" aria-label="Escrever comentário" value={commentDraft} onChange={e=>setCommentDraft(e.target.value)} placeholder="Adicione um comentário…" maxLength={300} style={{margin:0,minWidth:0}}/><button className="profile-btn primary" type="submit" disabled={!commentDraft.trim()}>Publicar</button></form>
         <p style={{fontSize:10,lineHeight:1.5,color:"#8588a5",margin:"10px 0 0"}}>Curtidas, comentários, salvos e republicações desta versão ficam neste dispositivo. A sincronização entre contas e aparelhos será ligada ao backend na etapa de integração.</p>
       <div style={{position:"absolute",left:12,top:"50%",zIndex:5,display:"flex",flexDirection:"column",gap:8}}><button className="profile-btn" aria-label="Publicação anterior" onClick={()=>{const list=posts.filter(p=>p.type===openedPost.type);const i=list.findIndex(p=>p.id===openedPost.id);if(list.length)setOpenedPost(list[(i-1+list.length)%list.length]);}} style={{background:"#111a",color:"#fff",border:"1px solid #ffffff55",borderRadius:99,width:40,height:40}}>‹</button><button className="profile-btn" aria-label="Próxima publicação" onClick={()=>{const list=posts.filter(p=>p.type===openedPost.type);const i=list.findIndex(p=>p.id===openedPost.id);if(list.length)setOpenedPost(list[(i+1)%list.length]);}} style={{background:"#111a",color:"#fff",border:"1px solid #ffffff55",borderRadius:99,width:40,height:40}}>›</button></div></section></div>}
