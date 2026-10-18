@@ -424,7 +424,20 @@ export default function ProfilePage() {
         .profile-toast{position:fixed;z-index:150;left:50%;bottom:92px;transform:translateX(-50%);background:#19172a;border:1px solid #8f78ff66;color:#fff;padding:12px 16px;border-radius:14px;font-size:12px;box-shadow:0 8px 30px #0008;width:max-content;max-width:90vw}
         @media(min-width:700px){.profile-shell{padding:0 24px}.profile-cover{height:230px}.profile-identity{padding:0 16px}.profile-tabs{gap:8px}.profile-tab{font-size:12px}.profile-grid{gap:9px}.profile-tile{border-radius:16px}}
         @media(max-width:380px){.profile-cover{height:145px}.profile-identity-actions{gap:5px}.profile-btn{padding:9px 10px;font-size:10px}.profile-name{font-size:20px}.profile-tab{padding:10px 9px;font-size:10px}.highlight-row{gap:9px}}
-      `}</style>
+      `}
+        /* Nexora profile — Instagram-inspired stats, with Nexora neon identity */
+        .profile-identity .profile-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:22px 0 8px;padding:0;border:0;background:transparent}
+        .profile-identity .profile-stat{min-width:0;text-align:center;border:0}
+        .profile-identity .profile-stat>strong,.profile-identity .profile-stat-button strong{display:block;color:#f7f7ff;font-size:clamp(18px,4.8vw,23px);font-weight:850;line-height:1.15;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+        .profile-identity .profile-stat>span,.profile-identity .profile-stat-button span{display:block;margin-top:5px;color:#a9adc4;font-size:11px;font-weight:500;line-height:1.3}
+        .profile-identity .profile-stat-button{display:block;width:100%;min-height:45px;padding:2px 4px;border:0;border-radius:12px;background:transparent;color:inherit;cursor:pointer;transition:background .18s ease,transform .18s ease}
+        .profile-identity .profile-stat-button:hover{background:linear-gradient(120deg,#55e8ff0c,#a66cff12)}
+        .profile-identity .profile-stat-button:active{transform:scale(.98)}
+        .profile-identity .profile-stat-button:focus-visible{outline:2px solid #55e8ff;outline-offset:2px}
+        .profile-stats-note{margin:0 0 18px;color:#777e9c;font-size:9px;line-height:1.45;text-align:left}
+        @media(min-width:700px){.profile-identity .profile-stats{max-width:480px;gap:24px;margin-top:24px}.profile-identity .profile-stat>span,.profile-identity .profile-stat-button span{font-size:12px}.profile-stats-note{font-size:10px}}
+        @media(max-width:380px){.profile-identity .profile-stats{gap:2px;margin-top:18px}.profile-identity .profile-stat>strong,.profile-identity .profile-stat-button strong{font-size:18px}.profile-identity .profile-stat>span,.profile-identity .profile-stat-button span{font-size:10px}}
+</style>
 
       <div className="profile-shell">
         <header className="profile-top">
@@ -452,12 +465,12 @@ export default function ProfilePage() {
           <div style={{display:"flex",alignItems:"center",gap:7,marginTop:8,flexWrap:"wrap"}}><span style={{display:"inline-flex",alignItems:"center",gap:6,border:"1px solid #72dfff70",borderRadius:999,padding:"5px 10px",background:"linear-gradient(100deg,#55e8ff12,#a66cff12)",color:"#b9f4ff",fontSize:10,letterSpacing:".2px",backdropFilter:"blur(12px)"}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.8l2.3 1.5 2.8-.1 1.1 2.6 2.4 1.5-.7 2.7.7 2.7-2.4 1.5-1.1 2.6-2.8-.1-2.3 1.5-2.3-1.5-2.8.1-1.1-2.6-2.4-1.5.7-2.7-.7-2.7 2.4-1.5 1.1-2.6 2.8.1L12 2.8Z" fill="#63dfff" fillOpacity=".22" stroke="#74e8ff"/><path d="m8.4 12.2 2.2 2.1 5-5" stroke="#baf8ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>{profileCategory}</span><span style={{fontSize:10,color:"#8588a3"}}>Identidade do perfil</span></div>
           <p className="profile-bio">{profileBio}</p>
           <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={item.startsWith("http://") || item.startsWith("https://") ? item : "https://" + item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace("https://","").replace("http://","")}</a>)}</div>}
-          <div className="profile-stats">
+          <div className="profile-stats" aria-label="Estatísticas do perfil">
             <div className="profile-stat"><strong>{posts.length}</strong><span>Publicações</span></div>
-            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("followers")} aria-label={translate(uiLanguage, "viewFollowers")}><strong>1.000*</strong><span>{translate(uiLanguage, "testFollowers")}</span></button></div>
-            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("following")} aria-label={translate(uiLanguage, "viewFollowing")}><strong>0</strong><span>{translate(uiLanguage, "following")}</span></button></div>
+            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("followers")} aria-label={translate(uiLanguage, "viewFollowers")}><strong>1.000*</strong><span>Seguidores</span></button></div>
+            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("following")} aria-label={translate(uiLanguage, "viewFollowing")}><strong>0</strong><span>Seguindo</span></button></div>
           </div>
-          <div style={{marginTop:-12,marginBottom:18,fontSize:9,color:"#8e91aa",textAlign:"center"}}>Demonstração · 1.000 seguidores fictícios para teste; nenhum é uma conta real.</div>
+          <div className="profile-stats-note">* Demonstração visual: os 1.000 seguidores são fictícios, não contas reais.</div>
         </section>
 
         {highlights.length > 0 && <section>
