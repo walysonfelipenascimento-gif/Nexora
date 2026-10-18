@@ -160,7 +160,7 @@ export default function ProfilePage() {
           <div className="profile-avatar-row">
             <div className="profile-avatar"><div className="profile-avatar-inner">👑</div></div>
             <div className="profile-identity-actions">
-              <button className="profile-btn" onClick={() => setEditOpen(true)}>Editar perfil</button>
+              <button className="profile-btn" onClick={() => { setNoteDraft(note); setEditOpen(true); }}>Editar perfil</button>
               <button className="profile-btn primary" onClick={() => addSamplePost("post")}>＋ Criar</button>
             </div>
           </div>
