@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import PrimaryNav from "./components/PrimaryNav";
 
 type FeedPost = {
   id: number;
@@ -583,13 +584,7 @@ export default function Home() {
 
       {composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><header><div><small>NEXORA · SUA COMUNIDADE</small><h2 id="composer-title">Criar publicação</h2></div><button onClick={() => setComposerOpen(false)} aria-label="Fechar">×</button></header><textarea value={composerText} onChange={event => setComposerText(event.target.value)} maxLength={1000} placeholder="Compartilhe algo com o mundo..." /><footer><span>{composerText.length}/1000</span><button disabled={!composerText.trim()} onClick={publish}>Publicar ↗</button></footer><p>Esta primeira etapa é uma demonstração visual; publicações e interações ainda não são sincronizadas com outras contas.</p></section></div>}
 
-      <nav className="bottom-nav" aria-label="Navegação principal">
-        <button className="nav-active" aria-label="Início" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V10Z"/></svg></button>
-        <button aria-label="Reels" onClick={() => router.push("/reels")}><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m10 8 6 4-6 4Z"/><path d="m7 3 4 5m3-5 4 5"/></svg></button>
-        <button className="nav-create" aria-label="Criar publicação" onClick={() => setComposerOpen(true)}><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-        <button aria-label="Mensagens" onClick={() => { setMessagesOpen(true); setActiveChatId(null); }}><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8Z"/><path d="M8 10h8M8 14h5"/></svg></button>
-        <button aria-label="Perfil" onClick={() => setNotice("A página de perfil será construída em uma próxima etapa.")}><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2Z"/></svg></button>
-      </nav>
+      <PrimaryNav active="inicio" />
     </main>
   );
 }
