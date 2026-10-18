@@ -542,7 +542,7 @@ export default function ProfilePage() {
         .profile-lower .pro-dashboard-metric small{font-size:9px;line-height:1.4}
         .profile-lower .highlight-circle{width:64px;height:64px}
         @media(max-width:420px){.profile-lower .profile-tabs{grid-template-columns:repeat(6,minmax(0,1fr))}.profile-lower .profile-tab-glyph{font-size:18px}.profile-lower .pro-dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.profile-lower .profile-grid{gap:2px}}
-        @media(min-width:700px){.profile-lower .profile-tabs{justify-content:space-around}.profile-lower .profile-tab{flex:0 1 150px}.pro-dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+        @media(min-width:700px){.profile-lower .profile-tabs{justify-content:space-around}.profile-lower .profile-tab{flex:0 1 150px}.pro-dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}
         /* REESTRUTURAÇÃO PROFUNDA — somente a área inferior; identidade superior preservada. */
         .profile-lower{padding-top:0}
         .profile-lower .profile-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin:22px 0 0;padding:0;border:0;border-top:1px solid #ffffff18;border-bottom:1px solid #ffffff22;background:transparent;border-radius:0;overflow:hidden}
@@ -589,7 +589,6 @@ export default function ProfilePage() {
           .profile-lower .profile-tab-glyph{font-size:17px}
           .profile-lower .profile-tile-engagement{font-size:8px;gap:3px}
         }
-}
       `}
 </style>
 
