@@ -64,6 +64,7 @@ export default function ProfilePage() {
   const [noteDraft, setNoteDraft] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [socialListOpen, setSocialListOpen] = useState<"followers" | "following" | null>(null);
   const [profileCategory, setProfileCategory] = useState("Criador de conteúdo");
   const [profileName, setProfileName] = useState("Licinhosz.bb");
   const [profileUsername, setProfileUsername] = useState("licinhosz.bb");
@@ -84,6 +85,7 @@ export default function ProfilePage() {
   const [prefs, setPrefs] = useState({ neon: true, showActivity: true, allowReposts: true, compactGrid: false, privateProfile: false, allowMessages: true, showLocation: true, saveData: false });
   const [posts, setPosts] = useState<{id:number; title:string; emoji:string; type:"post"|"reel"}[]>([]);
   const [reposted, setReposted] = useState<string[]>([]);
+  const syntheticFollowers = Array.from({ length: 1000 }, (_, index) => { const number = String(index + 1).padStart(4, "0"); return { id: `synthetic_${number}`, username: `nexora_test_${number}`, name: `Perfil de teste ${number}`, initials: String(index + 1).slice(-2), hue: (index * 37) % 360 }; });
 
   useEffect(() => {
     try {
@@ -212,6 +214,19 @@ export default function ProfilePage() {
         .profile-modal-backdrop{position:fixed;z-index:100;inset:0;background:#000a;backdrop-filter:blur(7px);display:flex;align-items:flex-end;justify-content:center;padding:12px}
         .profile-modal{width:100%;max-width:500px;border:1px solid #ffffff20;background:#10101b;border-radius:24px;padding:20px;box-shadow:0 15px 60px #000b}
         .profile-modal h2{font-size:17px;margin:0 0 6px}.profile-modal p{font-size:12px;color:#a2a4bd;line-height:1.5;margin:0 0 15px}
+        .social-list-head{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 14px) 16px 13px;border-bottom:1px solid #ffffff12;background:#0d0c18}
+        .social-list-back{width:38px;height:38px;border:1px solid #ffffff1b;border-radius:12px;background:#ffffff08;color:#fff;font-size:20px;flex:0 0 38px}
+        .social-list-title{font-size:16px;font-weight:850}.social-list-subtitle{font-size:10px;color:#9698b2;margin-top:3px}
+        .social-list-count{margin-left:auto;border:1px solid #55e8ff30;border-radius:99px;padding:6px 9px;color:#a8f1ff;background:#55e8ff0d;font-size:10px;white-space:nowrap}
+        .social-list-body{flex:1;min-height:0;overflow-y:auto;padding:5px 13px calc(env(safe-area-inset-bottom) + 14px);overscroll-behavior:contain}
+        .social-user-row{height:62px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #ffffff0b;padding:5px 1px}
+        .social-user-avatar{width:42px;height:42px;flex:0 0 42px;border-radius:15px;display:grid;place-items:center;border:1px solid #ffffff22;font-size:12px;font-weight:900;color:white;box-shadow:inset 0 1px #ffffff30}
+        .social-user-copy{min-width:0;flex:1}.social-user-name{font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.social-user-handle{font-size:10px;color:#999bb6;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .social-user-tag{font-size:9px;color:#91eaff;border:1px solid #55e8ff35;border-radius:99px;padding:5px 7px;white-space:nowrap}
+        .social-list-footer{padding:10px 15px calc(env(safe-area-inset-bottom) + 10px);border-top:1px solid #ffffff12;color:#777991;font-size:10px;line-height:1.5;background:#0b0b14}
+        .profile-stat-button{appearance:none;background:transparent;color:inherit;border:0;padding:0;width:100%;font:inherit;cursor:pointer}
+        .profile-stat-button:focus-visible{outline:2px solid #55e8ff;border-radius:8px}
+
         .profile-input{width:100%;border:1px solid #ffffff22;background:#080811;color:#fff;border-radius:13px;padding:13px;margin:7px 0 12px;outline:none}.profile-input:focus{border-color:#8d70ff}
         .profile-emoji-options{display:flex;gap:8px;margin:6px 0 16px}.profile-emoji-options button{font-size:20px;background:#ffffff09;border:1px solid #ffffff1b;border-radius:11px;padding:9px}
         .profile-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
@@ -267,9 +282,10 @@ export default function ProfilePage() {
           <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={item.startsWith("http://") || item.startsWith("https://") ? item : "https://" + item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace("https://","").replace("http://","")}</a>)}</div>}
           <div className="profile-stats">
             <div className="profile-stat"><strong>{posts.length}</strong><span>Publicações</span></div>
-            <div className="profile-stat"><strong>—</strong><span>Seguidores</span></div>
-            <div className="profile-stat"><strong>—</strong><span>Seguindo</span></div>
+            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("followers")} aria-label="Ver seguidores"><strong>1.000</strong><span>Seguidores</span></button></div>
+            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("following")} aria-label="Ver seguindo"><strong>0</strong><span>Seguindo</span></button></div>
           </div>
+          <div style={{marginTop:-12,marginBottom:18,fontSize:9,color:"#8e91aa",textAlign:"center"}}>Modo de demonstração · seguidores sintéticos de teste, não públicos</div>
         </section>
 
         {highlights.length > 0 && <section>
@@ -328,6 +344,23 @@ export default function ProfilePage() {
         </div>
         {!settingsDetail && <div className="settings-footer"><button className="profile-btn" onClick={()=>setSettingsOpen(false)}>Fechar configurações</button><button className="profile-btn primary" onClick={()=>{setSettingsOpen(false);setToast("Preferências locais mantidas.");}}>Concluir</button></div>}
       </section></div>}
+      {socialListOpen && <div className="profile-modal-backdrop" role="presentation" onClick={() => setSocialListOpen(null)}>
+        <section className="profile-modal" role="dialog" aria-modal="true" aria-label={socialListOpen === "followers" ? "Seguidores" : "Seguindo"} onClick={event => event.stopPropagation()}>
+          <header className="social-list-head">
+            <button className="social-list-back" onClick={() => setSocialListOpen(null)} aria-label="Voltar">‹</button>
+            <div style={{minWidth:0}}><div className="social-list-title">{socialListOpen === "followers" ? "Seguidores" : "Seguindo"}</div><div className="social-list-subtitle">@{profileUsername} · perfil de criador</div></div>
+            <span className="social-list-count">{socialListOpen === "followers" ? "1.000 testes" : "0 perfis"}</span>
+          </header>
+          {socialListOpen === "followers" ? <div className="social-list-body">
+            {syntheticFollowers.map((person) => <div className="social-user-row" key={person.id}>
+              <div className="social-user-avatar" style={{background:`linear-gradient(145deg,hsl(${person.hue} 78% 54%),#111126 88%)`}}>{person.initials}</div>
+              <div className="social-user-copy"><div className="social-user-name">{person.name}</div><div className="social-user-handle">@{person.username}</div></div>
+              <span className="social-user-tag">Teste</span>
+            </div>)}
+          </div> : <div className="social-list-body"><div style={{minHeight:220,display:"grid",placeItems:"center",textAlign:"center",padding:24,color:"#a3a5bd"}}><div><div style={{fontSize:30,marginBottom:10}}>◎</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Você ainda não segue perfis</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Quando seguir contas na Nexora, elas aparecerão aqui em uma lista compacta.</p></div></div></div>}
+          <footer className="social-list-footer">Ambiente de demonstração: os perfis desta lista são sintéticos e não criam seguidores públicos ou contas reais.</footer>
+        </section>
+      </div>}
       {previewOpen && <div className="profile-modal-backdrop" onClick={()=>setPreviewOpen(false)}><section className="profile-modal" role="dialog" aria-modal="true" aria-label="Pré-visualização do perfil" onClick={e=>e.stopPropagation()}><h2>Pré-visualização do perfil</h2><p>Confira sua identidade antes de salvar. Esta prévia é local, não uma página pública separada.</p><div style={{border:"1px solid #ffffff1c",borderRadius:18,overflow:"hidden",background:"#090913"}}><div style={{height:85,background:coverData?"url("+coverData+") center/cover":covers[coverIndex]}}/><div style={{padding:14}}><div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:54,height:54,borderRadius:17,background:avatarData?"url("+avatarData+") center/cover":"linear-gradient(135deg,#42e4ff,#915bff,#ee5acb)",display:"grid",placeItems:"center"}}>{avatarData?"":"👑"}</div><div><strong>{profileName||"Seu nome"}</strong><div style={{fontSize:11,color:"#a5a6bc"}}>@{profileUsername||"seu.usuario"}</div></div></div><p style={{whiteSpace:"pre-wrap",fontSize:12,lineHeight:1.6}}>{profileBio}</p>{prefs.showLocation&&profileLocation&&<small style={{color:"#a5a6bc"}}>⌖ {profileLocation}</small>}</div></div><div className="profile-modal-actions"><button className="profile-btn" onClick={()=>setPreviewOpen(false)}>Fechar prévia</button><button className="profile-btn primary" onClick={()=>{setPreviewOpen(false);setNoteDraft(note);setEditOpen(true)}}>Editar perfil</button></div></section></div>}
       {highlightOpen && <div className="profile-modal-backdrop" onClick={() => setHighlightOpen(false)}><section className="profile-modal" onClick={e => e.stopPropagation()}><h2>＋ Criar destaque</h2><p>Escolha um nome e um símbolo para a nova coleção.</p><input className="profile-input" value={highlightTitle} onChange={e => setHighlightTitle(e.target.value)} maxLength={22} placeholder="Ex.: Bastidores, Viagens, Favoritos"/><div className="profile-emoji-options">{["🌟","😂","📸","🎧","💜","🎮","🌎","🔥"].map(emoji => <button key={emoji} style={{borderColor:highlightEmoji===emoji?"#9d7aff":undefined,background:highlightEmoji===emoji?"#8d6aff25":undefined}} onClick={() => setHighlightEmoji(emoji)}>{emoji}</button>)}</div><div className="profile-modal-actions"><button className="profile-btn" onClick={() => setHighlightOpen(false)}>Cancelar</button><button className="profile-btn primary" onClick={createHighlight}>Criar destaque</button></div></section></div>}
       {toast && <button className="profile-toast" role="status" onClick={() => setToast("")}>{toast}　×</button>}
