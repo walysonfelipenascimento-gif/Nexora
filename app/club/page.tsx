@@ -23,7 +23,7 @@ export default function NexoraClubPage(){
  const [comments,setComments]=useState<Record<number,string[]>>({});
  const [notice,setNotice]=useState("");
  const [ageNotice,setAgeNotice]=useState(true);
- useEffect(()=>{const timer=window.setTimeout(()=>setAgeNotice(false),5000);return()=>window.clearTimeout(timer)},[]);
+ useEffect(()=>{const timer=window.setTimeout(()=>setAgeNotice(false),9000;return()=>window.clearTimeout(timer)},[]);
  const [mediaOnly,setMediaOnly]=useState(false);
  const publish=()=>{if(!draft.trim())return;setPosts(old=>[{id:Date.now(),name:"Você",handle:"@seuperfil",avatar:"https://images.unsplash.com/photo-1535717999511-1c2a7e0d1f35?w=120&h=120&fit=crop",time:"agora",text:draft.trim(),likes:0,comments:0,kind:"Sua publicação"},...old]);setDraft("");setNotice("Publicação adicionada nesta prévia. Ela ainda não foi salva no servidor.");setTab("para-voce");setMediaOnly(false)};
  const toggleLike=(id:number)=>{const on=liked.includes(id);setLiked(old=>on?old.filter(x=>x!==id):[...old,id]);setPosts(old=>old.map(p=>p.id===id?{...p,likes:p.likes+(on?-1:1)}:p))};
