@@ -10,6 +10,7 @@ type FeedPost = {
   username: string;
   avatar: string;
   image: string;
+  mediaType?: "image" | "video";
   caption: string;
   likes: number;
   comments: number;
@@ -118,7 +119,12 @@ export default function Home() {
   const [comments, setComments] = useState<Record<number, string[]>>({});
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [composerOpen, setComposerOpen] = useState(false);
+  const [createMode, setCreateMode] = useState<"hub" | "post" | "reel" | "live" | "highlight">("hub");
   const [composerText, setComposerText] = useState("");
+  const [createFile, setCreateFile] = useState<File | null>(null);
+  const [createPreview, setCreatePreview] = useState("");
+  const [createTitle, setCreateTitle] = useState("");
+  const createInputRef = useRef<HTMLInputElement>(null);
   const [stories, setStories] = useState<StoryItem[]>(initialStories);
   const [activeStory, setActiveStory] = useState<StoryItem | null>(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(1);
@@ -179,7 +185,7 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const action = params.get("action");
     const tab = params.get("tab");
-    if (action === "create") setComposerOpen(true);
+    if (action === "create") { setCreateMode("hub"); setComposerOpen(true); }
     if (tab === "mensagens") {
       setMessagesOpen(true);
       setActiveChatId(null);
@@ -265,16 +271,48 @@ export default function Home() {
 
   function publish() {
     const caption = composerText.trim();
-    if (!caption) return;
+    if (!caption && !createPreview) return;
+    if (createMode === "reel" && (!createFile || !createFile.type.startsWith("video/"))) {
+      setNotice("Para publicar um Reel, escolha um vídeo primeiro.");
+      return;
+    }
+    const mediaType = createFile?.type.startsWith("video/") ? "video" as const : "image" as const;
     setPosts(current => [{
       id: Date.now(), name: "Licinhosz.bb", username: "licinhosz.bb",
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces",
-      image: "", caption, likes: 0, comments: 0, shares: 0, saved: 0
+      image: createPreview, mediaType: createPreview ? mediaType : undefined, caption: caption || "Novo conteúdo na Nexora ✦", likes: 0, comments: 0, shares: 0, saved: 0
     }, ...current]);
     setComposerText("");
+    setCreateFile(null);
+    setCreatePreview("");
     setComposerOpen(false);
-    setNotice("Publicação adicionada nesta demonstração visual.");
+    setCreateMode("hub");
+    setNotice(createMode === "reel" ? "Reel adicionado ao Feed nesta sessão." : "Publicação adicionada ao Feed nesta sessão.");
     window.setTimeout(() => setNotice(""), 2800);
+  }
+  function openCreateMode(mode: "post" | "reel" | "live" | "highlight") {
+    setCreateMode(mode);
+    setComposerText("");
+    setCreateFile(null);
+    setCreatePreview("");
+    setCreateTitle("");
+  }
+  function createProfileHighlight() {
+    const title = createTitle.trim();
+    if (!title) { setNotice("Dê um nome ao destaque antes de criar."); return; }
+    try {
+      const raw = localStorage.getItem("nexora-profile-v1");
+      const data = raw ? JSON.parse(raw) : {};
+      const current = Array.isArray(data.highlights) ? data.highlights.filter((item: {title?:string}) => !["Minha vida","Resenha","Momentos","Músicas"].includes(item?.title || "")) : [];
+      const next = [...current, { id: Date.now(), title, emoji: "🌟", tone: ["#6c4cff", "#e84d9b", "#168db7", "#8a4ce0"][current.length % 4] }];
+      localStorage.setItem("nexora-profile-v1", JSON.stringify({ ...data, highlights: next }));
+      setComposerOpen(false);
+      setCreateMode("hub");
+      setCreateTitle("");
+      setNotice("Destaque criado neste dispositivo. Abra o perfil para vê-lo.");
+    } catch {
+      setNotice("Não foi possível salvar o destaque neste navegador.");
+    }
   }
 
   function goToStory(index: number) {
@@ -516,7 +554,7 @@ export default function Home() {
               </div>
               <button className="more-button" aria-label="Mais opções" onClick={() => setNotice("Mais opções de publicação serão adicionadas.")}>⋮</button>
             </header>
-            {post.image ? <img className="post-image" src={post.image} alt={`Publicação de ${post.name}`} /> : <div className="text-post-visual"><span>NEXORA ✦</span><p>{post.caption}</p></div>}
+            {post.image ? (post.mediaType === "video" ? <video className="post-image" src={post.image} controls playsInline /> : <img className="post-image" src={post.image} alt={`Publicação de ${post.name}`} />) : <div className="text-post-visual"><span>NEXORA ✦</span><p>{post.caption}</p></div>}
             <div className="post-bottom">
               <div className="post-actions">
                 <button className={`post-action ${liked.includes(post.id) ? "is-liked" : ""}`} aria-label="Curtir" onClick={() => setLiked(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id])}>
@@ -528,8 +566,8 @@ export default function Home() {
                 <button className="post-action" aria-label="Compartilhar" onClick={() => { if (navigator.share) void navigator.share({ title: `Nexora · @${post.username}`, text: post.caption }).catch(() => undefined); else { void navigator.clipboard?.writeText(post.caption); setNotice("Legenda copiada para compartilhar."); } }}>
                   <svg viewBox="0 0 24 24"><path d="m21 3-7.2 18-3.5-7.3L3 10.2 21 3Z"/><path d="m10.3 13.7 5-5"/></svg><span>{post.shares}</span>
                 </button>
-                <button className={`post-action ${reposted.includes(post.id) ? "is-reposted" : ""}`} aria-label={reposted.includes(post.id) ? "Desfazer republicação" : "Republicar publicação"} onClick={() => { setReposted(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id]); setNotice(reposted.includes(post.id) ? "Republicação removida desta demonstração." : "Publicação republicada no seu perfil nesta demonstração."); }}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg><span>{reposted.includes(post.id) ? "Republicado" : "Republicar"}</span>
+                <button className={`post-action ${reposted.includes(post.id) ? "is-reposted" : ""}`} style={{gap:5,paddingInline:7,minWidth:0,whiteSpace:"nowrap",fontSize:11}} aria-label={reposted.includes(post.id) ? "Desfazer repost" : "Repostar publicação"} title={reposted.includes(post.id) ? "Desfazer repost" : "Repostar"} onClick={() => { setReposted(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id]); setNotice(reposted.includes(post.id) ? "Repost removido desta demonstração." : "Repost adicionado nesta demonstração."); }}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg><span>{reposted.includes(post.id) ? "Repostado" : "Repost"}</span>
                 </button>
                 <button className={`post-action bookmark-action ${saved.includes(post.id) ? "is-saved" : ""}`} aria-label="Salvar publicação" onClick={() => setSaved(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id])}>
                   <svg viewBox="0 0 24 24"><path d="M6 3.5h12v17l-6-4-6 4v-17Z"/></svg><span>{post.saved + (saved.includes(post.id) ? 1 : 0)}</span>
@@ -586,7 +624,39 @@ export default function Home() {
 
 {storyComposerOpen && <div className="overlay story-composer-overlay" onClick={event => { if (event.target === event.currentTarget) setStoryComposerOpen(false); }}><section className="composer story-composer" role="dialog" aria-modal="true" aria-labelledby="story-composer-title"><header><div><small>NEXORA · STORIES</small><h2 id="story-composer-title">Criar Story</h2></div><button onClick={() => setStoryComposerOpen(false)} aria-label="Fechar">×</button></header><input ref={storyInputRef} className="story-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (!file) return; if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) { setNotice("Escolha uma foto ou vídeo."); return; } if (file.size > 50 * 1024 * 1024) { setNotice("O arquivo deve ter até 50 MB."); return; } setStoryFile(file); setStoryPreview(URL.createObjectURL(file)); }} /><button className="story-media-picker" onClick={() => storyInputRef.current?.click()}>{storyPreview ? (storyFile?.type.startsWith("video/") ? <video src={storyPreview} muted playsInline /> : <img src={storyPreview} alt="Prévia do Story" />) : <span><b>＋</b>Escolher foto ou vídeo</span>}</button><textarea value={storyCaption} onChange={event => setStoryCaption(event.target.value)} maxLength={180} placeholder="Adicione uma legenda (opcional)..." /><footer><span>{storyCaption.length}/180</span><button disabled={!storyFile || !storyPreview} onClick={() => { if (!storyFile || !storyPreview) return; const ownStory: StoryItem = { name: "Licinhosz.bb", own: true, image: storyPreview, mediaType: storyFile.type.startsWith("video/") ? "video" : "image", caption: storyCaption.trim(), id: `local-${Date.now()}` }; setStories(current => [current[0], ownStory, ...current.slice(1).filter(item => !item.own || !item.image)]); setActiveStoryIndex(1); setActiveStory(ownStory); setStoryComposerOpen(false); setStoryFile(null); setStoryPreview(""); setStoryCaption(""); setNotice("Story publicado nesta sessão do navegador."); }}>Publicar Story ↗</button></footer><p>O Story fica nesta sessão do navegador; a sincronização entre contas será conectada ao backend na etapa de persistência.</p></section></div>}
 
-      {composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><header><div><small>NEXORA · SUA COMUNIDADE</small><h2 id="composer-title">Criar publicação</h2></div><button onClick={() => setComposerOpen(false)} aria-label="Fechar">×</button></header><textarea value={composerText} onChange={event => setComposerText(event.target.value)} maxLength={1000} placeholder="Compartilhe algo com o mundo..." /><footer><span>{composerText.length}/1000</span><button disabled={!composerText.trim()} onClick={publish}>Publicar ↗</button></footer><p>Esta primeira etapa é uma demonstração visual; publicações e interações ainda não são sincronizadas com outras contas.</p></section></div>}
+      {composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title" style={{maxHeight:"min(88dvh,760px)",overflowY:"auto"}}><header><div><small>NEXORA · CENTRAL DE CRIAÇÃO</small><h2 id="composer-title">{createMode === "hub" ? "O que vamos criar?" : createMode === "post" ? "Nova publicação" : createMode === "reel" ? "Criar Reel" : "Preparar Live"}</h2></div><button onClick={() => {setComposerOpen(false);setCreateMode("hub");}} aria-label="Fechar">×</button></header>
+        {createMode === "hub" ? <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,marginTop:16}}>
+          {[
+            {mode:"story",icon:"◉",title:"Story",desc:"Foto ou vídeo por 24 horas"},
+            {mode:"post",icon:"▧",title:"Publicação",desc:"Foto, vídeo ou texto"},
+            {mode:"reel",icon:"▶",title:"Reels",desc:"Vídeos verticais"},
+            {mode:"highlight",icon:"✦",title:"Destaques",desc:"Organize Stories no perfil"},
+            {mode:"live",icon:"●",title:"Live",desc:"Prepare uma transmissão"},
+            {mode:"note",icon:"✎",title:"Nota",desc:"Compartilhe um pensamento"}
+          ].map(item => <button key={item.mode} type="button" onClick={() => {
+            if(item.mode==="story"){setComposerOpen(false);setStoryComposerOpen(true);return;}
+            if(item.mode==="note"){setComposerOpen(false);setNotesComposerOpen(true);return;}
+            if(item.mode==="highlight"){openCreateMode("highlight");return;}
+            openCreateMode(item.mode as "post"|"reel"|"live");
+          }} style={{textAlign:"left",padding:14,borderRadius:16,border:"1px solid #8e78ff45",background:"linear-gradient(135deg,#15152a,#0c1221)",color:"#fff",minHeight:106,cursor:"pointer"}}>
+            <span style={{display:"grid",placeItems:"center",width:35,height:35,borderRadius:12,background:"linear-gradient(135deg,#55e8ff30,#a66cff35)",color:"#8ceeff",fontSize:20,marginBottom:9}}>{item.icon}</span><strong style={{display:"block",fontSize:13}}>{item.title}</strong><small style={{display:"block",fontSize:10,color:"#9da2bd",marginTop:5,lineHeight:1.45}}>{item.desc}</small>
+          </button>)}
+        </div> : createMode === "live" ? <div style={{paddingTop:12}}>
+          <p style={{fontSize:13,color:"#c3c5dc",lineHeight:1.6}}>Configure o título e a privacidade da sua Live. A transmissão real precisa de integração com câmera, servidor de streaming e moderação; esta tela ainda não inicia vídeo ao vivo.</p>
+          <input value={createTitle} onChange={event=>setCreateTitle(event.target.value)} maxLength={80} placeholder="Título da transmissão" style={{width:"100%",padding:13,borderRadius:12,background:"#0b0c18",border:"1px solid #ffffff20",color:"#fff",margin:"10px 0"}} />
+          <button type="button" onClick={()=>setNotice(createTitle.trim() ? `Configuração da Live “${createTitle.trim()}” preparada. A transmissão será habilitada com a integração de streaming.` : "Digite um título para a Live.")} style={{width:"100%",padding:13,borderRadius:12,border:0,background:"linear-gradient(90deg,#55e8ff,#a66cff)",color:"#080817",fontWeight:800}}>Preparar transmissão</button>
+        </div> : createMode === "hub" ? null : <div style={{paddingTop:12}}>
+          <input ref={createInputRef} type="file" accept={createMode==="reel" ? "video/*" : "image/*,video/*"} onChange={event=>{const file=event.target.files?.[0];if(!file)return;if(createMode==="reel"&&!file.type.startsWith("video/")){setNotice("Reels precisam de um vídeo.");return;}if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){setNotice("Escolha uma imagem ou vídeo.");return;}if(file.size>50*1024*1024){setNotice("O arquivo deve ter até 50 MB.");return;}setCreateFile(file);setCreatePreview(URL.createObjectURL(file));}} style={{display:"none"}} />
+          <button type="button" onClick={()=>createInputRef.current?.click()} style={{width:"100%",minHeight:150,borderRadius:15,border:"1px dashed #8e78ff88",background:"#0a0c18",color:"#dce5ff",overflow:"hidden",display:"grid",placeItems:"center"}}>
+            {createPreview ? (createFile?.type.startsWith("video/") ? <video src={createPreview} muted playsInline style={{maxHeight:220,maxWidth:"100%"}} /> : <img src={createPreview} alt="Prévia da publicação" style={{maxHeight:220,maxWidth:"100%",objectFit:"contain"}} />) : <span style={{padding:20}}>＋<br/>Selecionar {createMode==="reel"?"vídeo":"foto ou vídeo"}</span>}
+          </button>
+          <textarea value={composerText} onChange={event=>setComposerText(event.target.value)} maxLength={1000} placeholder={createMode==="reel"?"Escreva a legenda do Reel...":"Escreva uma legenda ou mensagem..."} style={{marginTop:12}} />
+          <footer><span>{composerText.length}/1000</span><button disabled={(!composerText.trim()&&!createPreview)||(createMode==="reel"&&!(createFile?.type.startsWith("video/")))} onClick={publish}>{createMode==="reel"?"Publicar Reel ↗":"Publicar ↗"}</button></footer>
+          <p>O conteúdo fica disponível nesta sessão do navegador. Para publicar para outros usuários e manter a mídia após sair, falta integrar autenticação e armazenamento da Nexora.</p>
+        </div>}
+        {createMode === "highlight" ? <div style={{paddingTop:12}}><p style={{fontSize:12,color:"#bfc4dc",lineHeight:1.6}}>Dê um nome à coleção que ficará no seu perfil. Um destaque criado aqui aparecerá na área de perfil deste dispositivo.</p><input value={createTitle} onChange={event=>setCreateTitle(event.target.value)} maxLength={30} placeholder="Ex.: Viagens, Música, Momentos" style={{width:"100%",padding:13,borderRadius:12,background:"#0b0c18",border:"1px solid #ffffff20",color:"#fff",margin:"10px 0"}}/><button type="button" onClick={createProfileHighlight} style={{width:"100%",padding:13,borderRadius:12,border:0,background:"linear-gradient(90deg,#55e8ff,#a66cff)",color:"#080817",fontWeight:800}}>Criar destaque</button></div> : null}
+        {createMode === "hub" ? <p style={{marginTop:14,fontSize:10,color:"#858ba9",lineHeight:1.5}}>Escolha um formato. Stories, publicações e Reels usam mídia local nesta etapa; Live exige integração de streaming.</p> : null}
+      </section></div>}
 
       <PrimaryNav active="inicio" />
     </main>
