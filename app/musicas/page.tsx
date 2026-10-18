@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { getSupabaseBrowserClient } from "../../lib/supabase";
 
 type Artist = { name: string; genre: string; status: "Aguardando licença" | "Em análise"; note: string };
 
