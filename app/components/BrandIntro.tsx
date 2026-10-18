@@ -42,8 +42,8 @@ export default function BrandIntro() {
         <div className="intro-tag">Conectando pessoas, marcas e oportunidades</div>
         <div className="intro-rule" />
         <div className="intro-profile">
-          <div className="intro-avatar"><img src="https://images.unsplash.com/photo-1535717999511-1c2a7e0d1f35?w=120&h=120&fit=crop" alt="" /></div>
-          <div><div className="intro-name"><span className="intro-dot" />@licinhosz</div><div className="intro-handle">Walyson Felipe do Nascimento Silva</div></div>
+          <div className="intro-avatar"><span aria-hidden="true">L</span></div>
+          <div><div className="intro-name"><span className="intro-dot" />@Licinhosz.bb</div><div className="intro-handle">Walyson Felipe do Nascimento Silva</div></div>
         </div>
       </div>
     </div>
