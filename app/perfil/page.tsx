@@ -211,7 +211,7 @@ export default function ProfilePage() {
           <h1 className="profile-name">{profileName || "Seu nome"} <span className="profile-check" title="Identidade visual Nexora">✓</span></h1>
           <div className="profile-handle">@{profileUsername || "seu.usuario"} · {profileCategory}</div>
           <p className="profile-bio">{profileBio}</p>
-          <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={/^https?:\/\//i.test(item)?item:"https://"+item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace(/^https?:\/\//i,"")}</a>)}</div>
+          <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={item.startsWith("http://") || item.startsWith("https://") ? item : "https://" + item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace("https://","").replace("http://","")}</a>)}</div>
           <div className="profile-stats">
             <div className="profile-stat"><strong>{posts.length}</strong><span>Publicações</span></div>
             <div className="profile-stat"><strong>—</strong><span>Seguidores</span></div>
