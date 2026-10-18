@@ -461,15 +461,15 @@ export default function ProfilePage() {
         </section>
 
         {highlights.length > 0 && <section>
-          <div className="profile-section-title"><span>Seus destaques <small>· coleções do seu universo</small></span><small>{highlights.length} coleções</small></div>
+          <div className="profile-section-title"><span>{translate(uiLanguage, "highlightsTitle")} <small>· {translate(uiLanguage, "highlightsSubtitle")}</small></span><small>{highlights.length} coleções</small></div>
           <div className="highlight-row">
             {highlights.map((item) => <div className="highlight-item" key={item.id}><div className="highlight-circle"><div className="highlight-inner" style={{background:item.tone+"24"}}>{item.emoji}</div></div><span>{item.title}</span></div>)}
           </div>
         </section>}
 
         <section>
-          <div className="profile-section-title"><span>Notas Nexora <small>· presença rápida</small></span><small>✦ Neon</small></div>
-          {prefs.showActivity ? <div className="note-card"><div className="note-orb">✧</div><div className="note-copy"><strong>Sua nota de agora</strong><p>{note || "Adicione uma nota em Editar perfil para mostrar seu momento…"}</p></div><button className="note-edit" onClick={() => setEditOpen(true)}>Editar perfil</button></div> : <div className="profile-empty"><strong>Notas ocultas</strong><p>Ative “Mostrar nota no perfil” nas configurações para exibir sua nota.</p></div>}
+          <div className="profile-section-title"><span>{translate(uiLanguage, "notesTitle")} <small>· presença rápida</small></span><small>✦ Neon</small></div>
+          {prefs.showActivity ? <div className="note-card"><div className="note-orb">✧</div><div className="note-copy"><strong>{translate(uiLanguage, "noteNow")}</strong><p>{note || "Adicione uma nota em Editar perfil para mostrar seu momento…"}</p></div><button className="note-edit" onClick={() => setEditOpen(true)}>{translate(uiLanguage, "editProfile")}</button></div> : <div className="profile-empty"><strong>Notas ocultas</strong><p>Ative “Mostrar nota no perfil” nas configurações para exibir sua nota.</p></div>}
         </section>
 
         <div className="profile-tabs" role="tablist" aria-label="Conteúdo do perfil">
@@ -477,8 +477,8 @@ export default function ProfilePage() {
         </div>
         <section className="profile-content">
           {activeTab === "Preferências" ? <div>
-            <div className="video-preference-preview"><div className="video-preference-icon">▶</div><div><strong>Seus interesses em vídeos</strong><p>Marque os assuntos que você mais gosta para deixar sua preferência salva. Isso prepara seu perfil para o futuro sistema de recomendações; por enquanto, a seleção ainda não altera o Feed nem os Reels.</p><span>✦ Preferências salvas neste dispositivo</span></div></div>
-            <div className="video-topic-panel"><div className="video-topic-heading"><strong>O que você gosta de assistir?</strong><span>{videoTopics.length} selecionado{videoTopics.length === 1 ? "" : "s"}</span></div><div className="video-topic-grid">{videoTopicOptions.map((topic) => { const selected = videoTopics.includes(topic); return <button key={topic} type="button" aria-pressed={selected} className={`video-topic-chip ${selected ? "selected" : ""}`} onClick={() => { const next = selected ? videoTopics.filter((item) => item !== topic) : [...videoTopics, topic]; setVideoTopics(next); save({ videoTopics: next }); setToast("Preferências de vídeos salvas neste dispositivo."); }}>{selected ? "✓ " : "＋ "}{topic}</button>; })}</div><p className="video-topic-note">Você pode marcar vários temas ou desmarcar todos. Nenhuma recomendação real é alterada até o sistema de vídeos ser conectado.</p></div>
+            <div className="video-preference-preview"><div className="video-preference-icon">▶</div><div><strong>{translate(uiLanguage, "videoInterests")}</strong><p>Marque os assuntos que você mais gosta para deixar sua preferência salva. Isso prepara seu perfil para o futuro sistema de recomendações; por enquanto, a seleção ainda não altera o Feed nem os Reels.</p><span>✦ Preferências salvas neste dispositivo</span></div></div>
+            <div className="video-topic-panel"><div className="video-topic-heading"><strong>{translate(uiLanguage, "videoInterestPrompt")}</strong><span>{videoTopics.length} selecionado{videoTopics.length === 1 ? "" : "s"}</span></div><div className="video-topic-grid">{videoTopicOptions.map((topic) => { const selected = videoTopics.includes(topic); return <button key={topic} type="button" aria-pressed={selected} className={`video-topic-chip ${selected ? "selected" : ""}`} onClick={() => { const next = selected ? videoTopics.filter((item) => item !== topic) : [...videoTopics, topic]; setVideoTopics(next); save({ videoTopics: next }); setToast("Preferências de vídeos salvas neste dispositivo."); }}>{selected ? "✓ " : "＋ "}{topic}</button>; })}</div><p className="video-topic-note">Você pode marcar vários temas ou desmarcar todos. Nenhuma recomendação real é alterada até o sistema de vídeos ser conectado.</p></div>
             {([
               ["neon","Efeitos neon","Aplicar brilho sutil aos elementos do perfil."],
               ["showActivity","Mostrar atividade","Exibir sua nota atual no perfil."],
