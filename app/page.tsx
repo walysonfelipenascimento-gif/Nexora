@@ -223,6 +223,8 @@ export default function Home() {
         const distance = Math.abs(itemBox.left + itemBox.width / 2 - center);
         const focus = Math.max(0, 1 - distance / range);
         item.style.setProperty("--story-focus", focus.toFixed(3));
+        item.style.setProperty("--story-scale", (0.86 + focus * 0.25).toFixed(3));
+        item.style.setProperty("--story-opacity", (0.72 + focus * 0.28).toFixed(3));
       });
     };
     updateFocus();
