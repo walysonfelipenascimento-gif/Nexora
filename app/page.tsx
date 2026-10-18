@@ -821,6 +821,18 @@ export default function Home() {
       <a href="/club" aria-label="Abrir Nexora Club" title="Nexora Club" style={{position:"fixed",left:10,top:"calc(43% - 2px)",zIndex:45,width:47,height:47,display:"grid",placeItems:"center",border:"1px solid #f0cf83",borderRadius:"16px",background:"linear-gradient(145deg,#49320c,#171006 75%)",boxShadow:"0 0 20px #d6a84735,inset 0 1px #fff4cf35",color:"#f5d98c",textDecoration:"none",touchAction:"manipulation"}}><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 7 5 4 4-7 4 7 5-4-2 12H5L3 7Z"/><path d="M5 16h14M8 21h8"/></svg><span style={{position:"absolute",top:49,fontSize:9,fontWeight:900,color:"#f5d98c",letterSpacing:.6}}>CLUB</span></a>
       <LanguageWelcome />
       <PrimaryNav active={messagesOpen ? "mensagens" : "inicio"} />
+      <style jsx global>{`
+        .chat-input-wrap .chat-translate-toggle{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex:0 0 auto;min-width:42px;max-width:84px;height:32px;padding:0 6px;border:1px solid rgba(92,207,255,.24);border-radius:12px;background:linear-gradient(135deg,rgba(40,117,255,.13),rgba(151,69,255,.15));color:#9feeff;font-size:14px;line-height:1;white-space:nowrap;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
+        .chat-input-wrap .chat-translate-toggle .chat-translate-label{font-size:9px;font-weight:750;letter-spacing:-.15px}
+        .chat-input-wrap .chat-translate-toggle i{font-style:normal;font-size:8px;font-weight:900;color:#8b91a8}
+        .chat-input-wrap .chat-translate-toggle.is-active{border-color:rgba(81,231,255,.75);background:linear-gradient(110deg,rgba(31,205,255,.22),rgba(154,75,255,.25));box-shadow:0 0 12px rgba(48,197,255,.15);color:#e5fcff}
+        .chat-input-wrap .chat-translate-toggle.is-active i{color:#6fffd7}
+        .chat-input-wrap>button[aria-label="Emojis"]{flex:0 0 auto;padding:0 1px}
+        .chat-reaction-burst{position:absolute;z-index:15;left:50%;top:34%;pointer-events:none;font-size:clamp(34px,9vw,54px);line-height:1;filter:drop-shadow(0 4px 12px rgba(96,100,255,.48));animation:nexora-chat-story-reaction .92s cubic-bezier(.18,.75,.25,1) both}
+        @keyframes nexora-chat-story-reaction{0%{opacity:0;transform:translate(-50%,20px) scale(.28) rotate(-18deg)}18%{opacity:1;transform:translate(-50%,0) scale(1.28) rotate(7deg)}38%{transform:translate(-50%,-7px) scale(.94) rotate(-4deg)}68%{opacity:1;transform:translate(-50%,-33px) scale(1.08) rotate(3deg)}100%{opacity:0;transform:translate(-50%,-62px) scale(.72) rotate(0)}}
+        @media(max-width:430px){.chat-composer{gap:6px;padding-inline:9px}.chat-add,.chat-send{width:35px;height:35px}.chat-input-wrap{gap:3px;padding-left:9px;padding-right:6px}.chat-input-wrap .chat-translate-toggle{gap:2px;min-width:34px;padding-inline:4px}.chat-input-wrap .chat-translate-toggle .chat-translate-label{font-size:8px}.chat-input-wrap .chat-translate-toggle i{font-size:7px}}
+        @media(prefers-reduced-motion:reduce){.chat-reaction-burst{animation-duration:.01ms;animation-iteration-count:1}}
+      `}</style>
     </main>
   );
 }
