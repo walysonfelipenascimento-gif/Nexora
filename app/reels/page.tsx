@@ -46,13 +46,39 @@ const demoReels: Reel[] = [
 ];
 
 const navItems = [
-  { id: "inicio", label: "Início", icon: "⌂", href: "/" },
-  { id: "reels", label: "Reels", icon: "▷", href: "/reels" },
-  { id: "explorar", label: "Explorar", icon: "⌕", href: "/?tab=explorar" },
-  { id: "criar", label: "Criar", icon: "+", href: "/?action=create" },
-  { id: "oportunidades", label: "Oportunidades", icon: "◇", href: "/?tab=oportunidades" },
-  { id: "perfil", label: "Perfil", icon: "○", href: "/?tab=perfil" },
+  { id: "inicio", label: "Início", icon: "home", href: "/" },
+  { id: "reels", label: "Reels", icon: "reels", href: "/reels" },
+  { id: "explorar", label: "Explorar", icon: "search", href: "/?tab=explorar" },
+  { id: "criar", label: "Criar", icon: "plus", href: "/?action=create" },
+  { id: "oportunidades", label: "Oportunidades", icon: "creator", href: "/?tab=oportunidades" },
+  { id: "perfil", label: "Perfil", icon: "profile", href: "/?tab=perfil" },
 ];
+
+
+function UiIcon({ name, size = 22 }: { name: string; size?: number }) {
+  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true as const };
+  const paths: Record<string, React.ReactNode> = {
+    home: <><path d="m3 10 9-7 9 7"/><path d="M5 9v12h5v-7h4v7h5V9"/></>,
+    reels: <><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 8 6 4-6 4z"/><path d="m7 4 3 4M15 4l3 4"/></>,
+    search: <><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></>,
+    plus: <><path d="M12 5v14M5 12h14"/></>,
+    messages: <><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6A7.5 7.5 0 1 1 20 11.5Z"/><path d="M7.5 11.5h.01M12 11.5h.01M16.5 11.5h.01"/></>,
+    profile: <><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></>,
+    heart: <path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/>,
+    comment: <><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6A7.5 7.5 0 1 1 20 11.5Z"/><path d="M8 11h8M8 14h5"/></>,
+    bookmark: <path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4Z"/>,
+    share: <><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.6 6.6-4M8.7 13.4l6.6 4"/></>,
+    creator: <><path d="M12 3 14.7 8.3 21 9.2l-4.5 4.4 1.1 6.3L12 17l-5.6 2.9 1.1-6.3L3 9.2l6.3-.9Z"/></>,
+    sound: <><path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M15 9a5 5 0 0 1 0 6M17.5 6.5a9 9 0 0 1 0 11"/></>,
+    music: <><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>,
+    chart: <><path d="M4 19V5M4 19h17"/><rect x="7" y="11" width="3" height="5" rx=".5"/><rect x="13" y="7" width="3" height="9" rx=".5"/><rect x="19" y="4" width="2" height="12" rx=".5"/></>,
+    edit: <><path d="m4 16.5-.8 4.3 4.3-.8L20 7.5 16.5 4Z"/><path d="m14.8 5.7 3.5 3.5"/></>,
+    close: <><path d="m6 6 12 12M18 6 6 18"/></>,
+    play: <path d="m9 6 10 6-10 6z" fill="currentColor" stroke="none"/>,
+    check: <path d="m5 12 4 4L19 6"/>,
+  };
+  return <svg {...common}>{paths[name] || paths.creator}</svg>;
+}
 
 function compactNumber(value: number) {
   return new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(value);
@@ -166,7 +192,7 @@ export default function ReelsPage() {
       `}</style>
 
       <header className="reels-top">
-        <div className="reels-brand"><span className="reels-mark">▷</span><span>Nexora <span style={{ color: "#77eaff" }}>Reels</span></span></div>
+        <div className="reels-brand"><span className="reels-mark"><UiIcon name="reels" size={21} /></span><span>Nexora <span style={{ color: "#77eaff" }}>Reels</span></span></div>
         <button className="reels-top-label" onClick={() => setCreatorTools(true)}>✦ Modo criador</button>
       </header>
 
@@ -182,15 +208,15 @@ export default function ReelsPage() {
         <div className="reel-vignette" />
         <div className="reel-top-controls">
           <span className="glass-chip"><span className="live-dot" /> PARA VOCÊ</span>
-          <button className="glass-chip" onClick={() => setMuted((v) => !v)} aria-label={muted ? "Ativar som" : "Silenciar"}>{muted ? "♪̸ Som" : "♫ Som"}</button>
+          <button className="glass-chip" onClick={() => setMuted((v) => !v)} aria-label={muted ? "Ativar som" : "Silenciar"}><><UiIcon name="sound" size={15} /> {muted ? "Ativar som" : "Silenciar"}</></button>
         </div>
         {paused && <button className="reel-center-play" onClick={() => setPaused(false)} aria-label="Reproduzir">▶</button>}
 
         <aside className="reel-side-actions" aria-label="Ações do Reel">
-          <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon">{liked[reel.id] ? "♥" : "♡"}</span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
-          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon">☷</span><small>{compactNumber(reel.comments + (comments[reel.id]?.length || 0) - 2)}</small></button>
-          <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon">{saved[reel.id] ? "▣" : "♧"}</span><small>{saved[reel.id] ? "Salvo" : "Salvar"}</small></button>
-          <button className="reel-action" onClick={shareReel}><span className="reel-action-icon">↗</span><small>{compactNumber(reel.shares)}</small></button>
+          <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
+          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + (comments[reel.id]?.length || 0) - 2)}</small></button>
+          <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "Salvo" : "Salvar"}</small></button>
+          <button className="reel-action" onClick={shareReel}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
           <button className="reel-action" onClick={() => setCreatorTools(true)} aria-label="Ferramentas do criador"><span className="reel-disc"><img src={reel.avatar} alt="" /></span><small>Criador</small></button>
         </aside>
 
@@ -201,13 +227,13 @@ export default function ReelsPage() {
             <button className="reel-follow" onClick={() => setFollowing((v) => ({ ...v, [reel.user]: !v[reel.user] }))}>{following[reel.user] ? "✓ Seguindo" : "+ Seguir"}</button>
           </div>
           <p className="reel-caption">{reel.caption}</p>
-          <div className="reel-audio"><span>♫</span><span>{reel.song}</span><span>·</span><span>{index + 1}/{demoReels.length}</span></div>
+          <div className="reel-audio"><span><UiIcon name="music" size={14} /></span><span>{reel.song}</span><span>·</span><span>{index + 1}/{demoReels.length}</span></div>
         </div>
         <div className="reel-progress"><div className="reel-progress-fill" /></div>
       </section>
 
       <nav className="reels-nav" aria-label="Navegação principal">
-        {navItems.map((item) => <a key={item.id} href={item.href} className={`reels-nav-item ${item.id === "reels" ? "active" : ""}`}><span className="reels-nav-icon">{item.icon}</span><span>{item.label}</span></a>)}
+        {navItems.map((item) => <a key={item.id} href={item.href} className={`reels-nav-item ${item.id === "reels" ? "active" : ""}`}><span className="reels-nav-icon"><UiIcon name={item.icon} size={21} /></span><span>{item.label}</span></a>)}
       </nav>
 
       {commentsOpen && <div className="reels-overlay" onClick={() => { setCommentsOpen(false); setPaused(false); }}>
@@ -220,13 +246,13 @@ export default function ReelsPage() {
 
       {creatorTools && <div className="reels-overlay" onClick={() => setCreatorTools(false)}>
         <section className="reels-sheet" onClick={(event) => event.stopPropagation()}>
-          <div className="reels-sheet-head"><span>✦ Central do criador</span><button className="reels-close" onClick={() => setCreatorTools(false)}>×</button></div>
+          <div className="reels-sheet-head"><span><UiIcon name="creator" size={18} /> Central do criador</span><button className="reels-close" onClick={() => setCreatorTools(false)}>×</button></div>
           <p style={{ color: "#aeb0c5", fontSize: 12, lineHeight: 1.6, marginTop: 0 }}>Ferramentas de demonstração para organizar e acompanhar este Reel. A gestão real será conectada à conta do autor na etapa de integração.</p>
           <div className="reels-tools">
-            <button className="reels-tool" onClick={() => alert("Estatísticas demonstrativas: alcance " + compactNumber(reel.likes * 4) + " · interações " + compactNumber(reel.likes + reel.comments))}><strong>▥ Visão geral</strong><span>Alcance, interações e desempenho</span></button>
-            <button className="reels-tool" onClick={() => alert("A edição estará disponível quando os Reels estiverem vinculados à sua conta.")}><strong>✎ Editar Reel</strong><span>Legenda, capa e informações</span></button>
-            <button className="reels-tool" onClick={() => alert("Preferências de comentários demonstrativas nesta versão.")}><strong>☷ Comentários</strong><span>Preferências e moderação</span></button>
-            <button className="reels-tool" onClick={() => { setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] })); setCreatorTools(false); }}><strong>♧ {saved[reel.id] ? "Remover dos salvos" : "Guardar Reel"}</strong><span>Adicionar aos seus favoritos locais</span></button>
+            <button className="reels-tool" onClick={() => alert("Estatísticas demonstrativas: alcance " + compactNumber(reel.likes * 4) + " · interações " + compactNumber(reel.likes + reel.comments))}><strong><UiIcon name="chart" size={16} /> Visão geral</strong><span>Alcance, interações e desempenho</span></button>
+            <button className="reels-tool" onClick={() => alert("A edição estará disponível quando os Reels estiverem vinculados à sua conta.")}><strong><UiIcon name="edit" size={16} /> Editar Reel</strong><span>Legenda, capa e informações</span></button>
+            <button className="reels-tool" onClick={() => alert("Preferências de comentários demonstrativas nesta versão.")}><strong><UiIcon name="comment" size={16} /> Comentários</strong><span>Preferências e moderação</span></button>
+            <button className="reels-tool" onClick={() => { setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] })); setCreatorTools(false); }}><strong><UiIcon name="bookmark" size={16} /> {saved[reel.id] ? "Remover dos salvos" : "Guardar Reel"}</strong><span>Adicionar aos seus favoritos locais</span></button>
           </div>
         </section>
       </div>}
