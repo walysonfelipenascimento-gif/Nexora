@@ -198,7 +198,7 @@ export default function ReelsPage() {
 
         <aside className="reel-side-actions" aria-label="Ações do Reel">
           <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
-          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + (comments[reel.id]?.length || 0) - 2)}</small></button>
+          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + Math.max(0, (comments[reel.id]?.length || 0) - 2))}</small></button>
           <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "Salvo" : "Salvar"}</small></button>
           <button className="reel-action" onClick={shareReel}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
           <button className="reel-action" onClick={() => setCreatorTools(true)} aria-label="Ferramentas do criador"><span className="reel-disc"><img src={reel.avatar} alt="" /></span><small>Criador</small></button>
