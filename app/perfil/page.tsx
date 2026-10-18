@@ -232,7 +232,7 @@ export default function ProfilePage() {
       <div className="profile-shell">
         <header className="profile-top">
           <div className="profile-brand"><span className="profile-logo">N</span><span>Nexora</span></div>
-          <button className="profile-icon-btn" aria-label="Opções do perfil" onClick={() => { setSettingsDetail(""); setSettingsOpen(true); }} aria-label="Abrir configurações">☰</button>
+          <button className="profile-icon-btn" aria-label="Opções do perfil" onClick={() => { setSettingsDetail(""); setSettingsOpen(true); }}>☰</button>
         </header>
 
         <section className="profile-cover" style={coverData ? {backgroundImage:"linear-gradient(0deg,#07070df0,transparent 80%),url("+coverData+")",backgroundSize:"cover",backgroundPosition:"center"} : { background: covers[coverIndex] }}>
