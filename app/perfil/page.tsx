@@ -32,7 +32,7 @@ const settingsOptions = [
   {id:"monetizacao",title:"Monetização e parcerias",desc:"Preferências de colaboração",cat:"Criador",choices:["Interesse em parcerias","Interesse em publicidade","Ainda não"]},
   {id:"notificacoes",title:"Notificações",desc:"Escolha como quer ser avisado",cat:"Geral",choices:["Todas","Personalizadas","Pausadas"]},
   {id:"selos-verificacao",title:"Verificação e Selos 3D",desc:"Conheça os selos, critérios e avisos automáticos",cat:"Geral",choices:["Entender os selos","Preferências automáticas"]},
-  {id:"idioma",title:"Idioma",desc:"Idioma da interface",cat:"Geral",choices:["Português (Brasil)","English","Español"]},
+  {id:"idioma",title:"Idioma",desc:"Idioma preferido da interface; a tradução completa das páginas será conectada por etapas",cat:"Geral",choices:["Português (Brasil)","English (United States)","Español","Français","Deutsch","Italiano","日本語","한국어","中文（简体）","中文（繁體）","العربية","हिन्दी","বাংলা","Русский","Türkçe","Bahasa Indonesia","Bahasa Melayu","ไทย","Tiếng Việt","Filipino","Nederlands","Polski","Українська","Svenska","Kiswahili"]},
   {id:"aparencia",title:"Aparência",desc:"Personalize a experiência visual",cat:"Aparência",choices:["Escuro Nexora","Escuro discreto","Seguir dispositivo"]},
   {id:"acessibilidade",title:"Acessibilidade",desc:"Movimento, contraste e legibilidade",cat:"Aparência",choices:["Padrão","Reduzir animações","Contraste elevado","Texto ampliado"]},
   {id:"economia",title:"Uso de dados",desc:"Preferências de carregamento",cat:"Dados",choices:["Padrão","Economia de dados","Qualidade alta"]},
