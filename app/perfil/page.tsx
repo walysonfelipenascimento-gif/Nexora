@@ -65,6 +65,7 @@ export default function ProfilePage() {
   const [editOpen, setEditOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [socialListOpen, setSocialListOpen] = useState<"followers" | "following" | null>(null);
+  const [socialSearch, setSocialSearch] = useState("");
   const [profileCategory, setProfileCategory] = useState("Criador de conteúdo");
   const [profileName, setProfileName] = useState("Licinhosz.bb");
   const [profileUsername, setProfileUsername] = useState("licinhosz.bb");
@@ -210,20 +211,27 @@ export default function ProfilePage() {
         .profile-empty{border:1px dashed #ffffff1e;border-radius:18px;text-align:center;padding:26px 16px;background:#ffffff03}
         .profile-empty-icon{font-size:29px;margin-bottom:9px}.profile-empty strong{display:block;font-size:13px}.profile-empty p{font-size:11px;color:#9698b0;line-height:1.6;max-width:320px;margin:8px auto 14px}
         .profile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.profile-tile{aspect-ratio:1/1.15;border-radius:12px;background:linear-gradient(145deg,#121b32,#25164b 55%,#10101c);border:1px solid #ffffff12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:25px}.profile-tile span{font-size:10px;color:#c7c4dc}
-        .profile-pref{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 2px;border-bottom:1px solid #ffffff10}.profile-pref strong{display:block;font-size:12px}.profile-pref small{display:block;color:#8f92ac;font-size:10px;margin-top:5px;line-height:1.4}.profile-switch{width:42px;height:25px;flex:0 0 42px;border:0;border-radius:99px;padding:3px;background:#39394c}.profile-switch:after{content:"";display:block;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .18s}.profile-switch.on{background:linear-gradient(90deg,#328aff,#a15aff)}.profile-switch.on:after{transform:translateX(17px)}
+        .profile-pref{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 2px;border-bottom:1px solid #ffffff10}.profile-pref strong{display:block;font-size:12px}.profile-pref small{display:block;color:#8f92ac;font-size:10px;margin-top:5px;line-height:1.4}.video-preference-preview{display:flex;gap:13px;align-items:flex-start;padding:15px;margin:0 0 13px;border:1px solid #8b70ff42;border-radius:19px;background:radial-gradient(ellipse at 100% 0%,#a66cff20,transparent 55%),linear-gradient(120deg,#121a2d,#151023);box-shadow:inset 0 1px #ffffff0c}.video-preference-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(140deg,#55e8ff,#8a5cff 65%,#df58dc);color:#090914;font-size:18px;font-weight:900;box-shadow:0 6px 20px #8b5cff30}.video-preference-preview strong{font-size:13px}.video-preference-preview p{font-size:11px;line-height:1.65;color:#b3b5cf;margin:6px 0 8px}.video-preference-preview span{font-size:9px;color:#9eeeff;letter-spacing:.2px}.profile-switch{width:42px;height:25px;flex:0 0 42px;border:0;border-radius:99px;padding:3px;background:#39394c}.profile-switch:after{content:"";display:block;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .18s}.profile-switch.on{background:linear-gradient(90deg,#328aff,#a15aff)}.profile-switch.on:after{transform:translateX(17px)}
         .profile-modal-backdrop{position:fixed;z-index:100;inset:0;background:#000a;backdrop-filter:blur(7px);display:flex;align-items:flex-end;justify-content:center;padding:12px}
         .profile-modal{width:100%;max-width:500px;border:1px solid #ffffff20;background:#10101b;border-radius:24px;padding:20px;box-shadow:0 15px 60px #000b}
         .profile-modal h2{font-size:17px;margin:0 0 6px}.profile-modal p{font-size:12px;color:#a2a4bd;line-height:1.5;margin:0 0 15px}
-        .social-list-head{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 14px) 16px 13px;border-bottom:1px solid #ffffff12;background:#0d0c18}
-        .social-list-back{width:38px;height:38px;border:1px solid #ffffff1b;border-radius:12px;background:#ffffff08;color:#fff;font-size:20px;flex:0 0 38px}
-        .social-list-title{font-size:16px;font-weight:850}.social-list-subtitle{font-size:10px;color:#9698b2;margin-top:3px}
-        .social-list-count{margin-left:auto;border:1px solid #55e8ff30;border-radius:99px;padding:6px 9px;color:#a8f1ff;background:#55e8ff0d;font-size:10px;white-space:nowrap}
-        .social-list-body{flex:1;min-height:0;overflow-y:auto;padding:5px 13px calc(env(safe-area-inset-bottom) + 14px);overscroll-behavior:contain}
-        .social-user-row{height:62px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #ffffff0b;padding:5px 1px}
-        .social-user-avatar{width:42px;height:42px;flex:0 0 42px;border-radius:15px;display:grid;place-items:center;border:1px solid #ffffff22;font-size:12px;font-weight:900;color:white;box-shadow:inset 0 1px #ffffff30}
-        .social-user-copy{min-width:0;flex:1}.social-user-name{font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.social-user-handle{font-size:10px;color:#999bb6;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .social-user-tag{font-size:9px;color:#91eaff;border:1px solid #55e8ff35;border-radius:99px;padding:5px 7px;white-space:nowrap}
-        .social-list-footer{padding:10px 15px calc(env(safe-area-inset-bottom) + 10px);border-top:1px solid #ffffff12;color:#777991;font-size:10px;line-height:1.5;background:#0b0b14}
+        .social-list-head{display:flex;align-items:center;gap:11px;padding:calc(env(safe-area-inset-top) + 15px) 16px 14px;border-bottom:1px solid #ffffff12;background:radial-gradient(ellipse at 85% 0%,#7448d626,transparent 48%),#0d0c18}
+        .social-list-back{width:40px;height:40px;border:1px solid #ffffff20;border-radius:14px;background:linear-gradient(145deg,#ffffff12,#ffffff04);color:#fff;font-size:23px;flex:0 0 40px;box-shadow:inset 0 1px #ffffff12}
+        .social-list-title{font-size:19px;font-weight:900;letter-spacing:-.5px}.social-list-subtitle{font-size:11px;color:#a2a4bf;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .social-list-count{margin-left:auto;border:1px solid #55e8ff35;border-radius:99px;padding:7px 10px;color:#a8f1ff;background:linear-gradient(120deg,#55e8ff16,#a66cff15);font-size:10px;font-weight:800;white-space:nowrap}
+        .social-list-search-wrap{padding:12px 15px 10px;background:#0d0c18;border-bottom:1px solid #ffffff0d}
+        .social-list-search{width:100%;height:43px;border:1px solid #ffffff17;border-radius:15px;background:#ffffff08;color:#fff;padding:0 14px;outline:none;font:inherit;font-size:12px;transition:border-color .18s,box-shadow .18s}
+        .social-list-search::placeholder{color:#777b98}.social-list-search:focus{border-color:#8b70ff;box-shadow:0 0 0 3px #8b70ff20}
+        .social-list-body{flex:1;min-height:0;overflow-y:auto;padding:8px 13px calc(env(safe-area-inset-bottom) + 14px);overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#4a416a transparent}
+        .social-list-summary{font-size:10px;color:#8386a3;padding:3px 4px 8px}
+        .social-user-row{min-height:65px;display:flex;align-items:center;gap:11px;border:1px solid #ffffff0c;border-radius:17px;padding:9px 10px;margin:0 0 7px;background:linear-gradient(110deg,#ffffff07,#ffffff02);transition:background .18s,border-color .18s}
+        .social-user-row:hover{background:linear-gradient(110deg,#55e8ff0d,#a66cff0c);border-color:#8d75ff35}
+        .social-user-avatar{width:43px;height:43px;flex:0 0 43px;border-radius:16px;display:grid;place-items:center;border:1px solid #ffffff2b;font-size:12px;font-weight:900;color:white;box-shadow:inset 0 1px #ffffff35,0 5px 15px #0003}
+        .social-user-copy{min-width:0;flex:1}.social-user-name{font-size:12px;font-weight:850;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.social-user-handle{font-size:10px;color:#9da0bc;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .social-user-tag{font-size:9px;color:#b7a4ff;border:1px solid #a66cff3d;border-radius:99px;padding:5px 8px;white-space:nowrap;background:#a66cff10;font-weight:800}
+        .social-list-empty{min-height:220px;display:grid;place-items:center;text-align:center;padding:24px;color:#a3a5bd}
+        .social-list-empty-icon{width:62px;height:62px;border-radius:22px;margin:0 auto 13px;display:grid;place-items:center;font-size:27px;color:#a9a1ff;background:linear-gradient(145deg,#55e8ff14,#a66cff20);border:1px solid #a66cff35;box-shadow:0 8px 28px #7455ff15}
+        .social-list-footer{padding:11px 15px calc(env(safe-area-inset-bottom) + 11px);border-top:1px solid #ffffff12;color:#8386a0;font-size:10px;line-height:1.55;background:#0b0b14}
         .profile-stat-button{appearance:none;background:transparent;color:inherit;border:0;padding:0;width:100%;font:inherit;cursor:pointer}
         .profile-stat-button:focus-visible{outline:2px solid #55e8ff;border-radius:8px}
 
@@ -305,6 +313,7 @@ export default function ProfilePage() {
         </div>
         <section className="profile-content">
           {activeTab === "Preferências" ? <div>
+            <div className="video-preference-preview"><div className="video-preference-icon">▶</div><div><strong>Preferências de vídeos</strong><p>Em breve: você poderá indicar os temas e os tipos de vídeo que prefere ver no Feed e nos Reels. Este aviso é apenas uma prévia; ainda não altera as recomendações.</p><span>✦ Sistema de personalização planejado</span></div></div>
             {([
               ["neon","Efeitos neon","Aplicar brilho sutil aos elementos do perfil."],
               ["showActivity","Mostrar atividade","Exibir sua nota atual no perfil."],
@@ -347,17 +356,20 @@ export default function ProfilePage() {
       {socialListOpen && <div className="profile-modal-backdrop" role="presentation" onClick={() => setSocialListOpen(null)}>
         <section className="profile-modal" role="dialog" aria-modal="true" aria-label={socialListOpen === "followers" ? "Seguidores" : "Seguindo"} onClick={event => event.stopPropagation()}>
           <header className="social-list-head">
-            <button className="social-list-back" onClick={() => setSocialListOpen(null)} aria-label="Voltar">‹</button>
+            <button className="social-list-back" onClick={() => { setSocialListOpen(null); setSocialSearch(""); }} aria-label="Voltar">‹</button>
             <div style={{minWidth:0}}><div className="social-list-title">{socialListOpen === "followers" ? "Seguidores" : "Seguindo"}</div><div className="social-list-subtitle">@{profileUsername} · perfil de criador</div></div>
             <span className="social-list-count">{socialListOpen === "followers" ? "1.000 testes" : "0 perfis"}</span>
           </header>
+          <div className="social-list-search-wrap"><input className="social-list-search" value={socialSearch} onChange={event => setSocialSearch(event.target.value)} placeholder={socialListOpen === "followers" ? "⌕  Buscar nome ou @usuário" : "⌕  Buscar quem você segue"} aria-label="Buscar perfis"/></div>
           {socialListOpen === "followers" ? <div className="social-list-body">
-            {syntheticFollowers.map((person) => <div className="social-user-row" key={person.id}>
+            <div className="social-list-summary">{syntheticFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).length} perfis encontrados · demonstração</div>
+            {syntheticFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).map((person) => <div className="social-user-row" key={person.id}>
               <div className="social-user-avatar" style={{background:`linear-gradient(145deg,hsl(${person.hue} 78% 54%),#111126 88%)`}}>{person.initials}</div>
               <div className="social-user-copy"><div className="social-user-name">{person.name}</div><div className="social-user-handle">@{person.username}</div></div>
               <span className="social-user-tag">Teste</span>
             </div>)}
-          </div> : <div className="social-list-body"><div style={{minHeight:220,display:"grid",placeItems:"center",textAlign:"center",padding:24,color:"#a3a5bd"}}><div><div style={{fontSize:30,marginBottom:10}}>◎</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Você ainda não segue perfis</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Quando seguir contas na Nexora, elas aparecerão aqui em uma lista compacta.</p></div></div></div>}
+            {syntheticFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).length === 0 && <div className="social-list-empty"><div><div className="social-list-empty-icon">⌕</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Nenhum perfil encontrado</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Tente buscar por outro nome ou usuário.</p></div></div>}
+          </div> : <div className="social-list-body"><div className="social-list-empty"><div><div className="social-list-empty-icon">◎</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Você ainda não segue perfis</strong><p style={{fontSize:11,lineHeight:1.6,margin-top:7}}>Quando seguir contas na Nexora, elas aparecerão aqui em uma lista compacta.</p></div></div></div>}
           <footer className="social-list-footer">Ambiente de demonstração: os perfis desta lista são sintéticos e não criam seguidores públicos ou contas reais.</footer>
         </section>
       </div>}
