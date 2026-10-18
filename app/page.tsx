@@ -659,7 +659,7 @@ export default function Home() {
                 <button className={`post-action ${liked.includes(post.id) ? "is-liked" : ""}`} aria-label={t("like")} onClick={() => setLiked(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id])}>
                   <svg viewBox="0 0 24 24"><path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/></svg><span>{(post.likes + (liked.includes(post.id) ? 1 : 0)).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 })}</span>
                 </button>
-                <button className="post-action" aria-label="Comentários" onClick={() => setCommentsOpen(commentsOpen === post.id ? null : post.id)}>
+                <button className="post-action" aria-label={t("comment")} onClick={() => setCommentsOpen(commentsOpen === post.id ? null : post.id)}>
                   <svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.2-.6L4 20l1.4-4A7.1 7.1 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg><span>{(post.comments + (comments[post.id]?.length || 0)).toLocaleString("en-US")}</span>
                 </button>
                 <button className="post-action" aria-label={t("share")} onClick={() => { if (navigator.share) void navigator.share({ title: `Nexora · @${post.username}`, text: post.caption }).catch(() => undefined); else { void navigator.clipboard?.writeText(post.caption); setNotice("Legenda copiada para compartilhar."); } }}>
@@ -676,8 +676,8 @@ export default function Home() {
               {commentsOpen === post.id && <div className="comments-panel">
                 {(comments[post.id] || []).map((comment, index) => <p key={index}><strong>Você</strong> {comment}</p>)}
                 <form onSubmit={event => { event.preventDefault(); addComment(post.id); }}>
-                  <input value={drafts[post.id] || ""} onChange={event => setDrafts(current => ({ ...current, [post.id]: event.target.value }))} placeholder="Adicione um comentário..." aria-label="Comentário" />
-                  <button type="submit">Enviar</button>
+                  <input value={drafts[post.id] || ""} onChange={event => setDrafts(current => ({ ...current, [post.id]: event.target.value }))} placeholder={t("comment")} aria-label={t("comment")} />
+                  <button type="submit">{t("send")}</button>
                 </form>
               </div>}
             </div>
