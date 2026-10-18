@@ -82,7 +82,8 @@ export default function ReelsPage() {
     1: ["Que paz esse vídeo! 💜", "Precisava ver isso hoje ✨"],
     2: ["Amei a energia!", "Mais vídeos assim, por favor 💙"],
   });
-  const touchStart = useRef<{ x: number; y: number } | null>(null);\n  const lastWheelMove = useRef(0);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const lastWheelMove = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const reel = demoReels[index];
 
