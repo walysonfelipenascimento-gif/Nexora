@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 type Reel = {
@@ -229,7 +230,7 @@ export default function ReelsPage() {
       </section>
 
       <nav className="reels-nav" aria-label="Navegação principal">
-        {navItems.map((item) => <a key={item.id} href={item.href} className={`reels-nav-item ${item.id === "reels" ? "active" : ""}`}><span className="reels-nav-icon"><UiIcon name={item.icon} size={21} /></span><span>{item.label}</span></a>)}
+        {navItems.map((item) => <Link key={item.id} href={item.href} className={`reels-nav-item ${item.id === "reels" ? "active" : ""}`} aria-current={item.id === "reels" ? "page" : undefined}><span className="reels-nav-icon"><UiIcon name={item.icon} size={21} /></span><span>{item.label}</span></Link>)}
       </nav>
 
       {commentsOpen && <div className="reels-overlay" onClick={() => { setCommentsOpen(false); setPaused(false); }}>
