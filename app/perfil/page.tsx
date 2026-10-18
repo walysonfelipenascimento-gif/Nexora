@@ -369,7 +369,7 @@ export default function ProfilePage() {
               <span className="social-user-tag">Teste</span>
             </div>)}
             {syntheticFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).length === 0 && <div className="social-list-empty"><div><div className="social-list-empty-icon">⌕</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Nenhum perfil encontrado</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Tente buscar por outro nome ou usuário.</p></div></div>}
-          </div> : <div className="social-list-body"><div className="social-list-empty"><div><div className="social-list-empty-icon">◎</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Você ainda não segue perfis</strong><p style={{fontSize:11,lineHeight:1.6,margin-top:7}}>Quando seguir contas na Nexora, elas aparecerão aqui em uma lista compacta.</p></div></div></div>}
+          </div> : <div className="social-list-body"><div className="social-list-empty"><div><div className="social-list-empty-icon">◎</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Você ainda não segue perfis</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Quando seguir contas na Nexora, elas aparecerão aqui em uma lista compacta.</p></div></div></div>}
           <footer className="social-list-footer">Ambiente de demonstração: os perfis desta lista são sintéticos e não criam seguidores públicos ou contas reais.</footer>
         </section>
       </div>}
