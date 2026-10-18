@@ -665,3 +665,15 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 .bottom-nav .nav-create{flex:0 0 52px;width:52px;height:52px;background:linear-gradient(145deg,#d42cff,#9500ff);box-shadow:0 0 22px #bd17ff55;color:#fff}
 .bottom-nav .nav-create svg{width:32px;height:32px}
 @media(max-width:480px){.bottom-nav{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:5px 11px;min-height:65px}}
+
+/* Navegação primária compartilhada entre Início e Reels */
+.nexora-primary-nav{position:fixed;z-index:50;right:4.1vw;bottom:max(18px,env(safe-area-inset-bottom));left:4.1vw;display:flex;align-items:center;justify-content:space-around;gap:4px;min-height:66px;padding:7px 10px;border:1.5px solid #a52bff;border-radius:999px;background:linear-gradient(110deg,rgba(29,11,44,.78),rgba(17,7,31,.76));box-shadow:0 14px 35px #0006,0 0 20px #8c00ff20,inset 0 1px #ffffff24;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.nexora-nav-item{position:relative;display:flex;flex:1;min-width:0;min-height:48px;align-items:center;justify-content:center;flex-direction:column;gap:3px;border:0;border-radius:20px;color:#e8d9f6;text-decoration:none;font-size:10px;font-weight:650;transition:background .18s ease,color .18s ease}
+.nexora-nav-icon{display:grid;place-items:center;width:30px;height:27px}
+.nexora-nav-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nexora-nav-item.active{color:#fff;background:linear-gradient(135deg,#8f22df33,#e02cfa22);text-shadow:0 0 12px #c04bff66}
+.nexora-nav-item.active:before{position:absolute;top:3px;left:50%;width:20px;height:2px;border-radius:4px;background:#d77aff;box-shadow:0 0 9px #bf50ff;content:"";transform:translateX(-50%)}
+.nexora-nav-item.create .nexora-nav-icon{width:39px;height:39px;margin-top:-13px;border:2px solid #e9c6ff;border-radius:14px;background:linear-gradient(135deg,#7c2de2,#e528d4);box-shadow:0 0 16px #b92bff55}
+.nexora-nav-item.create .nexora-nav-icon svg{width:23px;height:23px;stroke-width:2.2}
+.nexora-nav-item.create .nexora-nav-label{margin-top:-1px}
+@media(min-width:700px){.nexora-primary-nav{right:auto;left:50%;width:min(460px,calc(100% - 40px));transform:translateX(-50%)}}
