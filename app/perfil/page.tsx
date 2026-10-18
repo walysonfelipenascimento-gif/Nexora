@@ -25,12 +25,15 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabName>("Publicações");
   const [note, setNote] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
-  const [noteOpen, setNoteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [profileName, setProfileName] = useState("Licinhosz.bb");
+  const [profileBio, setProfileBio] = useState("Humor, resenha, vida real e muito mais... 👑\nUma nova emoção, Sintonia de Amor 💜");
+  const [profileLocation, setProfileLocation] = useState("Brasil");
   const [highlightOpen, setHighlightOpen] = useState(false);
   const [highlightTitle, setHighlightTitle] = useState("");
   const [highlightEmoji, setHighlightEmoji] = useState("🌟");
   const [toast, setToast] = useState("");
-  const [prefs, setPrefs] = useState({ neon: true, showActivity: true, allowReposts: true, compactGrid: false });
+  const [prefs, setPrefs] = useState({ neon: true, showActivity: true, allowReposts: true, compactGrid: false, privateProfile: false, allowMessages: true, showLocation: true, saveData: false });
   const [posts, setPosts] = useState<{id:number; title:string; emoji:string; type:"post"|"reel"}[]>([]);
   const [reposted, setReposted] = useState<string[]>([]);
 
@@ -40,6 +43,9 @@ export default function ProfilePage() {
       if (!raw) return;
       const data = JSON.parse(raw);
       if (typeof data.note === "string") setNote(data.note);
+      if (typeof data.profileName === "string") setProfileName(data.profileName);
+      if (typeof data.profileBio === "string") setProfileBio(data.profileBio);
+      if (typeof data.profileLocation === "string") setProfileLocation(data.profileLocation);
       if (Array.isArray(data.highlights)) setHighlights(data.highlights);
       if (Array.isArray(data.posts)) setPosts(data.posts);
       if (Array.isArray(data.reposted)) setReposted(data.reposted);
@@ -154,14 +160,14 @@ export default function ProfilePage() {
           <div className="profile-avatar-row">
             <div className="profile-avatar"><div className="profile-avatar-inner">👑</div></div>
             <div className="profile-identity-actions">
-              <button className="profile-btn" onClick={() => setActiveTab("Preferências")}>Editar perfil</button>
+              <button className="profile-btn" onClick={() => setEditOpen(true)}>Editar perfil</button>
               <button className="profile-btn primary" onClick={() => addSamplePost("post")}>＋ Criar</button>
             </div>
           </div>
-          <h1 className="profile-name">Licinhosz.bb <span className="profile-check" title="Selo visual de demonstração">✓</span></h1>
-          <div className="profile-handle">@licinhosz.bb · Criador de conteúdo digital</div>
-          <p className="profile-bio">Humor, resenha, vida real e muito mais... 👑<br/>Uma nova emoção, Sintonia de Amor 💜</p>
-          <div className="profile-bio-meta"><span>⌖ Brasil</span><span>✦ Nexora</span><span>◉ Perfil de criador</span></div>
+          <h1 className="profile-name">{profileName || "Seu nome"} <span className="profile-check" title="Identidade visual Nexora">✓</span></h1>
+          <div className="profile-handle">@{profileName.toLowerCase().replace(/[^a-z0-9._]/g, "")} · Criador de conteúdo digital</div>
+          <p className="profile-bio">{profileBio}</p>
+          <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ Perfil de criador</span></div>
           <div className="profile-stats">
             <div className="profile-stat"><strong>{posts.length}</strong><span>Publicações</span></div>
             <div className="profile-stat"><strong>—</strong><span>Seguidores</span></div>
@@ -179,7 +185,7 @@ export default function ProfilePage() {
 
         <section>
           <div className="profile-section-title"><span>Notas Nexora <small>· presença rápida</small></span><small>✦ Neon</small></div>
-          <div className="note-card"><div className="note-orb">✧</div><div className="note-copy"><strong>Sua nota de agora</strong><p>{note || "Compartilhe uma ideia, uma pergunta ou o clima do momento…"}</p></div><button className="note-edit" onClick={() => {setNoteDraft(note);setNoteOpen(true)}}>{note ? "Editar" : "＋ Criar"}</button></div>
+          {prefs.showActivity ? <div className="note-card"><div className="note-orb">✧</div><div className="note-copy"><strong>Sua nota de agora</strong><p>{note || "Adicione uma nota em Editar perfil para mostrar seu momento…"}</p></div><button className="note-edit" onClick={() => setEditOpen(true)}>Editar perfil</button></div> : <div className="profile-empty"><strong>Notas ocultas</strong><p>Ative “Mostrar nota no perfil” nas configurações para exibir sua nota.</p></div>}
         </section>
 
         <div className="profile-tabs" role="tablist" aria-label="Conteúdo do perfil">
@@ -192,6 +198,10 @@ export default function ProfilePage() {
               ["showActivity","Mostrar atividade","Exibir sua nota atual no perfil."],
               ["allowReposts","Permitir republicações","Controlar se suas publicações podem ser republicadas."],
               ["compactGrid","Grade compacta","Usar cartões mais compactos na grade."],
+              ["privateProfile","Perfil privado","Deixar seu perfil marcado como privado. A restrição real de acesso depende da integração de contas."],
+              ["allowMessages","Permitir mensagens","Preferência visual para receber mensagens na Nexora."],
+              ["showLocation","Mostrar localização","Exibir ou ocultar a localização na apresentação do perfil."],
+              ["saveData","Economia de dados","Preferir uma experiência com menos efeitos visuais."] ,
             ] as const).map(([key,label,desc]) => <div className="profile-pref" key={key}><div><strong>{label}</strong><small>{desc}</small></div><button aria-label={label} aria-pressed={prefs[key]} className={`profile-switch ${prefs[key]?"on":""}`} onClick={() => {const next={...prefs,[key]:!prefs[key]};setPrefs(next);save({prefs:next});setToast("Preferência salva neste dispositivo.");}} /></div>)}
           </div> : activeTab === "Republicados" ? <div>
             {reposted.length ? <div className="profile-grid">{reposted.map((id) => <button className="profile-tile" key={id} onClick={() => toggleRepost(id)}>🔁<span>Republicação local</span><small>Remover ×</small></button>)}</div> : <div className="profile-empty"><div className="profile-empty-icon">🔁</div><strong>Seu espaço de republicações</strong><p>Quando você republicar algo do Feed ou dos Reels, ele aparecerá aqui quando a integração estiver conectada.</p><button className="profile-btn primary" onClick={() => toggleRepost("demo-repost-01")}>＋ Experimentar republicação</button></div>}
@@ -201,7 +211,7 @@ export default function ProfilePage() {
 
       <PrimaryNav active="perfil" />
 
-      {noteOpen && <div className="profile-modal-backdrop" onClick={() => setNoteOpen(false)}><section className="profile-modal" onClick={e => e.stopPropagation()}><h2>✧ Sua Nota Nexora</h2><p>Uma frase curta para expressar seu momento. Esta versão salva a nota neste navegador.</p><textarea className="profile-input" rows={3} maxLength={120} value={noteDraft} onChange={e => setNoteDraft(e.target.value)} placeholder="O que está passando pela sua cabeça?"/><div style={{textAlign:"right",fontSize:10,color:"#9294ad"}}>{noteDraft.length}/120</div><div className="profile-modal-actions"><button className="profile-btn" onClick={() => setNoteOpen(false)}>Cancelar</button><button className="profile-btn primary" onClick={publishNote}>Publicar nota</button></div></section></div>}
+      {editOpen && <div className="profile-modal-backdrop" onClick={() => setEditOpen(false)}><section className="profile-modal" onClick={e => e.stopPropagation()}><h2>✦ Editar perfil</h2><p>Personalize sua identidade e sua Nota Nexora em um único lugar.</p><label style={{fontSize:11,color:"#b8b7ce"}}>Nome de exibição</label><input className="profile-input" value={profileName} maxLength={30} onChange={e => setProfileName(e.target.value)} placeholder="Como as pessoas vão te chamar"/><label style={{fontSize:11,color:"#b8b7ce"}}>Biografia</label><textarea className="profile-input" rows={3} maxLength={180} value={profileBio} onChange={e => setProfileBio(e.target.value)} placeholder="Conte um pouco sobre você"/><label style={{fontSize:11,color:"#b8b7ce"}}>Localização (opcional)</label><input className="profile-input" value={profileLocation} maxLength={45} onChange={e => setProfileLocation(e.target.value)} placeholder="Cidade ou país"/><label style={{fontSize:11,color:"#b8b7ce"}}>✧ Nota Nexora · até 120 caracteres</label><textarea className="profile-input" rows={2} maxLength={120} value={noteDraft} onChange={e => setNoteDraft(e.target.value)} placeholder="Uma ideia, pergunta ou o clima do momento…"/><div style={{textAlign:"right",fontSize:10,color:"#9294ad"}}>{noteDraft.length}/120</div><div className="profile-modal-actions"><button className="profile-btn" onClick={() => setEditOpen(false)}>Cancelar</button><button className="profile-btn primary" onClick={() => { const value=noteDraft.trim(); setNote(value); save({profileName,profileBio,profileLocation,note:value}); setEditOpen(false); setToast("Perfil atualizado neste dispositivo."); }}>Salvar alterações</button></div></section></div>}
       {highlightOpen && <div className="profile-modal-backdrop" onClick={() => setHighlightOpen(false)}><section className="profile-modal" onClick={e => e.stopPropagation()}><h2>＋ Criar destaque</h2><p>Escolha um nome e um símbolo para a nova coleção.</p><input className="profile-input" value={highlightTitle} onChange={e => setHighlightTitle(e.target.value)} maxLength={22} placeholder="Ex.: Bastidores, Viagens, Favoritos"/><div className="profile-emoji-options">{["🌟","😂","📸","🎧","💜","🎮","🌎","🔥"].map(emoji => <button key={emoji} style={{borderColor:highlightEmoji===emoji?"#9d7aff":undefined,background:highlightEmoji===emoji?"#8d6aff25":undefined}} onClick={() => setHighlightEmoji(emoji)}>{emoji}</button>)}</div><div className="profile-modal-actions"><button className="profile-btn" onClick={() => setHighlightOpen(false)}>Cancelar</button><button className="profile-btn primary" onClick={createHighlight}>Criar destaque</button></div></section></div>}
       {toast && <button className="profile-toast" role="status" onClick={() => setToast("")}>{toast}　×</button>}
     </main>
