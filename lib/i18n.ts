@@ -86,6 +86,34 @@ const extraMessages: Partial<Record<NexoraLanguage, Record<string, string>>> = {
   sw: { search: "Tafuta", notifications: "Arifa", moreOptions: "Chaguo zaidi", stories: "Hadithi", socialFeed: "Mlisho wa kijamii", like: "Penda", comment: "Toa maoni", share: "Shiriki", save: "Hifadhi", viewComments: "Tazama maoni", officialLanguageNotice: "Kwa sasa Nexora ina chaguo 25 za lugha. Tafsiri kamili ya kiolesura inawekwa hatua kwa hatua." },
 };
 
+const profileMessages: Record<NexoraLanguage, Record<string, string>> = {
+  "pt-BR": { profilePosts: "Publicações", profileReels: "Reels", profilePreferences: "Preferências", profileReposts: "Republicados" },
+  "en-US": { profilePosts: "Posts", profileReels: "Reels", profilePreferences: "Preferences", profileReposts: "Reposts" },
+  es: { profilePosts: "Publicaciones", profileReels: "Reels", profilePreferences: "Preferencias", profileReposts: "Republicaciones" },
+  fr: { profilePosts: "Publications", profileReels: "Reels", profilePreferences: "Préférences", profileReposts: "Republications" },
+  de: { profilePosts: "Beiträge", profileReels: "Reels", profilePreferences: "Einstellungen", profileReposts: "Reposts" },
+  it: { profilePosts: "Post", profileReels: "Reels", profilePreferences: "Preferenze", profileReposts: "Ripubblicati" },
+  ja: { profilePosts: "投稿", profileReels: "リール", profilePreferences: "設定", profileReposts: "再投稿" },
+  ko: { profilePosts: "게시물", profileReels: "릴스", profilePreferences: "환경설정", profileReposts: "재게시" },
+  "zh-CN": { profilePosts: "帖子", profileReels: "短视频", profilePreferences: "偏好设置", profileReposts: "转发" },
+  "zh-TW": { profilePosts: "貼文", profileReels: "短片", profilePreferences: "偏好設定", profileReposts: "轉發" },
+  ar: { profilePosts: "المنشورات", profileReels: "ريلز", profilePreferences: "التفضيلات", profileReposts: "إعادة النشر" },
+  hi: { profilePosts: "पोस्ट", profileReels: "रील्स", profilePreferences: "प्राथमिकताएँ", profileReposts: "रीपोस्ट" },
+  bn: { profilePosts: "পোস্ট", profileReels: "রিলস", profilePreferences: "পছন্দসমূহ", profileReposts: "পুনঃপ্রকাশ" },
+  ru: { profilePosts: "Публикации", profileReels: "Reels", profilePreferences: "Настройки", profileReposts: "Репосты" },
+  tr: { profilePosts: "Gönderiler", profileReels: "Reels", profilePreferences: "Tercihler", profileReposts: "Yeniden paylaşımlar" },
+  id: { profilePosts: "Postingan", profileReels: "Reels", profilePreferences: "Preferensi", profileReposts: "Posting ulang" },
+  ms: { profilePosts: "Siaran", profileReels: "Reels", profilePreferences: "Keutamaan", profileReposts: "Siaran semula" },
+  th: { profilePosts: "โพสต์", profileReels: "รีลส์", profilePreferences: "การตั้งค่า", profileReposts: "รีโพสต์" },
+  vi: { profilePosts: "Bài viết", profileReels: "Reels", profilePreferences: "Tùy chọn", profileReposts: "Đăng lại" },
+  fil: { profilePosts: "Mga post", profileReels: "Reels", profilePreferences: "Mga kagustuhan", profileReposts: "Mga repost" },
+  nl: { profilePosts: "Berichten", profileReels: "Reels", profilePreferences: "Voorkeuren", profileReposts: "Reposts" },
+  pl: { profilePosts: "Posty", profileReels: "Reels", profilePreferences: "Preferencje", profileReposts: "Udostępnione ponownie" },
+  uk: { profilePosts: "Публікації", profileReels: "Reels", profilePreferences: "Налаштування", profileReposts: "Репости" },
+  sv: { profilePosts: "Inlägg", profileReels: "Reels", profilePreferences: "Inställningar", profileReposts: "Återpublicerat" },
+  sw: { profilePosts: "Machapisho", profileReels: "Reels", profilePreferences: "Mapendeleo", profileReposts: "Machapisho yaliyoshirikiwa tena" },
+};
+
 export function getSavedLanguage(): NexoraLanguage {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
   try {
@@ -99,5 +127,5 @@ export function getSavedLanguage(): NexoraLanguage {
 }
 
 export function translate(language: NexoraLanguage, key: string): string {
-  return messages[language]?.[key] ?? extraMessages[language]?.[key] ?? messages[DEFAULT_LANGUAGE][key] ?? extraMessages[DEFAULT_LANGUAGE]?.[key] ?? key;
+  return messages[language]?.[key] ?? extraMessages[language]?.[key] ?? profileMessages[language]?.[key] ?? messages[DEFAULT_LANGUAGE][key] ?? extraMessages[DEFAULT_LANGUAGE]?.[key] ?? profileMessages[DEFAULT_LANGUAGE]?.[key] ?? key;
 }
