@@ -11,12 +11,7 @@ const covers = [
   "radial-gradient(ellipse at 75% 0%,#55ffce66,transparent 38%),linear-gradient(135deg,#031a20,#07544e,#080b1d)",
   "radial-gradient(ellipse at 50% 50%,#b7f5ff88,transparent 28%),linear-gradient(135deg,#10172f,#245c88,#17113b)",
 ];
-const defaultHighlights: Highlight[] = [
-  { id: 1, title: "Minha vida", emoji: "✨", tone: "#6c4cff" },
-  { id: 2, title: "Resenha", emoji: "😂", tone: "#e84d9b" },
-  { id: 3, title: "Momentos", emoji: "📸", tone: "#168db7" },
-  { id: 4, title: "Músicas", emoji: "🎧", tone: "#8a4ce0" },
-];
+const defaultHighlights: Highlight[] = [];
 const tabNames = ["Publicações", "Reels", "Preferências", "Republicados"] as const;
 
 const settingsOptions = [
@@ -89,7 +84,7 @@ export default function ProfilePage() {
       if (typeof data.profileBio === "string") setProfileBio(data.profileBio);
       if (typeof data.profileLocation === "string") setProfileLocation(data.profileLocation);
       if (typeof data.profileCategory === "string") setProfileCategory(data.profileCategory);
-      if (Array.isArray(data.highlights)) setHighlights(data.highlights);
+      if (Array.isArray(data.highlights)) setHighlights(data.highlights.filter((item: Highlight) => !["Minha vida","Resenha","Momentos","Músicas"].includes(item?.title || "")));
       if (Array.isArray(data.posts)) setPosts(data.posts);
       if (Array.isArray(data.reposted)) setReposted(data.reposted);
       if (typeof data.coverIndex === "number") setCoverIndex(Math.max(0, Math.min(covers.length - 1, data.coverIndex)));
@@ -247,7 +242,7 @@ export default function ProfilePage() {
             <div className="profile-avatar"><div className="profile-avatar-inner" style={avatarData ? {backgroundImage:"url("+avatarData+")",backgroundSize:"cover",backgroundPosition:"center",fontSize:0} : undefined}>{avatarData ? "" : "👑"}</div></div>
             <div className="profile-identity-actions">
               <button className="profile-btn" onClick={() => { setNoteDraft(note); setEditOpen(true); }}>Editar perfil</button><button className="profile-btn" onClick={() => setPreviewOpen(true)}>Prévia</button>
-              <button className="profile-btn primary" onClick={() => addSamplePost("post")}>＋ Criar</button>
+              <button className="profile-btn primary" onClick={() => { window.location.href = "/?action=create"; }}>＋ Criar</button>
             </div>
           </div>
           <h1 className="profile-name">{profileName || "Seu nome"}</h1>
@@ -262,13 +257,12 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <section>
+        {highlights.length > 0 && <section>
           <div className="profile-section-title"><span>Seus destaques <small>· coleções do seu universo</small></span><small>{highlights.length} coleções</small></div>
           <div className="highlight-row">
-            <button className="highlight-item" style={{border:0,background:"transparent"}} onClick={() => setHighlightOpen(true)}><span className="highlight-add">＋</span><span>Criar novo</span></button>
             {highlights.map((item) => <div className="highlight-item" key={item.id}><div className="highlight-circle"><div className="highlight-inner" style={{background:item.tone+"24"}}>{item.emoji}</div></div><span>{item.title}</span></div>)}
           </div>
-        </section>
+        </section>}
 
         <section>
           <div className="profile-section-title"><span>Notas Nexora <small>· presença rápida</small></span><small>✦ Neon</small></div>
