@@ -677,3 +677,88 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 .nexora-nav-item.create .nexora-nav-icon svg{width:23px;height:23px;stroke-width:2.2}
 .nexora-nav-item.create .nexora-nav-label{margin-top:-1px}
 @media(min-width:700px){.nexora-primary-nav{right:auto;left:50%;width:min(460px,calc(100% - 40px));transform:translateX(-50%)}}
+
+
+/* Etapa 3 — identidade visual compartilhada e ajustes de navegação */
+:root {
+  --nexora-cyan: #55dcff;
+  --nexora-blue: #4388ff;
+  --nexora-purple: #9b5cff;
+  --nexora-magenta: #e34bff;
+  --nexora-panel: rgba(12, 10, 25, .94);
+}
+.nexora-primary-nav {
+  border-color: rgba(91, 190, 255, .58);
+  background: linear-gradient(112deg, rgba(7, 20, 43, .92), rgba(27, 8, 45, .91) 56%, rgba(42, 8, 46, .88));
+  box-shadow: 0 14px 35px rgba(0,0,0,.38), 0 0 22px rgba(67,136,255,.12), inset 0 1px rgba(255,255,255,.08);
+}
+.nexora-nav-item.active {
+  background: linear-gradient(135deg, rgba(67,136,255,.24), rgba(155,92,255,.22), rgba(227,75,255,.12));
+  text-shadow: 0 0 12px rgba(85,220,255,.28);
+}
+.nexora-nav-item.active:before {
+  background: var(--nexora-cyan);
+  box-shadow: 0 0 9px rgba(85,220,255,.8);
+}
+.nexora-nav-item.create .nexora-nav-icon {
+  border-color: rgba(207,240,255,.92);
+  background: linear-gradient(135deg, var(--nexora-blue), var(--nexora-purple) 58%, var(--nexora-magenta));
+  box-shadow: 0 0 16px rgba(91,120,255,.35);
+}
+.messages-app {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(155,92,255,.17), transparent 38%),
+    radial-gradient(ellipse at 0% 20%, rgba(67,136,255,.10), transparent 34%),
+    #050711;
+}
+.messages-topbar {
+  border-bottom-color: rgba(104,132,201,.2);
+  background: rgba(6,8,19,.94);
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+.messages-new, .messages-head-action {
+  border-color: rgba(85,220,255,.35);
+  background: linear-gradient(140deg, rgba(67,136,255,.18), rgba(155,92,255,.2));
+  color: #e9faff;
+}
+.messages-person img, .message-avatar img {
+  border-color: rgba(85,220,255,.58);
+  box-shadow: 0 0 0 2px rgba(67,136,255,.08);
+}
+.messages-search input:focus, .chat-input-wrap:focus-within {
+  border-color: rgba(85,220,255,.65);
+  box-shadow: 0 0 0 3px rgba(67,136,255,.12);
+}
+.create-channel-trigger {
+  border: 1px solid rgba(85,220,255,.22) !important;
+  border-radius: 999px;
+  padding: 8px 11px;
+  background: linear-gradient(110deg, rgba(67,136,255,.13), rgba(155,92,255,.13)) !important;
+}
+.chat-send {
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--nexora-blue), var(--nexora-purple) 65%, var(--nexora-magenta));
+  box-shadow: 0 5px 16px rgba(91,104,255,.22);
+}
+.chat-input-wrap {
+  border-color: rgba(126,139,203,.38);
+  background: rgba(17,20,39,.94);
+}
+.chat-bubble.mine {
+  border-color: rgba(85,220,255,.22);
+}
+.messages-footer {
+  border-top-color: rgba(104,132,201,.16);
+}
+.nexora-nav-item:focus-visible, .messages-app button:focus-visible {
+  outline: 2px solid var(--nexora-cyan);
+  outline-offset: 3px;
+}
+@media (max-width: 520px) {
+  .messages-topbar { padding-left: 12px; padding-right: 12px; gap: 7px; }
+  .messages-title h1 { font-size: 22px; }
+  .messages-title p { max-width: 210px; }
+  .messages-list-heading { padding-left: 13px; padding-right: 13px; }
+  .message-row { padding-left: 13px; padding-right: 13px; }
+  .nexora-primary-nav { left: 3vw; right: 3vw; padding-left: 6px; padding-right: 6px; }
+}
