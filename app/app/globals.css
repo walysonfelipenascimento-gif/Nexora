@@ -1177,3 +1177,26 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
  .chat-settings-panel{padding:15px 12px!important}
 }
 @media(prefers-reduced-motion:reduce){.messages-app *{transition:none!important;animation:none!important}}
+
+
+/* ETAPA 3/3 — clarity and accessibility for local chat preferences */
+.chat-local-preferences-note{
+  margin:0 0 8px!important;
+  padding:11px 12px!important;
+  border:1px solid #6bdcff24!important;
+  border-radius:12px!important;
+  background:linear-gradient(120deg,#1b8caa12,#7b49d612)!important;
+  color:#aebbd7!important;
+  font-size:11px!important;
+  line-height:1.55!important;
+}
+.chat-setting-row[aria-pressed="true"]{
+  background:linear-gradient(100deg,#44d9ff0a,#9a5dff0c)!important;
+}
+.chat-setting-row:focus-visible{
+  outline:2px solid #45e5ff!important;
+  outline-offset:3px!important;
+}
+@media(max-width:520px){
+  .chat-local-preferences-note{font-size:10px!important;padding:10px!important}
+}
