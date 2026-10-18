@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryNav from "./components/PrimaryNav";
+import LanguageWelcome from "./components/LanguageWelcome";
 
 type FeedPost = {
   id: number;
@@ -768,6 +769,7 @@ export default function Home() {
       </section></div>}
 
       <a href="/club" aria-label="Abrir Nexora Club" title="Nexora Club" style={{position:"fixed",left:10,top:"calc(43% - 2px)",zIndex:45,width:47,height:47,display:"grid",placeItems:"center",border:"1px solid #f0cf83",borderRadius:"16px",background:"linear-gradient(145deg,#49320c,#171006 75%)",boxShadow:"0 0 20px #d6a84735,inset 0 1px #fff4cf35",color:"#f5d98c",textDecoration:"none",touchAction:"manipulation"}}><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 7 5 4 4-7 4 7 5-4-2 12H5L3 7Z"/><path d="M5 16h14M8 21h8"/></svg><span style={{position:"absolute",top:49,fontSize:9,fontWeight:900,color:"#f5d98c",letterSpacing:.6}}>CLUB</span></a>
+      <LanguageWelcome />
       <PrimaryNav active="inicio" />
     </main>
   );
