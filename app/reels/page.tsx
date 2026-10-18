@@ -140,6 +140,13 @@ export default function ReelsPage() {
   const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
 
   useEffect(() => {
+    try { const stored = window.localStorage.getItem("nexora-comments-v1"); if (stored) setComments(current => ({ ...current, ...JSON.parse(stored) })); } catch { /* Mantém comentários da sessão se o armazenamento estiver indisponível. */ }
+    const syncComments = (event: StorageEvent) => { if (event.key !== "nexora-comments-v1" || !event.newValue) return; try { setComments(current => ({ ...current, ...JSON.parse(event.newValue as string) })); } catch { /* Ignora dados locais inválidos. */ } };
+    window.addEventListener("storage", syncComments);
+    return () => window.removeEventListener("storage", syncComments);
+  }, []);
+
+  useEffect(() => {
     setLanguage(getSavedLanguage());
     const updateLanguage = () => setLanguage(getSavedLanguage());
     window.addEventListener("nexora-language-change", updateLanguage);
@@ -190,7 +197,7 @@ export default function ReelsPage() {
     event.preventDefault();
     const text = commentDraft.trim();
     if (!text) return;
-    setComments((current) => ({ ...current, [reel.id]: [...(current[reel.id] || []), text] }));
+    setComments((current) => { const next = { ...current, [reel.id]: [...(current[reel.id] || []), text] }; try { window.localStorage.setItem("nexora-comments-v1", JSON.stringify(next)); } catch { /* A interação permanece ativa na sessão. */ } return next; });
     setCommentDraft("");
   }
 
