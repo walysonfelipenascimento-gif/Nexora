@@ -294,7 +294,7 @@ export default function ReelsPage() {
           <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} aria-label={translate(language, "like")} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
           <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + Math.max(0, (comments[reel.id]?.length || 0) - 2))}</small></button>
           <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "✓" : translate(language, "save")}</small></button>
-          <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { setReposted((v) => ({ ...v, [reel.id]: !v[reel.id] })); setToast(reposted[reel.id] ? "Republicação removida nesta demonstração." : "Reel republicado no seu perfil nesta demonstração."); }} aria-label={reposted[reel.id] ? "Desfazer republicação" : "Republicar Reel"}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? "Repostado" : "Republicar"}</small></button>
+          <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { setReposted((v) => ({ ...v, [reel.id]: !v[reel.id] })); setToast(reposted[reel.id] ? "Republicação removida nesta demonstração." : "Reel republicado no seu perfil nesta demonstração."); }} aria-label={reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}</small></button>
           <button className="reel-action" onClick={shareReel} aria-label={translate(language, "share")}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
           <button className="reel-action" onClick={() => setCreatorTools(true)} aria-label="Ferramentas do criador"><span className="reel-disc"><img src={reel.avatar} alt="" /></span><small>Criador</small></button>
         </aside>
@@ -320,7 +320,7 @@ export default function ReelsPage() {
         <section className="reels-sheet" onClick={(event) => event.stopPropagation()}>
           <div className="reels-sheet-head"><span>{translate(language, "viewComments")} <span style={{ color: "#7ceaff" }}>· {(comments[reel.id] || []).length}</span></span><button className="reels-close" onClick={() => { setCommentsOpen(false); setPaused(false); }}>×</button></div>
           {(comments[reel.id] || []).map((comment, i) => <div className="reels-comment" key={i}><strong>@comunidade</strong> {comment}</div>)}
-          <form className="reels-comment-form" onSubmit={submitComment}><input value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comente com respeito..." maxLength={500} /><button type="submit">Enviar</button></form>
+          <form className="reels-comment-form" onSubmit={submitComment}><input value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder={translate(language, "comment")} maxLength={500} /><button type="submit">{translate(language, "send")}</button></form>
         </section>
       </div>}
 
@@ -331,7 +331,7 @@ export default function ReelsPage() {
           <div className="reels-tools">
             <button className="reels-tool" onClick={() => alert("Estatísticas demonstrativas: alcance " + compactNumber(reel.likes * 4) + " · interações " + compactNumber(reel.likes + reel.comments))}><strong><UiIcon name="chart" size={16} /> Visão geral</strong><span>Alcance, interações e desempenho</span></button>
             <button className="reels-tool" onClick={() => alert("A edição estará disponível quando os Reels estiverem vinculados à sua conta.")}><strong><UiIcon name="edit" size={16} /> Editar Reel</strong><span>Legenda, capa e informações</span></button>
-            <button className="reels-tool" onClick={() => alert("Preferências de comentários demonstrativas nesta versão.")}><strong><UiIcon name="comment" size={16} /> Comentários</strong><span>Preferências e moderação</span></button>
+            <button className="reels-tool" onClick={() => alert("Preferências de comentários demonstrativas nesta versão.")}><strong><UiIcon name="comment" size={16} /> {translate(language, "comments")}</strong><span>Preferências e moderação</span></button>
             <button className="reels-tool" onClick={() => { setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] })); setCreatorTools(false); }}><strong><UiIcon name="bookmark" size={16} /> {saved[reel.id] ? "Remover dos salvos" : "Guardar Reel"}</strong><span>Adicionar aos seus favoritos locais</span></button>
           </div>
         </section>
