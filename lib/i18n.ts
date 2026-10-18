@@ -116,13 +116,35 @@ const profileMessages: Record<NexoraLanguage, Record<string, string>> = {
 export function getSavedLanguage(): NexoraLanguage {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
   try {
+    const isSupported = (value: unknown): value is NexoraLanguage =>
+      typeof value === "string" &&
+      NEXORA_LANGUAGES.some((language) => language.code === value);
+
+    // Prefer the dedicated language key; keep older profile preferences compatible.
     const saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return NEXORA_LANGUAGES.some((language) => language.code === saved)
-      ? (saved as NexoraLanguage)
-      : DEFAULT_LANGUAGE;
+    if (isSupported(saved)) return saved;
+
+    const rawProfile = window.localStorage.getItem("nexora-profile-v1");
+    if (rawProfile) {
+      const parsed = JSON.parse(rawProfile) as {
+        profile?: { selectedSettings?: { idioma?: unknown } };
+        selectedSettings?: { idioma?: unknown };
+      };
+      const legacyChoice =
+        parsed.profile?.selectedSettings?.idioma ?? parsed.selectedSettings?.idioma;
+
+      if (isSupported(legacyChoice)) return legacyChoice;
+      if (typeof legacyChoice === "string") {
+        const matchingLanguage = NEXORA_LANGUAGES.find(
+          (language) => language.label.toLocaleLowerCase() === legacyChoice.toLocaleLowerCase()
+        );
+        if (matchingLanguage) return matchingLanguage.code;
+      }
+    }
   } catch {
-    return DEFAULT_LANGUAGE;
+    // Corrupted or unavailable local storage must never prevent the app from loading.
   }
+  return DEFAULT_LANGUAGE;
 }
 
 const settingsMessages: Record<NexoraLanguage, Record<string, string>> = {
