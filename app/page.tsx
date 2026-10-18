@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type FeedPost = {
   id: number;
@@ -106,6 +107,7 @@ function Verified() {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [liked, setLiked] = useState<number[]>([]);
   const [saved, setSaved] = useState<number[]>([]);
@@ -567,7 +569,7 @@ export default function Home() {
 
       <nav className="bottom-nav" aria-label="Navegação principal">
         <button className="nav-active" aria-label="Início" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V10Z"/></svg></button>
-        <button aria-label="Reels" onClick={() => { window.location.href = "/reels"; }}><svg viewBox="0 0 24 24"><path d="M7 4.5 19 12 7 19.5Z"/><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" fill="none"/></svg></button>
+        <button aria-label="Reels" onClick={() => { router.push("/reels"); }}><svg viewBox="0 0 24 24"><path d="M7 4.5 19 12 7 19.5Z"/><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" fill="none"/></svg></button>
         <button aria-label="Explorar" onClick={() => setNotice("A página Explorar será construída na próxima etapa.")}><svg viewBox="0 0 24 24"><path d="m4 19 4-11 12-3-3 12-11 4-2-2Z"/><path d="m8 8 8 8"/></svg></button>
         <button className="nav-create" aria-label="Criar publicação" onClick={() => setComposerOpen(true)}><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
         <button aria-label="Mensagens" onClick={() => { setMessagesOpen(true); setActiveChatId(null); }}><svg viewBox="0 0 24 24"><path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/></svg></button>
