@@ -1,6 +1,7 @@
 "use client";
 
 import PrimaryNav from "../components/PrimaryNav";
+import { extraReels, imageForCaption } from "./extraReels";
 import { useEffect, useRef, useState } from "react";
 
 type Reel = {
@@ -15,6 +16,7 @@ type Reel = {
   shares: number;
   video: string;
   tint: string;
+  image?: string;
 };
 
 const demoReels: Reel[] = [
@@ -69,6 +71,8 @@ const demoReels: Reel[] = [
   { id: 49, user: "horizonte_aberto", name: "Horizonte Aberto", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop", caption: "Um horizonte desses e eu cancelava todos os compromissos por uma semana 🌅", song: "Escapada virtual · legenda original", likes: 35600, comments: 810, shares: 2890, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", tint: "sunset" },
   { id: 50, user: "nexora_em_alta", name: "Nexora em Alta", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop", caption: "Se você chegou até o Reel 50, comenta um 💜 pra eu saber que você ficou!", song: "Comunidade Nexora · legenda original", likes: 50200, comments: 3210, shares: 4200, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", tint: "violet" }
 ];
+
+demoReels.push(...extraReels);
 
 const navItems = [
   { id: "inicio", label: "Início", icon: "home", href: "/" },
@@ -196,6 +200,9 @@ export default function ReelsPage() {
         .reel-video-error { position:absolute; inset:0; display:grid; place-content:center; gap:10px; padding:35px; text-align:center; background:radial-gradient(ellipse at 50% 40%,#28204a,#080911 72%); color:#fff; }
         .reel-video-error strong { font-size:22px; }
         .reel-video-error span { font-size:12px; line-height:1.5; color:#c9c5df; }
+        .reel-meme-sticker { position:absolute; z-index:3; top:43%; right:17%; width:clamp(74px,21vw,112px); padding:4px 4px 7px; border:2px solid #fff; border-radius:14px; background:linear-gradient(135deg,#fff,#f4eaff); box-shadow:0 8px 28px #0009,0 0 18px #b75cff55; transform:rotate(5deg); pointer-events:none; animation:meme-pop .4s ease-out both; }
+        .reel-meme-sticker img { display:block; width:100%; height:clamp(70px,20vw,104px); object-fit:cover; border-radius:9px; }
+        .reel-meme-sticker span { display:block; padding-top:4px; text-align:center; color:#23143b; font-size:9px; font-weight:1000; letter-spacing:1px; }
         @keyframes meme-pop { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
         .reel-vignette { position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,#0008 0%,transparent 20%,transparent 43%,#05050a24 55%,#05050be8 100%); }
         .reel-top-controls { position:absolute; top:76px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:center; }
@@ -262,6 +269,7 @@ export default function ReelsPage() {
         }}>
         {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop muted={muted} autoPlay onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
         <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>
+        <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>
         <div className="reel-vignette" />
         <div className="reel-top-controls">
           <span className="glass-chip"><span className="live-dot" /> PARA VOCÊ</span>
