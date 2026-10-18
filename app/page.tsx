@@ -297,6 +297,36 @@ export default function Home() {
     } catch { /* dados locais inválidos não devem impedir a abertura das conversas */ }
     setChatStorageReady(true);
   }, []);
+
+  // Recebe compartilhamentos enviados do perfil e os coloca na conversa escolhida.
+  useEffect(() => {
+    if (!chatStorageReady) return;
+    try {
+      const raw = window.localStorage.getItem("nexora-share-handoff-v1");
+      if (!raw) return;
+      const payload = JSON.parse(raw) as { title?: string; type?: string; url?: string; from?: string; recipients?: string[]; createdAt?: number };
+      if (!Array.isArray(payload.recipients) || payload.recipients.length === 0 || !payload.title) {
+        window.localStorage.removeItem("nexora-share-handoff-v1");
+        return;
+      }
+      window.localStorage.removeItem("nexora-share-handoff-v1");
+      const now = new Date();
+      const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const messageText = "↗ " + (payload.type === "reel" ? "Reel" : "Publicação") + " compartilhada por " + (payload.from || "um perfil Nexora") + ": " + payload.title + " · " + (payload.url || window.location.origin + "/perfil");
+      setChatThreads(current => current.map(chat => payload.recipients!.includes(chat.id) ? {
+        ...chat,
+        preview: "Você compartilhou uma publicação",
+        time,
+        unread: 0,
+        messages: [...chat.messages, { id: Date.now() + Math.floor(Math.random() * 1000), text: messageText, mine: true, time }]
+      } : chat));
+      setActiveChatId(payload.recipients[0]);
+      setChatDetail("chat");
+      setMessagesOpen(true);
+    } catch {
+      window.localStorage.removeItem("nexora-share-handoff-v1");
+    }
+  }, [chatStorageReady]);
   useEffect(() => {
     if (!chatStorageReady) return;
     try {
