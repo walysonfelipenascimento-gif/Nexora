@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 type Artist = { name: string; genre: string; status: "Aguardando licença" | "Em análise"; note: string };
 
@@ -23,24 +24,48 @@ export default function MusicasPage() {
   const [genre, setGenre] = useState("Todos");
   const [requested, setRequested] = useState<string[]>([]);
   const [requestsReady, setRequestsReady] = useState(false);
+  const [catalogArtists, setCatalogArtists] = useState<Artist[]>(artists);
+  const [catalogSource, setCatalogSource] = useState<"supabase" | "fallback">("fallback");
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem("nexora-music-artist-interest-v1");
       if (saved) {
         const parsed: unknown = JSON.parse(saved);
-        if (Array.isArray(parsed)) setRequested(parsed.filter((item): item is string => typeof item === "string" && artists.some((artist) => artist.name === item)));
+        if (Array.isArray(parsed)) setRequested(parsed.filter((item): item is string => typeof item === "string"));
       }
     } catch { /* armazenamento local indisponível: a página continua funcionando */ }
     setRequestsReady(true);
   }, []);
   useEffect(() => {
+    let active = true;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return () => { active = false; };
+    (async () => {
+      const { data, error } = await supabase
+        .from("nexora_music_artists")
+        .select("name, genres, catalog_status, public_note")
+        .neq("catalog_status", "blocked")
+        .order("name", { ascending: true });
+      if (!active || error || !data || data.length === 0) return;
+      const mapped: Artist[] = data.map((row: { name: string; genres: string[] | null; catalog_status: string; public_note: string | null }) => ({
+        name: row.name,
+        genre: (row.genres || []).join(" / ") || "Gêneros variados",
+        status: row.catalog_status === "requested" ? "Aguardando licença" : "Em análise",
+        note: row.public_note || "Disponibilidade depende de confirmação de direitos.",
+      }));
+      setCatalogArtists(mapped);
+      setCatalogSource("supabase");
+    })();
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
     if (!requestsReady) return;
     try { window.localStorage.setItem("nexora-music-artist-interest-v1", JSON.stringify(requested)); } catch { /* preferência opcional */ }
   }, [requested, requestsReady]);
-  const filtered = useMemo(() => artists.filter((artist) => {
+  const filtered = useMemo(() => catalogArtists.filter((artist) => {
     const matchesQuery = (artist.name + " " + artist.genre).toLowerCase().includes(query.toLowerCase());
     return matchesQuery && (genre === "Todos" || artist.genre.toLowerCase().includes(genre.toLowerCase()));
-  }), [query, genre]);
+  }), [catalogArtists, query, genre]);
 
   return (
     <main className="music-page">
@@ -64,7 +89,7 @@ export default function MusicasPage() {
       </section>
 
       <section className="catalog">
-        <div className="section-heading"><div><span className="kicker">EXPLORE</span><h2>Artistas desejados</h2></div><span className="count">{filtered.length} opções · {requested.length} interesses</span></div>
+        <div className="section-heading"><div><span className="kicker">EXPLORE</span><h2>Artistas desejados</h2></div><span className="count">{filtered.length} opções · {requested.length} interesses · {catalogSource === "supabase" ? "catálogo conectado" : "modo de reserva"}</span></div>
         <label className="searchbox"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar artista ou gênero..." aria-label="Buscar artista ou gênero" /></label>
         <div className="filters">
           {["Todos", "Arrocha", "Forró", "Funk", "Rap"].map((item) => <button key={item} onClick={() => setGenre(item)} className={genre === item ? "filter active" : "filter"}>{item}</button>)}
