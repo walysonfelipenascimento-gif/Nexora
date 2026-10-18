@@ -148,10 +148,13 @@ export default function ProfilePage() {
       if (Array.isArray(data.videoTopics)) setVideoTopics(data.videoTopics.filter((topic: unknown): topic is string => typeof topic === "string" && ["Humor", "Música", "Games", "Lifestyle", "Tutoriais", "Esportes", "Beleza", "Comédia", "Tecnologia", "Educação"].includes(topic)));
       if (data.selectedSettings && typeof data.selectedSettings === "object") setSelectedSettings(data.selectedSettings);
       const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-      const savedLanguageOption = NEXORA_LANGUAGES.find((language) => language.code === savedLanguage);
       const previousLanguageOption = NEXORA_LANGUAGES.find((language) => language.label === data.selectedSettings?.idioma);
       if (!savedLanguage && previousLanguageOption) localStorage.setItem(LANGUAGE_STORAGE_KEY, previousLanguageOption.code);
-      if (!data.selectedSettings?.idioma && savedLanguageOption) setSelectedSettings((current) => ({ ...current, idioma: savedLanguageOption.label }));
+      const resolvedLanguage = getSavedLanguage();
+      const resolvedLanguageOption = NEXORA_LANGUAGES.find((language) => language.code === resolvedLanguage);
+      if (resolvedLanguageOption && data.selectedSettings?.idioma !== resolvedLanguageOption.label) {
+        setSelectedSettings((current) => ({ ...current, idioma: resolvedLanguageOption.label }));
+      }
     } catch { /* Ignore malformed local demo data safely. */ }
   }, []);
 
