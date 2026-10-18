@@ -13,7 +13,7 @@ const covers = [
   "radial-gradient(ellipse at 50% 50%,#b7f5ff88,transparent 28%),linear-gradient(135deg,#10172f,#245c88,#17113b)",
 ];
 const defaultHighlights: Highlight[] = [];
-const tabNames = ["Publicações", "Reels", "Preferências", "Republicados"] as const;
+const tabNames = ["Publicações", "Reels", "Republicados", "Marcados"] as const;
 
 const settingsOptions = [
   {id:"tipo-conta",title:"Tipo de perfil",desc:"Pessoal, profissional ou criador",cat:"Conta",choices:["Pessoal","Profissional","Criador de conteúdo"]},
@@ -170,7 +170,7 @@ const settingsIconColorById: Record<string, string> = {
   "acessibilidade":"#5eead4","economia":"#86efac","download":"#93c5fd","seguranca":"#f87171"
 };
 
-type TabName = typeof tabNames[number];
+type TabName = typeof tabNames[number] | "Preferências";
 
 export default function ProfilePage() {
   const [uiLanguage, setUiLanguage] = useState<NexoraLanguage>("pt-BR");
@@ -257,7 +257,7 @@ export default function ProfilePage() {
       if (typeof data.profileLocation === "string") setProfileLocation(data.profileLocation);
       if (typeof data.profileCategory === "string") setProfileCategory(data.profileCategory);
       if (Array.isArray(data.highlights)) setHighlights(data.highlights.filter((item: Highlight) => !["Minha vida","Resenha","Momentos","Músicas"].includes(item?.title || "")));
-      if (Array.isArray(data.posts)) setPosts(data.posts);
+      if (Array.isArray(data.posts)) setPosts(data.posts.filter((post: { title?: string; emoji?: string }) => !((post.title === "Nova publicação" && post.emoji === "🖼️") || (post.title === "Novo Reel" && post.emoji === "▶️"))));
       if (Array.isArray(data.reposted)) setReposted(data.reposted);
       if (typeof data.coverIndex === "number") setCoverIndex(Math.max(0, Math.min(covers.length - 1, data.coverIndex)));
       if (data.prefs && typeof data.prefs === "object") setPrefs((p) => ({ ...p, ...data.prefs }));
@@ -315,11 +315,6 @@ export default function ProfilePage() {
     const next = [...highlights, { id: Date.now(), title, emoji: highlightEmoji, tone: ["#6c4cff", "#e84d9b", "#168db7", "#8a4ce0"][highlights.length % 4] }];
     setHighlights(next); save({ highlights: next }); setHighlightOpen(false); setHighlightTitle("");
     setToast("Destaque criado neste dispositivo.");
-  }
-  function addSamplePost(type: "post" | "reel") {
-    const next = [...posts, { id: Date.now(), title: type === "post" ? "Nova publicação" : "Novo Reel", emoji: type === "post" ? "🖼️" : "▶️", type }];
-    setPosts(next); save({ posts: next }); setActiveTab(type === "post" ? "Publicações" : "Reels");
-    setToast("Adicionamos um cartão de demonstração. A publicação real exige envio de mídia.");
   }
   function toggleRepost(id: string) {
     const next = reposted.includes(id) ? reposted.filter((x) => x !== id) : [...reposted, id];
@@ -451,6 +446,22 @@ export default function ProfilePage() {
         .profile-lower .profile-content{margin-top:16px}
         .profile-lower .profile-empty{border:1px solid #ffffff14;border-radius:16px;background:#ffffff03;padding:30px 18px}
         .profile-lower .profile-grid{gap:3px}
+        /* Barra de conteúdo inspirada no Instagram, com acabamento Nexora. */
+        .profile-lower .profile-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 42px;align-items:stretch;gap:0;margin-top:22px;padding:0;border:0;border-bottom:1px solid #ffffff20;border-radius:0;background:transparent;overflow:visible}
+        .profile-lower .profile-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:0;min-height:48px;padding:8px 3px 10px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:#85879c;box-shadow:none;font-size:10px;font-weight:600}
+        .profile-lower .profile-tab.active{color:#f7f6ff;border-bottom-color:#8c6cff;background:transparent;box-shadow:none}
+        .profile-lower .profile-tab-glyph{display:block;font-size:22px;line-height:1.1;font-weight:500}
+        .profile-lower .profile-tab-label{display:none}
+        .profile-lower .profile-tab-settings{border-left:1px solid #ffffff12}
+        .profile-lower .profile-tab-settings.active{color:#a98cff}
+        .profile-lower .instagram-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:0;border-radius:0;background:transparent;padding:28px 16px}
+        .profile-lower .instagram-empty-icon{width:64px;height:64px;border:2px solid #8d8fa5;border-radius:50%;display:grid;place-items:center;margin-bottom:18px;color:#d9d9e9;font-size:29px;background:linear-gradient(145deg,#55e8ff0c,#a66cff12)}
+        .profile-lower .instagram-empty strong{font-size:20px;letter-spacing:-.45px;font-weight:600;color:#f4f3fb}
+        .profile-lower .instagram-empty p{max-width:280px;margin:8px auto 0;font-size:13px;line-height:1.55;color:#a0a2b7}
+        .profile-lower .profile-tile{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:0;aspect-ratio:1/1.12;background:linear-gradient(145deg,#101827,#19132d 55%,#10101b);overflow:hidden}
+        .profile-lower .profile-tile-symbol{font-size:25px;color:#b8a5ff}
+        .profile-lower .profile-tile span:not(.profile-tile-symbol){font-size:10px;color:#e2e0f2;text-align:center}
+        @media(min-width:700px){.profile-lower .profile-tab{min-height:54px}.profile-lower .instagram-empty{min-height:280px}}
         .profile-lower .profile-tile{border-radius:5px;border:0;background:linear-gradient(145deg,#17162a,#11101b);aspect-ratio:1/1.12}
         .pro-dashboard{margin:18px 0 21px;border:1px solid #8b70ff42;border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at 100% 0%,#7c5cff24,transparent 45%),linear-gradient(145deg,#151326,#0e101b 70%);box-shadow:0 12px 28px #0002}
         .pro-dashboard-head{display:flex;align-items:center;gap:11px;padding:16px 15px 14px;border-bottom:1px solid #ffffff10}
@@ -518,7 +529,8 @@ export default function ProfilePage() {
         </section>
 
         <div className="profile-tabs" role="tablist" aria-label="Conteúdo do perfil">
-          {tabNames.map((tab) => <button key={tab} role="tab" aria-selected={activeTab===tab} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}>{profileTabLabels[tab]}</button>)}
+          {tabNames.map((tab) => <button key={tab} role="tab" aria-selected={activeTab===tab} aria-label={profileTabLabels[tab]} title={profileTabLabels[tab]} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}><span className="profile-tab-glyph" aria-hidden="true">{tab === "Publicações" ? "▦" : tab === "Reels" ? "▶" : tab === "Republicados" ? "⟳" : "♙"}</span><span className="profile-tab-label">{profileTabLabels[tab]}</span></button>)}
+          <button type="button" role="tab" aria-label="Preferências do perfil" title="Preferências do perfil" aria-selected={activeTab==="Preferências"} className={`profile-tab profile-tab-settings ${activeTab==="Preferências"?"active":""}`} onClick={() => setActiveTab("Preferências")}><span className="profile-tab-glyph" aria-hidden="true">⚙</span></button>
         </div>
         <section className="profile-content">
           {activeTab === "Preferências" ? <div>
@@ -535,8 +547,8 @@ export default function ProfilePage() {
               ["saveData","Economia de dados","Preferir uma experiência com menos efeitos visuais."] ,
             ] as const).map(([key,label,desc]) => <div className="profile-pref" key={key}><div><strong>{label}</strong><small>{desc}</small></div><button aria-label={label} aria-pressed={prefs[key]} className={`profile-switch ${prefs[key]?"on":""}`} onClick={() => {const next={...prefs,[key]:!prefs[key]};setPrefs(next);save({prefs:next});setToast("Preferência salva neste dispositivo.");}} /></div>)}
           </div> : activeTab === "Republicados" ? <div>
-            {reposted.length ? <div className="profile-grid">{reposted.map((id) => <button className="profile-tile" key={id} onClick={() => toggleRepost(id)}>🔁<span>Republicação local</span><small>Remover ×</small></button>)}</div> : <div className="profile-empty"><div className="profile-empty-icon">🔁</div><strong>Seu espaço de republicações</strong><p>Quando você republicar algo do Feed ou dos Reels, ele aparecerá aqui quando a integração estiver conectada.</p><button className="profile-btn primary" onClick={() => toggleRepost("demo-repost-01")}>＋ Experimentar republicação</button></div>}
-          </div> : posts.filter(p => activeTab === "Publicações" ? p.type === "post" : p.type === "reel").length ? <div className={`profile-grid ${prefs.compactGrid?"compact":""}`}>{posts.filter(p => activeTab === "Publicações" ? p.type === "post" : p.type === "reel").map(p => <div className="profile-tile" key={p.id}>{p.emoji}<span>{p.title}</span></div>)}</div> : <div className="profile-empty"><div className="profile-empty-icon">{activeTab === "Reels" ? "▶" : "✦"}</div><strong>{activeTab === "Reels" ? "Seus Reels começam aqui" : "Seu próximo momento começa aqui"}</strong><p>{activeTab === "Reels" ? "Crie vídeos curtos e organize seus melhores momentos nesta aba." : "Publique fotos, ideias e momentos para começar a construir seu perfil."}</p><button className="profile-btn primary" onClick={() => addSamplePost(activeTab === "Reels" ? "reel" : "post")}>＋ {activeTab === "Reels" ? "Preparar Reel" : "Nova publicação"}</button></div>}
+            {reposted.length ? <div className="profile-grid">{reposted.map((id) => <button className="profile-tile" key={id} onClick={() => toggleRepost(id)}><span className="profile-tile-symbol">⟳</span><span>Republicado</span><small>Remover ×</small></button>)}</div> : <div className="profile-empty instagram-empty"><div className="instagram-empty-icon" aria-hidden="true">⟳</div><strong>Nenhuma republicação ainda</strong><p>Quando você republicar conteúdo, ele aparecerá aqui.</p></div>}
+            {activeTab === "Marcados" ? <div className="profile-empty instagram-empty"><div className="instagram-empty-icon" aria-hidden="true">♙</div><strong>Fotos e vídeos com você</strong><p>Quando alguém marcar seu perfil, o conteúdo aparecerá aqui.</p></div> : posts.filter(p => activeTab === "Publicações" ? p.type === "post" : p.type === "reel").length ? <div className={`profile-grid ${prefs.compactGrid?"compact":""}`}>{posts.filter(p => activeTab === "Publicações" ? p.type === "post" : p.type === "reel").map(p => <div className="profile-tile" key={p.id}><span className="profile-tile-symbol">{p.type === "reel" ? "▶" : "▧"}</span><span>{p.title}</span></div>)}</div> : <div className="profile-empty instagram-empty"><div className="instagram-empty-icon" aria-hidden="true">{activeTab === "Reels" ? "▶" : "▧"}</div><strong>{activeTab === "Reels" ? "Nenhum Reel ainda" : "Nenhuma publicação ainda"}</strong><p>{activeTab === "Reels" ? "Os Reels que você publicar aparecerão aqui." : "As fotos e os vídeos que você compartilhar aparecerão aqui."}</p></div>}
         </section>
         </div>
       </div>
