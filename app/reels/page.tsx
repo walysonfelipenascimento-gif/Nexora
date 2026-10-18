@@ -21,7 +21,7 @@ type Reel = {
 };
 
 const demoReels: Reel[] = [
-  { id: 1, user: "risadadodia", name: "Risada do Dia", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop", caption: "POV: você fala “só vou descansar 5 minutinhos” e acorda em outra dimensão 😂", song: "Comédia cotidiana · áudio demo", likes: 28400, comments: 1840, shares: 927, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", tint: "sunset" },
+  { id: 1, user: "flores.em.movimento", name: "Flores em Movimento", avatar: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=120&h=120&fit=crop", caption: "Um instante de calma: veja uma flor se abrir diante dos seus olhos. 🌸✨", song: "Natureza em foco · som ambiente", likes: 28400, comments: 1840, shares: 927, video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", tint: "sunset" },
   { id: 2, user: "mundosempressa", name: "Mundo sem pressa", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop", caption: "Um lugar tão surreal que parece outro planeta. Você visitaria? 🌋", song: "Natureza em foco · áudio demo", likes: 19300, comments: 742, shares: 1260, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", tint: "violet" },
   { id: 3, user: "memes.da.nexa", name: "Memes da Nexa", avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&h=120&fit=crop", caption: "Eu ensaiando a resposta perfeita… e na hora falando “pois é né” 🤡", song: "Humor de milhões · áudio demo", likes: 36200, comments: 2310, shares: 3100, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", tint: "violet" },
   { id: 4, user: "rotas.secretas", name: "Rotas Secretas", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&h=120&fit=crop", caption: "Uma lagoa escondida entre montanhas. Salva esse destino para sonhar depois. 💎", song: "Diário de viagem · áudio demo", likes: 15700, comments: 598, shares: 1830, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", tint: "sunset" },
@@ -136,7 +136,7 @@ export default function ReelsPage() {
   const lastWheelMove = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const reel = demoReels[index];
-  const availableVideoSources = Array.from(new Set(demoReels.map((item) => item.video)));
+  const availableVideoSources = reel.id === 1 ? [reel.video] : Array.from(new Set(demoReels.map((item) => item.video)));
   const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
 
   useEffect(() => {
@@ -206,7 +206,7 @@ export default function ReelsPage() {
         .reels-mark { display:grid; place-items:center; width:32px; height:32px; border-radius:11px; font-size:20px; font-weight:900; background:linear-gradient(140deg,#49e5ff,#8b65ff 60%,#e05cff); box-shadow:0 0 22px #7764ff60; }
         .reels-top-label { font-size:12px; color:#d8d8e8; border:1px solid #ffffff24; background:#10111caa; border-radius:20px; padding:8px 11px; backdrop-filter:blur(12px); }
         .reel-stage { position:relative; width:100%; height:100%; max-width:560px; margin:auto; overflow:hidden; background:#12121d; }
-        .reel-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#12121d; touch-action:pan-x; }
+        .reel-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#12121d; touch-action:pan-x; }\n         .reel-nature-label { position:absolute; z-index:2; top:24%; left:7%; right:20%; display:flex; flex-direction:column; gap:8px; pointer-events:none; animation:meme-pop .65s ease-out both; text-shadow:0 2px 18px #000b; }\n         .reel-nature-label span { align-self:flex-start; padding:7px 10px; border:1px solid #ffffff55; border-radius:999px; background:#071a19a6; color:#baf8e4; font-size:9px; font-weight:900; letter-spacing:1.5px; backdrop-filter:blur(12px); }\n         .reel-nature-label strong { max-width:310px; color:#fff; font-size:clamp(22px,6vw,34px); font-weight:850; line-height:1.06; letter-spacing:-.7px; }
         .reel-video-fallback { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#12121d; }
         .reel-meme-hook { position:absolute; z-index:2; top:25%; left:8%; right:18%; max-width:430px; padding:13px 15px; border:1px solid #ffffff50; border-radius:15px; background:linear-gradient(120deg,#090a14d9,#17102bd9); box-shadow:0 10px 35px #0006; color:#fff; font-size:clamp(18px,4.8vw,27px); font-weight:950; line-height:1.15; letter-spacing:-.5px; text-shadow:0 2px 12px #000b; animation:meme-pop .35s ease-out both; pointer-events:none; }
         .reel-meme-hook em { display:block; margin-bottom:7px; color:#7ceaff; font-size:9px; font-style:normal; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; }
@@ -280,9 +280,9 @@ export default function ReelsPage() {
           if (Math.abs(dy) > 48 && Math.abs(dy) > Math.abs(dx) * 1.2) move(dy < 0 ? 1 : -1);
           touchStart.current = null;
         }}>
-        {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop muted={muted} autoPlay onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
-        <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>
-        <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>
+        {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop preload="auto" muted={muted} autoPlay onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
+        {reel.id === 1 ? <div className="reel-nature-label" key="nature-reel-label"><span>✦ NATUREZA EM MOVIMENTO</span><strong>Um momento de beleza natural</strong></div> : <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>}
+        {reel.id !== 1 && <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>}
         <div className="reel-vignette" />
         <div className="reel-top-controls">
           <span className="glass-chip"><span className="live-dot" /> PARA VOCÊ</span>
