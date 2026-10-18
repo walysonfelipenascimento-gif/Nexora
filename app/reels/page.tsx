@@ -3,6 +3,7 @@
 import PrimaryNav from "../components/PrimaryNav";
 import { extraReels, imageForCaption } from "./extraReels";
 import { useEffect, useRef, useState } from "react";
+import { getSavedLanguage, translate, type NexoraLanguage } from "../../lib/i18n";
 
 type Reel = {
   id: number;
@@ -113,6 +114,7 @@ function compactNumber(value: number) {
 }
 
 export default function ReelsPage() {
+  const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
   const [index, setIndex] = useState(0);
   const [liked, setLiked] = useState<Record<number, boolean>>({});
   const [saved, setSaved] = useState<Record<number, boolean>>({});
@@ -136,6 +138,17 @@ export default function ReelsPage() {
   const reel = demoReels[index];
   const availableVideoSources = Array.from(new Set(demoReels.map((item) => item.video)));
   const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
+
+  useEffect(() => {
+    setLanguage(getSavedLanguage());
+    const updateLanguage = () => setLanguage(getSavedLanguage());
+    window.addEventListener("nexora-language-change", updateLanguage);
+    window.addEventListener("storage", updateLanguage);
+    return () => {
+      window.removeEventListener("nexora-language-change", updateLanguage);
+      window.removeEventListener("storage", updateLanguage);
+    };
+  }, []);
 
   useEffect(() => {
     setVideoFailed(false);
@@ -278,11 +291,11 @@ export default function ReelsPage() {
         {paused && <button className="reel-center-play" onClick={() => setPaused(false)} aria-label="Reproduzir">▶</button>}
 
         <aside className="reel-side-actions" aria-label="Ações do Reel">
-          <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
+          <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} aria-label={translate(language, "like")} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
           <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + Math.max(0, (comments[reel.id]?.length || 0) - 2))}</small></button>
-          <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "Salvo" : "Salvar"}</small></button>
+          <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "✓" : translate(language, "save")}</small></button>
           <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { setReposted((v) => ({ ...v, [reel.id]: !v[reel.id] })); setToast(reposted[reel.id] ? "Republicação removida nesta demonstração." : "Reel republicado no seu perfil nesta demonstração."); }} aria-label={reposted[reel.id] ? "Desfazer republicação" : "Republicar Reel"}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? "Repostado" : "Republicar"}</small></button>
-          <button className="reel-action" onClick={shareReel}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
+          <button className="reel-action" onClick={shareReel} aria-label={translate(language, "share")}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
           <button className="reel-action" onClick={() => setCreatorTools(true)} aria-label="Ferramentas do criador"><span className="reel-disc"><img src={reel.avatar} alt="" /></span><small>Criador</small></button>
         </aside>
 
@@ -305,7 +318,7 @@ export default function ReelsPage() {
 
       {commentsOpen && <div className="reels-overlay" onClick={() => { setCommentsOpen(false); setPaused(false); }}>
         <section className="reels-sheet" onClick={(event) => event.stopPropagation()}>
-          <div className="reels-sheet-head"><span>Comentários <span style={{ color: "#7ceaff" }}>· {(comments[reel.id] || []).length}</span></span><button className="reels-close" onClick={() => { setCommentsOpen(false); setPaused(false); }}>×</button></div>
+          <div className="reels-sheet-head"><span>{translate(language, "viewComments")} <span style={{ color: "#7ceaff" }}>· {(comments[reel.id] || []).length}</span></span><button className="reels-close" onClick={() => { setCommentsOpen(false); setPaused(false); }}>×</button></div>
           {(comments[reel.id] || []).map((comment, i) => <div className="reels-comment" key={i}><strong>@comunidade</strong> {comment}</div>)}
           <form className="reels-comment-form" onSubmit={submitComment}><input value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comente com respeito..." maxLength={500} /><button type="submit">Enviar</button></form>
         </section>
