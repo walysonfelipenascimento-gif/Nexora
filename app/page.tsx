@@ -110,6 +110,11 @@ function Verified() {
 
 export default function Home() {
   const router = useRouter();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "mensagens") setMessagesOpen(true);
+    if (params.get("action") === "create") setComposerOpen(true);
+  }, []);
   const [posts, setPosts] = useState(initialPosts);
   const [liked, setLiked] = useState<number[]>([]);
   const [saved, setSaved] = useState<number[]>([]);
