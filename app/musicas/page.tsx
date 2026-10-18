@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Artist = { name: string; genre: string; status: "Aguardando licença" | "Em análise"; note: string };
 
@@ -22,6 +22,21 @@ export default function MusicasPage() {
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("Todos");
   const [requested, setRequested] = useState<string[]>([]);
+  const [requestsReady, setRequestsReady] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("nexora-music-artist-interest-v1");
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed)) setRequested(parsed.filter((item): item is string => typeof item === "string" && artists.some((artist) => artist.name === item)));
+      }
+    } catch { /* armazenamento local indisponível: a página continua funcionando */ }
+    setRequestsReady(true);
+  }, []);
+  useEffect(() => {
+    if (!requestsReady) return;
+    try { window.localStorage.setItem("nexora-music-artist-interest-v1", JSON.stringify(requested)); } catch { /* preferência opcional */ }
+  }, [requested, requestsReady]);
   const filtered = useMemo(() => artists.filter((artist) => {
     const matchesQuery = (artist.name + " " + artist.genre).toLowerCase().includes(query.toLowerCase());
     return matchesQuery && (genre === "Todos" || artist.genre.toLowerCase().includes(genre.toLowerCase()));
@@ -49,7 +64,7 @@ export default function MusicasPage() {
       </section>
 
       <section className="catalog">
-        <div className="section-heading"><div><span className="kicker">EXPLORE</span><h2>Artistas desejados</h2></div><span className="count">{filtered.length} opções</span></div>
+        <div className="section-heading"><div><span className="kicker">EXPLORE</span><h2>Artistas desejados</h2></div><span className="count">{filtered.length} opções · {requested.length} interesses</span></div>
         <label className="searchbox"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar artista ou gênero..." aria-label="Buscar artista ou gênero" /></label>
         <div className="filters">
           {["Todos", "Arrocha", "Forró", "Funk", "Rap"].map((item) => <button key={item} onClick={() => setGenre(item)} className={genre === item ? "filter active" : "filter"}>{item}</button>)}
@@ -69,6 +84,10 @@ export default function MusicasPage() {
       </section>
 
       <section className="how">
+        <div className="notice" role="note" style={{marginBottom:24}}>
+          <span className="notice-icon">♡</span>
+          <div><strong>Seus interesses ficam salvos neste dispositivo</strong><p>Marque os artistas que você quer ver no catálogo. Essa lista é uma preferência local, não uma solicitação enviada ao artista nem uma confirmação de licença.</p></div>
+        </div>
         <span className="kicker">COMO VAI FUNCIONAR</span><h2>Da escolha à publicação</h2>
         <div className="steps">
           <div><b>01</b><strong>Escolha uma faixa</strong><p>Pesquise por música, artista, álbum ou gênero e ouça apenas as prévias autorizadas.</p></div>
