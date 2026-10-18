@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryNav from "./components/PrimaryNav";
 import LanguageWelcome from "./components/LanguageWelcome";
+import { getSavedLanguage, translate, type NexoraLanguage } from "../lib/i18n";
 
 type FeedPost = {
   id: number;
@@ -111,6 +112,15 @@ function Verified() {
 
 export default function Home() {
   const router = useRouter();
+  const [uiLanguage, setUiLanguage] = useState<NexoraLanguage>("pt-BR");
+  const t = (key: string) => translate(uiLanguage, key);
+  useEffect(() => {
+    setUiLanguage(getSavedLanguage());
+    const syncLanguage = () => setUiLanguage(getSavedLanguage());
+    window.addEventListener("nexora-language-change", syncLanguage);
+    window.addEventListener("storage", syncLanguage);
+    return () => { window.removeEventListener("nexora-language-change", syncLanguage); window.removeEventListener("storage", syncLanguage); };
+  }, []);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("tab") === "mensagens") setMessagesOpen(true);
@@ -609,19 +619,19 @@ export default function Home() {
           <span>Nexora</span>
         </a>
         <div className="topbar-actions" style={{position:"relative",zIndex:31}}> 
-          <a className="round-action" href="/pesquisar" aria-label="Pesquisar pessoas, posts e Reels" title="Pesquisar" style={{display:"grid",placeItems:"center",textDecoration:"none"}}>
+          <a className="round-action" href="/pesquisar" aria-label={t("search")} title={t("search")} style={{display:"grid",placeItems:"center",textDecoration:"none"}}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
           </a>
-          <button className="round-action" aria-label="Mensagens" onClick={() => { setMessagesOpen(true); setActiveChatId(null); }}>
+          <button className="round-action" aria-label={t("messages")} onClick={() => { setMessagesOpen(true); setActiveChatId(null); }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 3 3 10.2l7.1 2.1L12.2 20 21 3Z"/><path d="m10.1 12.3 5-5"/></svg>
           </button>
-          <a className="round-action" href="/notificacoes" onClick={(event) => { event.preventDefault(); router.push("/notificacoes"); }} aria-label="Abrir notificações e convites de colaboração" title="Abrir notificações" style={{display:"grid",placeItems:"center",textDecoration:"none",position:"relative",zIndex:32,pointerEvents:"auto",cursor:"pointer",touchAction:"manipulation"}}>
+          <a className="round-action" href="/notificacoes" onClick={(event) => { event.preventDefault(); router.push("/notificacoes"); }} aria-label={t("notifications")} title={t("notifications")} style={{display:"grid",placeItems:"center",textDecoration:"none",position:"relative",zIndex:32,pointerEvents:"auto",cursor:"pointer",touchAction:"manipulation"}}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/></svg>
           </a>
         </div>
       </header>
 
-      <section className="stories-rail" aria-label="Stories">
+      <section className="stories-rail" aria-label={t("stories")}>
         {stories.map((story) => (
           <button className="story" key={story.name} onClick={() => { if (story.own) setStoryComposerOpen(true); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
             <span className={`story-ring ${story.own ? "story-own" : ""}`}>
@@ -632,7 +642,7 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="feed" aria-label="Feed social">
+      <section className="feed" aria-label={t("socialFeed")}>
         {posts.map((post) => (
           <article className="post-card" key={post.id}>
             <header className="post-header">
@@ -641,18 +651,18 @@ export default function Home() {
                 <strong>{post.name} {post.verified && <Verified />}</strong>
                 <span>@{post.username}</span>
               </div>
-              <button className="more-button" aria-label="Mais opções" onClick={() => setNotice("Mais opções de publicação serão adicionadas.")}>⋮</button>
+              <button className="more-button" aria-label={t("moreOptions")} onClick={() => setNotice("Mais opções de publicação serão adicionadas.")}>⋮</button>
             </header>
             {post.image ? (post.mediaType === "video" ? <video className="post-image" src={post.image} controls playsInline /> : <img className="post-image" src={post.image} alt={`Publicação de ${post.name}`} />) : <div className="text-post-visual"><span>NEXORA ✦</span><p>{post.caption}</p></div>}
             <div className="post-bottom">
               <div className="post-actions">
-                <button className={`post-action ${liked.includes(post.id) ? "is-liked" : ""}`} aria-label="Curtir" onClick={() => setLiked(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id])}>
+                <button className={`post-action ${liked.includes(post.id) ? "is-liked" : ""}`} aria-label={t("like")} onClick={() => setLiked(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id])}>
                   <svg viewBox="0 0 24 24"><path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/></svg><span>{(post.likes + (liked.includes(post.id) ? 1 : 0)).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 })}</span>
                 </button>
                 <button className="post-action" aria-label="Comentários" onClick={() => setCommentsOpen(commentsOpen === post.id ? null : post.id)}>
                   <svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.2-.6L4 20l1.4-4A7.1 7.1 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg><span>{(post.comments + (comments[post.id]?.length || 0)).toLocaleString("en-US")}</span>
                 </button>
-                <button className="post-action" aria-label="Compartilhar" onClick={() => { if (navigator.share) void navigator.share({ title: `Nexora · @${post.username}`, text: post.caption }).catch(() => undefined); else { void navigator.clipboard?.writeText(post.caption); setNotice("Legenda copiada para compartilhar."); } }}>
+                <button className="post-action" aria-label={t("share")} onClick={() => { if (navigator.share) void navigator.share({ title: `Nexora · @${post.username}`, text: post.caption }).catch(() => undefined); else { void navigator.clipboard?.writeText(post.caption); setNotice("Legenda copiada para compartilhar."); } }}>
                   <svg viewBox="0 0 24 24"><path d="m21 3-7.2 18-3.5-7.3L3 10.2 21 3Z"/><path d="m10.3 13.7 5-5"/></svg><span>{post.shares}</span>
                 </button>
                 <button className={`post-action ${reposted.includes(post.id) ? "is-reposted" : ""}`} style={{gap:5,paddingInline:7,minWidth:0,whiteSpace:"nowrap",fontSize:11}} aria-label={reposted.includes(post.id) ? "Desfazer repost" : "Repostar publicação"} title={reposted.includes(post.id) ? "Desfazer repost" : "Repostar"} onClick={() => { setReposted(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id]); setNotice(reposted.includes(post.id) ? "Repost removido desta demonstração." : "Repost adicionado nesta demonstração."); }}>
