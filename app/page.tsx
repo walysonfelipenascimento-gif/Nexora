@@ -165,8 +165,6 @@ export default function Home() {
   const [storySticker, setStorySticker] = useState("");
   const [storyOverlayText, setStoryOverlayText] = useState("");
   const [storyLocation, setStoryLocation] = useState("");
-  const storyCameraInputRef_UNUSED = useRef<HTMLInputElement>(null);
-  const storyInputRef_UNUSED = useRef<HTMLInputElement>(null);
   const [notice, setNotice] = useState("");
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -570,7 +568,7 @@ export default function Home() {
     if (storyLens === "coffee") { context.font = `${Math.round(canvas.width*.12)}px sans-serif`; context.textAlign = "center"; context.fillText("☕✨",canvas.width/2,canvas.height*.28); }
     if (storySticker) { context.font = `${Math.round(canvas.width*.1)}px sans-serif`; context.textAlign = "center"; context.fillText(storySticker,canvas.width/2,canvas.height*.82); }
     if (storyOverlayText.trim()) { context.font = `bold ${Math.round(canvas.width*.06)}px sans-serif`; context.textAlign = "center"; context.lineWidth = Math.max(3,canvas.width*.006); context.strokeStyle = "#000"; context.fillStyle = "#fff"; context.strokeText(storyOverlayText.trim(),canvas.width/2,canvas.height*.55,canvas.width*.85); context.fillText(storyOverlayText.trim(),canvas.width/2,canvas.height*.55,canvas.width*.85); }
-    canvas.toBlob(blob => { if(!blob)return; const file = new File([blob],`nexora-story-${Date.now()}.jpg`,{type:"image/jpeg"}); if(storyPreview.startsWith("blob:"))URL.revokeObjectURL(storyPreview);setStoryFile(file);setStoryPreview(URL.createObjectURL(file));setNotice("Foto capturada. Confira a prévia antes de compartilhar."); }, "image/jpeg", .92);
+    canvas.toBlob(blob => { if(!blob)return; const file = new File([blob],`nexora-story-${Date.now()}.jpg`,{type:"image/jpeg"}); if(storyPreview.startsWith("blob:"))URL.revokeObjectURL(storyPreview);setStoryFile(file);setStoryPreview(URL.createObjectURL(file));storyLiveStreamRef.current?.getTracks().forEach(track=>track.stop());storyLiveStreamRef.current=null;setStoryCameraActive(false);setNotice("Foto capturada. Confira a prévia antes de compartilhar."); }, "image/jpeg", .92);
   };
 
   const startStoryRecording = () => {
@@ -586,7 +584,7 @@ export default function Home() {
         if(blob.size > 50*1024*1024) { setNotice("O vídeo excedeu o limite de 50 MB."); return; }
         const file = new File([blob],`nexora-story-${Date.now()}.webm`,{type:blob.type});
         if(storyPreview.startsWith("blob:"))URL.revokeObjectURL(storyPreview);
-        setStoryFile(file);setStoryPreview(URL.createObjectURL(file));setNotice("Vídeo gravado. Confira a prévia antes de compartilhar.");
+        setStoryFile(file);setStoryPreview(URL.createObjectURL(file));storyLiveStreamRef.current?.getTracks().forEach(track=>track.stop());storyLiveStreamRef.current=null;setStoryCameraActive(false);setNotice("Vídeo gravado. Confira a prévia antes de compartilhar.");
       };
       storyRecorderRef.current = recorder; recorder.start(); setStoryRecording(true);
     } catch { setNotice("Não foi possível iniciar a gravação neste dispositivo."); }
@@ -730,7 +728,7 @@ export default function Home() {
 </div>
 <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:10}}>
 {["😂","💖","🔥","☕","🐶","🐰","✨","🦋","💫","🎀"].map(sticker=><button key={sticker} type="button" onClick={()=>setStorySticker(current=>current===sticker?"":sticker)} aria-pressed={storySticker===sticker} style={{flex:"0 0 auto",width:42,height:42,borderRadius:14,border:storySticker===sticker?"1px solid #7eeaff":"1px solid #ffffff20",background:storySticker===sticker?"#17364a":"#ffffff08",fontSize:23}}>{sticker}</button>)}
-<button type="button" onClick={()=>setStorySticker(current=>current==="💖✨💖"?"":"💖✨💖")} style={{flex:"0 0 auto",padding:"0 12px",borderRadius:14,border:"1px solid #ffffff20",background:"#ffffff08",color:"#fff",fontSize:12}}>GIF ✨</button>
+<button type="button" onClick={()=>setStorySticker(current=>current==="💖✨💖"?"":"💖✨💖")} style={{flex:"0 0 auto",padding:"0 12px",borderRadius:14,border:"1px solid #ffffff20",background:"#ffffff08",color:"#fff",fontSize:12}}>Sticker ✨</button>
 </div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
 <input value={storyOverlayText} onChange={event=>setStoryOverlayText(event.target.value)} maxLength={80} placeholder="Aa Adicionar texto" aria-label="Texto sobre o Story" style={{minWidth:0,padding:12,borderRadius:12,border:"1px solid #ffffff20",background:"#080a13",color:"#fff"}} />
