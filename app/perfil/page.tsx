@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import PrimaryNav from "../components/PrimaryNav";
-import { NEXORA_LANGUAGES, LANGUAGE_STORAGE_KEY } from "../../lib/i18n";
+import { NEXORA_LANGUAGES, LANGUAGE_STORAGE_KEY, getSavedLanguage, translate, type NexoraLanguage } from "../../lib/i18n";
 
 type Highlight = { id: number; title: string; emoji: string; tone: string };
 const covers = [
@@ -58,6 +58,20 @@ const settingsIconColorById: Record<string, string> = {
 type TabName = typeof tabNames[number];
 
 export default function ProfilePage() {
+  const [uiLanguage, setUiLanguage] = useState<NexoraLanguage>("pt-BR");
+  useEffect(() => {
+    setUiLanguage(getSavedLanguage());
+    const syncLanguage = () => setUiLanguage(getSavedLanguage());
+    window.addEventListener("nexora-language-change", syncLanguage);
+    window.addEventListener("storage", syncLanguage);
+    return () => { window.removeEventListener("nexora-language-change", syncLanguage); window.removeEventListener("storage", syncLanguage); };
+  }, []);
+  const profileTabLabels: Record<TabName, string> = {
+    "Publicações": translate(uiLanguage, "profilePosts"),
+    "Reels": translate(uiLanguage, "profileReels"),
+    "Preferências": translate(uiLanguage, "profilePreferences"),
+    "Republicados": translate(uiLanguage, "profileReposts"),
+  };
   const [coverIndex, setCoverIndex] = useState(0);
   const [highlights, setHighlights] = useState<Highlight[]>(defaultHighlights);
   const [activeTab, setActiveTab] = useState<TabName>("Publicações");
@@ -341,7 +355,7 @@ export default function ProfilePage() {
         </section>
 
         <div className="profile-tabs" role="tablist" aria-label="Conteúdo do perfil">
-          {tabNames.map((tab) => <button key={tab} role="tab" aria-selected={activeTab===tab} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}>{tab}</button>)}
+          {tabNames.map((tab) => <button key={tab} role="tab" aria-selected={activeTab===tab} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}>{profileTabLabels[tab]}</button>)}
         </div>
         <section className="profile-content">
           {activeTab === "Preferências" ? <div>
