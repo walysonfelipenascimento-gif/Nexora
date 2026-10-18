@@ -1,4 +1,4 @@
-/* NEXORA_PROFILE_DEPLOY_SYNC: trigger Render auto-deploy for the verified profile settings fix. */
+/* NEXORA_PROFILE_DEPLOY_SYNC: retry auto-deploy after follower list glass-neon refinement; keep single-column rows. */
 "use client";
 
 import { useEffect, useState } from "react";
