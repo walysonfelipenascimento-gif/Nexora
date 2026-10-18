@@ -15,7 +15,7 @@ const items: NavItem[] = [
 
 export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "perfil" | "loja" }) {
   return <nav className="nexora-primary-nav" aria-label="Navegação principal">
-    {items.map((item) => <Link key={item.id} href={item.href} className={`nexora-nav-item ${item.id === active ? "active" : ""} ${item.id === "criar" ? "create" : ""}`} aria-current={item.id === active ? "page" : undefined} aria-label={item.label}>
+    {items.map((item) => <Link key={item.id} href={item.href} onClick={item.id === "mensagens" ? (event) => { event.preventDefault(); window.location.assign(item.href); } : undefined} className={`nexora-nav-item ${item.id === active ? "active" : ""} ${item.id === "criar" ? "create" : ""}`} aria-current={item.id === active ? "page" : undefined} aria-label={item.label}>
       <span className="nexora-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{item.icon}</svg></span>
       <span className="nexora-nav-label">{item.label}</span>
     </Link>)}
