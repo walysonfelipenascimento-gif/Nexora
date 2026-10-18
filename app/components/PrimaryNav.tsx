@@ -19,9 +19,8 @@ export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "m
   const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
   useEffect(() => {
     setLanguage(getSavedLanguage());
-    const updateLanguage = (event?: Event) => {
-      const custom = event as CustomEvent<string> | undefined;
-      setLanguage(custom?.detail ? getSavedLanguage() : getSavedLanguage());
+    const updateLanguage = () => {
+      setLanguage(getSavedLanguage());
     };
     window.addEventListener("nexora-language-change", updateLanguage);
     window.addEventListener("storage", updateLanguage);
