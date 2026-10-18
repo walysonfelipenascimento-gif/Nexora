@@ -543,30 +543,26 @@ export default function ProfilePage() {
         .profile-lower .highlight-circle{width:64px;height:64px}
         @media(max-width:420px){.profile-lower .profile-tabs{grid-template-columns:repeat(6,minmax(0,1fr))}.profile-lower .profile-tab-glyph{font-size:18px}.profile-lower .pro-dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.profile-lower .profile-grid{gap:2px}}
         @media(min-width:700px){.profile-lower .profile-tabs{justify-content:space-around}.profile-lower .profile-tab{flex:0 1 150px}.pro-dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}
-        /* REESTRUTURAÇÃO PROFUNDA — somente a área inferior; identidade superior preservada. */
+        /* Perfil social: a faixa superior fica intacta; esta seção controla apenas conteúdo abaixo das estatísticas. */
         .profile-lower{padding-top:0}
-        .profile-lower .profile-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin:22px 0 0;padding:0;border:0;border-top:1px solid #ffffff18;border-bottom:1px solid #ffffff22;background:transparent;border-radius:0;overflow:hidden}
-        .profile-lower .profile-tab{min-width:0;min-height:52px;padding:10px 2px 9px;display:flex;align-items:center;justify-content:center;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:#777b95;box-shadow:none}
-        .profile-lower .profile-tab-glyph{font-size:21px;line-height:1;font-weight:500}
+        .profile-lower .profile-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:20px 0 0;padding:0;border:0;border-top:1px solid #ffffff20;border-bottom:1px solid #ffffff20;border-radius:0;background:transparent;overflow:hidden;gap:0}
+        .profile-lower .profile-tab{display:flex;min-width:0;min-height:48px;align-items:center;justify-content:center;padding:10px 0;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:#85869d;box-shadow:none}
+        .profile-lower .profile-tab-glyph{font-size:21px;line-height:1;font-weight:400}
         .profile-lower .profile-tab-label{display:none}
-        .profile-lower .profile-tab.active{color:#f8f7ff;border-bottom:2px solid #a58aff;background:linear-gradient(180deg,transparent,#9a7aff0b);box-shadow:none}
-        .profile-lower .profile-tab:focus-visible{outline:2px solid #55e8ff;outline-offset:-3px}
-        .profile-lower .profile-tab-settings{border-left:1px solid #ffffff12}
-        .profile-lower .profile-content{margin-top:0}
-        .profile-lower .profile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;align-items:start;margin:0;padding:0}
-        .profile-lower .profile-tile,.profile-lower .profile-tile-interactive{position:relative;display:block;width:100%;min-width:0;min-height:0;aspect-ratio:1/1;border:0;border-radius:0;padding:0;margin:0;overflow:hidden;background:#10111a;box-shadow:none;appearance:none;-webkit-appearance:none;transform:none}
+        .profile-lower .profile-tab.active{color:#f7f5ff;border-bottom-color:#b18aff;background:transparent;box-shadow:none}
+        .profile-lower .profile-content{margin:0;padding:0}
+        .profile-lower .profile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:2px;margin:0;padding:0}
+        .profile-lower .profile-tile,.profile-lower .profile-tile-interactive{position:relative;display:block;width:100%;min-width:0;min-height:0;margin:0;padding:0;overflow:hidden;aspect-ratio:1/1;border:0;border-radius:0;background:#10111a;box-shadow:none;appearance:none;-webkit-appearance:none;transform:none}
         .profile-lower .profile-tile-post{aspect-ratio:1/1!important}
         .profile-lower .profile-tile-reel{aspect-ratio:9/16!important}
         .profile-lower .profile-tile img,.profile-lower .profile-tile video{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}
-        .profile-lower .profile-tile-interactive:focus-visible{outline:2px solid #65eaff;outline-offset:-3px;z-index:2}
-        .profile-lower .profile-tile-interactive:active{filter:brightness(.9);transform:none}
-        .profile-lower .profile-tile-engagement{position:absolute;inset:auto 0 0;display:flex;justify-content:center;align-items:center;gap:clamp(4px,1.7vw,12px);padding:12px 3px 6px;background:linear-gradient(transparent,#000a);font-size:clamp(8px,2.4vw,11px);font-weight:750;color:#fff;text-shadow:0 1px 3px #000;white-space:nowrap}
+        .profile-lower .profile-tile-engagement{position:absolute;inset:auto 0 0;display:flex;align-items:center;justify-content:center;gap:clamp(4px,1.7vw,12px);padding:12px 3px 6px;background:linear-gradient(transparent,#000b);color:#fff;font-size:clamp(8px,2.4vw,11px);font-weight:750;text-shadow:0 1px 3px #000;white-space:nowrap}
         .profile-lower .profile-tile-engagement span{white-space:nowrap}
-        .profile-lower .instagram-empty{min-height:250px;margin:0;padding:34px 20px;border:0;border-radius:0;background:transparent}
-        .profile-lower .instagram-empty-icon{width:66px;height:66px;margin-bottom:17px;border:1.5px solid #8d8fa5;border-radius:50%;display:grid;place-items:center;background:transparent;color:#e8e7f4;font-size:27px}
+        .profile-lower .profile-tile-interactive:focus-visible{outline:2px solid #65eaff;outline-offset:-3px;z-index:2}
+        .profile-lower .instagram-empty{display:flex;min-height:250px;flex-direction:column;align-items:center;justify-content:center;margin:0;padding:32px 20px;border:0;border-radius:0;background:transparent}
+        .profile-lower .instagram-empty-icon{display:grid;width:66px;height:66px;place-items:center;margin-bottom:17px;border:1.5px solid #8d8fa5;border-radius:50%;background:transparent;color:#e8e7f4;font-size:27px}
         .profile-lower .instagram-empty strong{font-size:18px;font-weight:650;letter-spacing:-.3px;text-align:center}
-        .profile-lower .instagram-empty p{max-width:270px;margin:8px auto 0;font-size:12px;line-height:1.55;text-align:center;color:#999bb3}
-        .profile-lower .profile-section-title{margin:18px 0 10px}
+        .profile-lower .instagram-empty p{max-width:270px;margin:8px auto 0;color:#999bb3;font-size:12px;line-height:1.55;text-align:center}
         .profile-lower .highlight-row{overflow-x:auto;scrollbar-width:none}
         .profile-lower .highlight-row::-webkit-scrollbar{display:none}
         .profile-lower .profile-viewer-media img,.profile-lower .profile-viewer-media video{object-fit:contain}
@@ -578,16 +574,16 @@ export default function ProfilePage() {
           .profile-lower .instagram-empty{min-height:300px}
         }
         @media(max-width:420px){
-          .profile-lower .profile-tabs{margin-top:18px}
-          .profile-lower .profile-tab{min-height:47px}
-          .profile-lower .profile-tab-glyph{font-size:19px}
+          .profile-lower .profile-tabs{margin-top:16px}
+          .profile-lower .profile-tab{min-height:46px}
+          .profile-lower .profile-tab-glyph{font-size:20px}
           .profile-lower .profile-grid{gap:2px}
           .profile-lower .profile-tile-engagement{gap:5px;padding:10px 2px 5px;font-size:9px}
           .profile-lower .instagram-empty{min-height:220px;padding:28px 14px}
         }
         @media(max-width:350px){
-          .profile-lower .profile-tab-glyph{font-size:17px}
-          .profile-lower .profile-tile-engagement{font-size:8px;gap:3px}
+          .profile-lower .profile-tab-glyph{font-size:18px}
+          .profile-lower .profile-tile-engagement{gap:3px;font-size:8px}
         }
       `}
 </style>
@@ -635,16 +631,9 @@ export default function ProfilePage() {
           </div>
         </section>}
 
-        <section>
-          <div className="profile-section-title"><span>{translate(uiLanguage, "notesTitle")} <small>· presença rápida</small></span><small>✦ Neon</small></div>
-          {prefs.showActivity ? <div className="note-card"><div className="note-orb">✧</div><div className="note-copy"><strong>{translate(uiLanguage, "noteNow")}</strong><p>{note || "Adicione uma nota em Editar perfil para mostrar seu momento…"}</p></div><button className="note-edit" onClick={() => setEditOpen(true)}>{translate(uiLanguage, "editProfile")}</button></div> : <div className="profile-empty"><strong>Notas ocultas</strong><p>Ative “Mostrar nota no perfil” nas configurações para exibir sua nota.</p></div>}
-        </section>
-
-        <div className="profile-tabs" role="tablist" aria-label="Conteúdo do perfil">
-          {tabNames.map((tab) => <button key={tab} role="tab" aria-selected={activeTab===tab} aria-label={profileTabLabels[tab]} title={profileTabLabels[tab]} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}><span className="profile-tab-glyph" aria-hidden="true">{tab === "Publicações" ? "▦" : tab === "Reels" ? "▶" : tab === "Republicados" ? "⟳" : "♙"}</span><span className="profile-tab-label">{profileTabLabels[tab]}</span></button>)}
-          <button type="button" role="tab" aria-label="Criar publicação ou Reel" title="Criar" aria-selected={createOpen} className="profile-tab" onClick={() => {setCreateType("post");setPostTitle("");setPostMedia("");setPostMediaKind(null);setCreateOpen(true);}}><span className="profile-tab-glyph" aria-hidden="true">＋</span><span className="profile-tab-label">Criar</span></button>
-          <button type="button" role="tab" aria-label="Preferências do perfil" title="Preferências do perfil" aria-selected={activeTab==="Preferências"} className={`profile-tab profile-tab-settings ${activeTab==="Preferências"?"active":""}`} onClick={() => setActiveTab("Preferências")}><span className="profile-tab-glyph" aria-hidden="true">⚙</span><span className="profile-tab-label">Preferências</span></button>
-        </div>
+        <nav className="profile-tabs" role="tablist" aria-label="Conteúdo do perfil">
+          {tabNames.map((tab) => <button key={tab} type="button" role="tab" aria-selected={activeTab===tab} aria-label={profileTabLabels[tab]} title={profileTabLabels[tab]} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}><span className="profile-tab-glyph" aria-hidden="true">{tab === "Publicações" ? "▦" : tab === "Reels" ? "▣" : tab === "Republicados" ? "⟳" : "♙"}</span><span className="profile-tab-label">{profileTabLabels[tab]}</span></button>)}
+        </nav>
         <section className="profile-content">
           {activeTab === "Preferências" ? <div>
             <div className="video-preference-preview"><div className="video-preference-icon">▶</div><div><strong>{translate(uiLanguage, "videoInterests")}</strong><p>A Nexora pode perguntar se você está gostando de certos vídeos. Suas respostas ficam salvas neste dispositivo e ajudam a preparar recomendações personalizadas. O Feed ainda não está conectado a essas preferências.</p><span>✦ Preferências salvas neste dispositivo</span></div></div>
