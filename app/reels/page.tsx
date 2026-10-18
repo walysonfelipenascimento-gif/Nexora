@@ -118,6 +118,7 @@ export default function ReelsPage() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [videoSourceIndex, setVideoSourceIndex] = useState(0);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [creatorTools, setCreatorTools] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
@@ -129,9 +130,12 @@ export default function ReelsPage() {
   const lastWheelMove = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const reel = demoReels[index];
+  const availableVideoSources = Array.from(new Set(demoReels.map((item) => item.video)));
+  const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
 
   useEffect(() => {
     setVideoFailed(false);
+    setVideoSourceIndex(0);
     if (!videoRef.current) return;
     if (paused) videoRef.current.pause();
     else { videoRef.current.currentTime = 0; videoRef.current.play().catch(() => undefined); }
@@ -187,6 +191,12 @@ export default function ReelsPage() {
         .reel-stage { position:relative; width:100%; height:100%; max-width:560px; margin:auto; overflow:hidden; background:#12121d; }
         .reel-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#12121d; touch-action:pan-x; }
         .reel-video-fallback { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#12121d; }
+        .reel-meme-hook { position:absolute; z-index:2; top:25%; left:8%; right:18%; max-width:430px; padding:13px 15px; border:1px solid #ffffff50; border-radius:15px; background:linear-gradient(120deg,#090a14d9,#17102bd9); box-shadow:0 10px 35px #0006; color:#fff; font-size:clamp(18px,4.8vw,27px); font-weight:950; line-height:1.15; letter-spacing:-.5px; text-shadow:0 2px 12px #000b; animation:meme-pop .35s ease-out both; pointer-events:none; }
+        .reel-meme-hook em { display:block; margin-bottom:7px; color:#7ceaff; font-size:9px; font-style:normal; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; }
+        .reel-video-error { position:absolute; inset:0; display:grid; place-content:center; gap:10px; padding:35px; text-align:center; background:radial-gradient(ellipse at 50% 40%,#28204a,#080911 72%); color:#fff; }
+        .reel-video-error strong { font-size:22px; }
+        .reel-video-error span { font-size:12px; line-height:1.5; color:#c9c5df; }
+        @keyframes meme-pop { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
         .reel-vignette { position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,#0008 0%,transparent 20%,transparent 43%,#05050a24 55%,#05050be8 100%); }
         .reel-top-controls { position:absolute; top:76px; left:14px; right:14px; display:flex; justify-content:space-between; align-items:center; }
         .glass-chip { display:flex; gap:7px; align-items:center; border:1px solid #ffffff26; border-radius:99px; padding:8px 11px; color:white; background:#08091470; backdrop-filter:blur(16px); font-size:11px; font-weight:750; }
@@ -250,7 +260,8 @@ export default function ReelsPage() {
           if (Math.abs(dy) > 48 && Math.abs(dy) > Math.abs(dx) * 1.2) move(dy < 0 ? 1 : -1);
           touchStart.current = null;
         }}>
-        {!videoFailed ? <video key={reel.id} ref={videoRef} className="reel-video" src={reel.video} playsInline loop muted={muted} onClick={() => setPaused((v) => !v)} onError={() => { setVideoFailed(true); setPaused(true); }} /> : <img className="reel-video-fallback" src={([2,4,6,8,13,15,17,19,21,23,25,27,29].includes(reel.id) ? "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1080&auto=format&fit=crop" : "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=1080&auto=format&fit=crop")} alt="Prévia visual do Reel" />}
+        {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop muted={muted} autoPlay onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
+        <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>
         <div className="reel-vignette" />
         <div className="reel-top-controls">
           <span className="glass-chip"><span className="live-dot" /> PARA VOCÊ</span>
