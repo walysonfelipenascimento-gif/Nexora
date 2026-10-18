@@ -131,7 +131,7 @@ const imageMap = {
   "general": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500&h=700&fit=crop"
 };
 
-function chooseImage(caption: string) {
+export function imageForCaption(caption: string) {
   const t = caption.toLowerCase();
   if (/professor|prova|mat[eé]ria|escola|trabalho|estudar|grupo|aula/.test(t)) return imageMap.school;
   if (/comida|comer|lanche|bolo|salada|cozinha|receita|sobremesa|pizza|geladeira|hamb[uú]rguer/.test(t)) return imageMap.food;
@@ -144,7 +144,7 @@ function chooseImage(caption: string) {
   return imageMap.general;
 }
 
-export const extraReels = captions.map((caption, i) => ({
+export const extraReels = captions.slice(0, 100).map((caption, i) => ({
   id: i + 51,
   user: ["pov_do_caos", "memes_nexora", "risada_real", "vida_sem_filtro", "kkkk_oficial"][i % 5],
   name: ["POV do Caos", "Memes Nexora", "Risada Real", "Vida sem Filtro", "KKKK Oficial"][i % 5],
@@ -156,5 +156,5 @@ export const extraReels = captions.map((caption, i) => ({
   shares: 90 + ((i * 197) % 3400),
   video: videos[i % videos.length],
   tint: i % 2 ? "violet" : "sunset",
-  image: chooseImage(caption),
+  image: imageForCaption(caption),
 }));
