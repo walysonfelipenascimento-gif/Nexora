@@ -15,7 +15,7 @@ const items: NavItem[] = [
   { id: "perfil", label: "Perfil", href: "/perfil", icon: <><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></> },
 ];
 
-export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "perfil" | "loja" }) {
+export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "mensagens" | "perfil" | "loja" }) {
   const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
   useEffect(() => {
     setLanguage(getSavedLanguage());
@@ -34,7 +34,7 @@ export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "p
   return <nav className="nexora-primary-nav" aria-label={translate(language, "mainNavigation")}>
     {items.map((item) => {
       const label = translate(language, labels[item.id] || item.id);
-      return <Link key={item.id} href={item.href} className={`nexora-nav-item ${item.id === active ? "active" : ""} ${item.id === "criar" ? "create" : ""}`} aria-current={item.id === active ? "page" : undefined} aria-label={label}>
+      return <Link key={item.id} href={item.href} onClick={() => { if (item.id === "mensagens") window.dispatchEvent(new Event("nexora-open-messages")); if (item.id === "criar") window.dispatchEvent(new Event("nexora-open-composer")); }} className={`nexora-nav-item ${item.id === active ? "active" : ""} ${item.id === "criar" ? "create" : ""}`} aria-current={item.id === active ? "page" : undefined} aria-label={label}>
         <span className="nexora-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{item.icon}</svg></span>
         <span className="nexora-nav-label">{label}</span>
       </Link>;
