@@ -603,6 +603,9 @@ export default function Home() {
           <span>Nexora</span>
         </a>
         <div className="topbar-actions">
+          <a className="round-action" href="/pesquisar" aria-label="Pesquisar pessoas, posts e Reels" title="Pesquisar" style={{display:"grid",placeItems:"center",textDecoration:"none"}}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+          </a>
           <button className="round-action" aria-label="Mensagens" onClick={() => { setMessagesOpen(true); setActiveChatId(null); }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 3 3 10.2l7.1 2.1L12.2 20 21 3Z"/><path d="m10.1 12.3 5-5"/></svg>
           </button>
