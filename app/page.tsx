@@ -120,6 +120,7 @@ export default function Home() {
   const [following, setFollowing] = useState<string[]>([]);
   const [commentsOpen, setCommentsOpen] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, string[]>>({});
+  useEffect(() => { try { const stored = localStorage.getItem("nexora-comments-v1"); if (stored) { const all = JSON.parse(stored); const feed: Record<number,string[]> = {}; Object.entries(all).forEach(([key,value]) => { if (key.startsWith("feed-") && Array.isArray(value)) feed[Number(key.slice(5))] = value as string[]; }); setComments(feed); } } catch {} const sync = (event: StorageEvent) => { if (event.key !== "nexora-comments-v1" || !event.newValue) return; try { const all = JSON.parse(event.newValue); const feed: Record<number,string[]> = {}; Object.entries(all).forEach(([key,value]) => { if (key.startsWith("feed-") && Array.isArray(value)) feed[Number(key.slice(5))] = value as string[]; }); setComments(feed); } catch {} }; window.addEventListener("storage",sync); return () => window.removeEventListener("storage",sync); }, []);
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [composerOpen, setComposerOpen] = useState(false);
   const [createMode, setCreateMode] = useState<"hub" | "post" | "reel" | "live" | "highlight">("hub");
@@ -568,7 +569,7 @@ export default function Home() {
     const value = storyCommentDraft.trim();
     if (!value) return;
     const key = currentStoryKey();
-    setStoryComments(current => ({ ...current, [key]: [...(current[key] || []), value] }));
+    setStoryComments(current => { const next = { ...current, [key]: [...(current[key] || []), value] }; try { localStorage.setItem("nexora-story-comments-v1", JSON.stringify(next)); } catch {} return next; });
     showStoryFeedback("comment", value);
     setStoryCommentDraft("");
     setStoryCommentsOpen(false);
@@ -620,7 +621,7 @@ export default function Home() {
   function addComment(id: number) {
     const value = (drafts[id] || "").trim();
     if (!value) return;
-    setComments(current => ({ ...current, [id]: [...(current[id] || []), value] }));
+    setComments(current => { const next = { ...current, [id]: [...(current[id] || []), value] }; try { const all = JSON.parse(localStorage.getItem("nexora-comments-v1") || "{}"); all["feed-"+id] = next[id]; localStorage.setItem("nexora-comments-v1", JSON.stringify(all)); } catch {} return next; });
     setDrafts(current => ({ ...current, [id]: "" }));
   }
 
