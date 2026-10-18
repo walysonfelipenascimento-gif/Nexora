@@ -1,4 +1,4 @@
-/* NEXORA_PROFILE_DEPLOY_SYNC: retry auto-deploy after follower list glass-neon refinement; keep single-column rows. */
+/* NEXORA_PROFILE_REFRESH: functional video-interest preferences + compact, honest follower preview; preserve saved profile data. */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -84,9 +84,20 @@ export default function ProfilePage() {
   const [highlightEmoji, setHighlightEmoji] = useState("🌟");
   const [toast, setToast] = useState("");
   const [prefs, setPrefs] = useState({ neon: true, showActivity: true, allowReposts: true, compactGrid: false, privateProfile: false, allowMessages: true, showLocation: true, saveData: false });
+  const [videoTopics, setVideoTopics] = useState<string[]>(["Humor", "Música"]);
+  const videoTopicOptions = ["Humor", "Música", "Games", "Lifestyle", "Tutoriais", "Esportes", "Beleza", "Comédia", "Tecnologia", "Educação"];
+  const sampleFollowers = [
+    { id: "sample-humor", username: "demo.humor", name: "Criador de humor", initials: "CH", hue: 285 },
+    { id: "sample-music", username: "demo.musica", name: "Música & covers", initials: "MC", hue: 190 },
+    { id: "sample-games", username: "demo.games", name: "Universo gamer", initials: "UG", hue: 145 },
+    { id: "sample-life", username: "demo.lifestyle", name: "Vida cotidiana", initials: "VC", hue: 330 },
+    { id: "sample-tutorials", username: "demo.tutoriais", name: "Dicas e tutoriais", initials: "DT", hue: 215 },
+    { id: "sample-sports", username: "demo.esportes", name: "Esportes", initials: "ES", hue: 25 },
+    { id: "sample-tech", username: "demo.tecnologia", name: "Tecnologia", initials: "TC", hue: 255 },
+    { id: "sample-arts", username: "demo.criativo", name: "Criatividade", initials: "CR", hue: 45 },
+  ];
   const [posts, setPosts] = useState<{id:number; title:string; emoji:string; type:"post"|"reel"}[]>([]);
   const [reposted, setReposted] = useState<string[]>([]);
-  const syntheticFollowers = Array.from({ length: 1000 }, (_, index) => { const number = String(index + 1).padStart(4, "0"); return { id: `synthetic_${number}`, username: `nexora_test_${number}`, name: `Perfil de teste ${number}`, initials: String(index + 1).slice(-2), hue: (index * 37) % 360 }; });
 
   useEffect(() => {
     try {
@@ -107,6 +118,7 @@ export default function ProfilePage() {
       if (Array.isArray(data.reposted)) setReposted(data.reposted);
       if (typeof data.coverIndex === "number") setCoverIndex(Math.max(0, Math.min(covers.length - 1, data.coverIndex)));
       if (data.prefs && typeof data.prefs === "object") setPrefs((p) => ({ ...p, ...data.prefs }));
+      if (Array.isArray(data.videoTopics)) setVideoTopics(data.videoTopics.filter((topic: unknown): topic is string => typeof topic === "string" && ["Humor", "Música", "Games", "Lifestyle", "Tutoriais", "Esportes", "Beleza", "Comédia", "Tecnologia", "Educação"].includes(topic)));
       if (data.selectedSettings && typeof data.selectedSettings === "object") setSelectedSettings(data.selectedSettings);
     } catch { /* Ignore malformed local demo data safely. */ }
   }, []);
@@ -211,7 +223,7 @@ export default function ProfilePage() {
         .profile-empty{border:1px dashed #ffffff1e;border-radius:18px;text-align:center;padding:26px 16px;background:#ffffff03}
         .profile-empty-icon{font-size:29px;margin-bottom:9px}.profile-empty strong{display:block;font-size:13px}.profile-empty p{font-size:11px;color:#9698b0;line-height:1.6;max-width:320px;margin:8px auto 14px}
         .profile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.profile-tile{aspect-ratio:1/1.15;border-radius:12px;background:linear-gradient(145deg,#121b32,#25164b 55%,#10101c);border:1px solid #ffffff12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:25px}.profile-tile span{font-size:10px;color:#c7c4dc}
-        .profile-pref{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 2px;border-bottom:1px solid #ffffff10}.profile-pref strong{display:block;font-size:12px}.profile-pref small{display:block;color:#8f92ac;font-size:10px;margin-top:5px;line-height:1.4}.video-preference-preview{display:flex;gap:13px;align-items:flex-start;padding:15px;margin:0 0 13px;border:1px solid #8b70ff42;border-radius:19px;background:radial-gradient(ellipse at 100% 0%,#a66cff20,transparent 55%),linear-gradient(120deg,#121a2d,#151023);box-shadow:inset 0 1px #ffffff0c}.video-preference-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(140deg,#55e8ff,#8a5cff 65%,#df58dc);color:#090914;font-size:18px;font-weight:900;box-shadow:0 6px 20px #8b5cff30}.video-preference-preview strong{font-size:13px}.video-preference-preview p{font-size:11px;line-height:1.65;color:#b3b5cf;margin:6px 0 8px}.video-preference-preview span{font-size:9px;color:#9eeeff;letter-spacing:.2px}.profile-switch{width:42px;height:25px;flex:0 0 42px;border:0;border-radius:99px;padding:3px;background:#39394c}.profile-switch:after{content:"";display:block;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .18s}.profile-switch.on{background:linear-gradient(90deg,#328aff,#a15aff)}.profile-switch.on:after{transform:translateX(17px)}
+        .profile-pref{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 2px;border-bottom:1px solid #ffffff10}.profile-pref strong{display:block;font-size:12px}.profile-pref small{display:block;color:#8f92ac;font-size:10px;margin-top:5px;line-height:1.4}.video-preference-preview{display:flex;gap:13px;align-items:flex-start;padding:15px;margin:0 0 13px;border:1px solid #8b70ff55;border-radius:20px;background:radial-gradient(ellipse at 100% 0%,#a66cff24,transparent 55%),linear-gradient(120deg,#121a2d,#151023);box-shadow:inset 0 1px #ffffff0c,0 12px 30px #0002}.video-preference-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(140deg,#55e8ff,#8a5cff 65%,#df58dc);color:#090914;font-size:18px;font-weight:900;box-shadow:0 6px 20px #8b5cff30}.video-preference-preview strong{font-size:13px}.video-preference-preview p{font-size:11px;line-height:1.65;color:#b3b5cf;margin:6px 0 8px}.video-preference-preview span{font-size:9px;color:#9eeeff;letter-spacing:.2px}.video-topic-panel{padding:14px;margin:0 0 10px;border:1px solid #ffffff15;border-radius:18px;background:linear-gradient(140deg,#ffffff08,#ffffff02)}.video-topic-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.video-topic-heading strong{font-size:12px}.video-topic-heading span{font-size:10px;color:#9feeff;white-space:nowrap}.video-topic-grid{display:flex;flex-wrap:wrap;gap:8px}.video-topic-chip{border:1px solid #ffffff1b;background:#ffffff06;color:#c7c8dd;border-radius:999px;padding:10px 12px;font-size:11px;font-weight:750;transition:background .18s,border-color .18s,transform .18s}.video-topic-chip.selected{color:#fff;border-color:#71ddff99;background:linear-gradient(110deg,#2c8bff35,#a15aff35);box-shadow:0 0 18px #8a5cff18,inset 0 1px #ffffff16}.video-topic-chip:active{transform:scale(.97)}.video-topic-note{font-size:10px;line-height:1.55;color:#8588a5;margin:12px 0 0}.profile-switch{width:42px;height:25px;flex:0 0 42px;border:0;border-radius:99px;padding:3px;background:#39394c}.profile-switch:after{content:"";display:block;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .18s}.profile-switch.on{background:linear-gradient(90deg,#328aff,#a15aff)}.profile-switch.on:after{transform:translateX(17px)}
         .profile-modal-backdrop{position:fixed;z-index:100;inset:0;background:#000a;backdrop-filter:blur(7px);display:flex;align-items:flex-end;justify-content:center;padding:12px}
         .profile-modal{width:100%;max-width:500px;border:1px solid #ffffff20;background:#10101b;border-radius:24px;padding:20px;box-shadow:0 15px 60px #000b}
         .profile-modal h2{font-size:17px;margin:0 0 6px}.profile-modal p{font-size:12px;color:#a2a4bd;line-height:1.5;margin:0 0 15px}
@@ -292,10 +304,10 @@ export default function ProfilePage() {
           <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={item.startsWith("http://") || item.startsWith("https://") ? item : "https://" + item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace("https://","").replace("http://","")}</a>)}</div>}
           <div className="profile-stats">
             <div className="profile-stat"><strong>{posts.length}</strong><span>Publicações</span></div>
-            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("followers")} aria-label="Ver seguidores"><strong>1.000</strong><span>Seguidores</span></button></div>
+            <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("followers")} aria-label="Ver seguidores"><strong>0</strong><span>Seguidores</span></button></div>
             <div className="profile-stat"><button className="profile-stat-button" onClick={() => setSocialListOpen("following")} aria-label="Ver seguindo"><strong>0</strong><span>Seguindo</span></button></div>
           </div>
-          <div style={{marginTop:-12,marginBottom:18,fontSize:9,color:"#8e91aa",textAlign:"center"}}>Modo de demonstração · seguidores sintéticos de teste, não públicos</div>
+          <div style={{marginTop:-12,marginBottom:18,fontSize:9,color:"#8e91aa",textAlign:"center"}}>Prévia de interface · sem seguidores reais conectados ainda</div>
         </section>
 
         {highlights.length > 0 && <section>
@@ -315,7 +327,8 @@ export default function ProfilePage() {
         </div>
         <section className="profile-content">
           {activeTab === "Preferências" ? <div>
-            <div className="video-preference-preview"><div className="video-preference-icon">▶</div><div><strong>Preferências de vídeos</strong><p>Em breve: você poderá indicar os temas e os tipos de vídeo que prefere ver no Feed e nos Reels. Este aviso é apenas uma prévia; ainda não altera as recomendações.</p><span>✦ Sistema de personalização planejado</span></div></div>
+            <div className="video-preference-preview"><div className="video-preference-icon">▶</div><div><strong>Seus interesses em vídeos</strong><p>Marque os assuntos que você mais gosta para deixar sua preferência salva. Isso prepara seu perfil para o futuro sistema de recomendações; por enquanto, a seleção ainda não altera o Feed nem os Reels.</p><span>✦ Preferências salvas neste dispositivo</span></div></div>
+            <div className="video-topic-panel"><div className="video-topic-heading"><strong>O que você gosta de assistir?</strong><span>{videoTopics.length} selecionado{videoTopics.length === 1 ? "" : "s"}</span></div><div className="video-topic-grid">{videoTopicOptions.map((topic) => { const selected = videoTopics.includes(topic); return <button key={topic} type="button" aria-pressed={selected} className={`video-topic-chip ${selected ? "selected" : ""}`} onClick={() => { const next = selected ? videoTopics.filter((item) => item !== topic) : [...videoTopics, topic]; setVideoTopics(next); save({ videoTopics: next }); setToast("Preferências de vídeos salvas neste dispositivo."); }}>{selected ? "✓ " : "＋ "}{topic}</button>; })}</div><p className="video-topic-note">Você pode marcar vários temas ou desmarcar todos. Nenhuma recomendação real é alterada até o sistema de vídeos ser conectado.</p></div>
             {([
               ["neon","Efeitos neon","Aplicar brilho sutil aos elementos do perfil."],
               ["showActivity","Mostrar atividade","Exibir sua nota atual no perfil."],
@@ -360,19 +373,19 @@ export default function ProfilePage() {
           <header className="social-list-head">
             <button className="social-list-back" onClick={() => { setSocialListOpen(null); setSocialSearch(""); }} aria-label="Voltar">‹</button>
             <div style={{minWidth:0}}><div className="social-list-title">{socialListOpen === "followers" ? "Seguidores" : "Seguindo"}</div><div className="social-list-subtitle">@{profileUsername} · perfil de criador</div></div>
-            <span className="social-list-count">{socialListOpen === "followers" ? "1.000 testes" : "0 perfis"}</span>
+            <span className="social-list-count">{socialListOpen === "followers" ? "8 exemplos" : "0 perfis"}</span>
           </header>
           <div className="social-list-search-wrap"><input className="social-list-search" value={socialSearch} onChange={event => setSocialSearch(event.target.value)} placeholder={socialListOpen === "followers" ? "⌕  Buscar nome ou @usuário" : "⌕  Buscar quem você segue"} aria-label="Buscar perfis"/></div>
           {socialListOpen === "followers" ? <div className="social-list-body">
-            <div className="social-list-summary">{syntheticFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).length} perfis encontrados · demonstração</div>
-            {syntheticFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).map((person) => <div className="social-user-row" key={person.id}>
+            <div className="social-list-summary">Prévia visual · {sampleFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).length} perfis de exemplo. Não são seguidores reais.</div>
+            {sampleFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).map((person) => <div className="social-user-row" key={person.id}>
               <div className="social-user-avatar" style={{background:`linear-gradient(145deg,hsl(${person.hue} 78% 54%),#111126 88%)`}}>{person.initials}</div>
               <div className="social-user-copy"><div className="social-user-name">{person.name}</div><div className="social-user-handle">@{person.username}</div></div>
-              <span className="social-user-tag">Teste</span>
+              <span className="social-user-tag">Exemplo</span>
             </div>)}
-            {syntheticFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).length === 0 && <div className="social-list-empty"><div><div className="social-list-empty-icon">⌕</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Nenhum perfil encontrado</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Tente buscar por outro nome ou usuário.</p></div></div>}
+            {sampleFollowers.filter(person => (person.name + " " + person.username).toLowerCase().includes(socialSearch.trim().toLowerCase())).length === 0 && <div className="social-list-empty"><div><div className="social-list-empty-icon">⌕</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Nenhum perfil encontrado</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Tente buscar por outro nome ou usuário.</p></div></div>}
           </div> : <div className="social-list-body"><div className="social-list-empty"><div><div className="social-list-empty-icon">◎</div><strong style={{display:"block",fontSize:13,color:"#f3f2ff"}}>Você ainda não segue perfis</strong><p style={{fontSize:11,lineHeight:1.6,marginTop:7}}>Quando seguir contas na Nexora, elas aparecerão aqui em uma lista compacta.</p></div></div></div>}
-          <footer className="social-list-footer">Ambiente de demonstração: os perfis desta lista são sintéticos e não criam seguidores públicos ou contas reais.</footer>
+          <footer className="social-list-footer">Prévia de interface: os perfis de exemplo servem somente para conferir o visual. Seguidores reais serão exibidos quando o sistema de contas e relacionamentos estiver conectado.</footer>
         </section>
       </div>}
       {previewOpen && <div className="profile-modal-backdrop" onClick={()=>setPreviewOpen(false)}><section className="profile-modal" role="dialog" aria-modal="true" aria-label="Pré-visualização do perfil" onClick={e=>e.stopPropagation()}><h2>Pré-visualização do perfil</h2><p>Confira sua identidade antes de salvar. Esta prévia é local, não uma página pública separada.</p><div style={{border:"1px solid #ffffff1c",borderRadius:18,overflow:"hidden",background:"#090913"}}><div style={{height:85,background:coverData?"url("+coverData+") center/cover":covers[coverIndex]}}/><div style={{padding:14}}><div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:54,height:54,borderRadius:17,background:avatarData?"url("+avatarData+") center/cover":"linear-gradient(135deg,#42e4ff,#915bff,#ee5acb)",display:"grid",placeItems:"center"}}>{avatarData?"":"👑"}</div><div><strong>{profileName||"Seu nome"}</strong><div style={{fontSize:11,color:"#a5a6bc"}}>@{profileUsername||"seu.usuario"}</div></div></div><p style={{whiteSpace:"pre-wrap",fontSize:12,lineHeight:1.6}}>{profileBio}</p>{prefs.showLocation&&profileLocation&&<small style={{color:"#a5a6bc"}}>⌖ {profileLocation}</small>}</div></div><div className="profile-modal-actions"><button className="profile-btn" onClick={()=>setPreviewOpen(false)}>Fechar prévia</button><button className="profile-btn primary" onClick={()=>{setPreviewOpen(false);setNoteDraft(note);setEditOpen(true)}}>Editar perfil</button></div></section></div>}
