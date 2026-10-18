@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getSavedLanguage, translate, type NexoraLanguage } from "../../lib/i18n";
 
 type NavItem = { id: string; label: string; href: string; icon: React.ReactNode };
 
@@ -14,10 +16,25 @@ const items: NavItem[] = [
 ];
 
 export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "perfil" | "loja" }) {
-  return <nav className="nexora-primary-nav" aria-label="Navegação principal">
+  const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
+  useEffect(() => {
+    setLanguage(getSavedLanguage());
+    const updateLanguage = (event?: Event) => {
+      const custom = event as CustomEvent<string> | undefined;
+      setLanguage(custom?.detail ? getSavedLanguage() : getSavedLanguage());
+    };
+    window.addEventListener("nexora-language-change", updateLanguage);
+    window.addEventListener("storage", updateLanguage);
+    return () => {
+      window.removeEventListener("nexora-language-change", updateLanguage);
+      window.removeEventListener("storage", updateLanguage);
+    };
+  }, []);
+  const labels: Record<string, string> = { inicio: "home", reels: "reels", criar: "create", mensagens: "messages", loja: "store", perfil: "profile" };
+  return <nav className="nexora-primary-nav" aria-label={translate(language, "mainNavigation")}>
     {items.map((item) => <Link key={item.id} href={item.href} onClick={item.id === "mensagens" ? (event) => { event.preventDefault(); window.location.assign(item.href); } : undefined} className={`nexora-nav-item ${item.id === active ? "active" : ""} ${item.id === "criar" ? "create" : ""}`} aria-current={item.id === active ? "page" : undefined} aria-label={item.label}>
       <span className="nexora-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{item.icon}</svg></span>
-      <span className="nexora-nav-label">{item.label}</span>
+      <span className="nexora-nav-label">{translate(language, labels[item.id] || item.id)}</span>
     </Link>)}
   </nav>;
 }
