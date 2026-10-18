@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./app/globals.css";
+import BrandIntro from "./components/BrandIntro";
 
 export const metadata: Metadata = {
   title: "Nexora — Conectando pessoas, marcas e oportunidades",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <BrandIntro />
+        {children}
+      </body>
     </html>
   );
 }
