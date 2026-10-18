@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DEFAULT_LANGUAGE, LANGUAGE_STORAGE_KEY, NEXORA_LANGUAGES, type NexoraLanguage } from "../../lib/i18n";
+import { DEFAULT_LANGUAGE, LANGUAGE_STORAGE_KEY, NEXORA_LANGUAGES, translate, type NexoraLanguage } from "../../lib/i18n";
 
 const ONBOARDING_KEY = "nexora-language-onboarding-seen-v1";
 
@@ -87,7 +87,7 @@ export default function LanguageWelcome() {
         </select>
         <div className="language-official">
           <strong>{text.official}</strong>
-          <div>{language === "pt-BR" ? "A Nexora está preparando uma experiência cada vez mais acessível para pessoas de diferentes países. Atualmente, a plataforma oferece 25 opções de idioma; a tradução completa da interface está sendo implementada gradualmente." : language === "en-US" ? "Nexora is preparing a more accessible experience for people in different countries. The platform currently offers 25 language options; full interface translation is being implemented gradually." : language === "es" ? "Nexora está preparando una experiencia más accesible para personas de distintos países. Actualmente ofrece 25 opciones de idioma; la traducción completa de la interfaz se está implementando gradualmente." : "Nexora — 25 idiomas disponibles. A tradução completa da interface está sendo implementada gradualmente."}</div>
+          <div>{translate(language, "officialLanguageNotice")}</div>
           <h3>{text.settings}</h3>
           <ol><li>{text.step1}</li><li>{text.step2}</li><li>{text.step3}</li></ol>
         </div>
