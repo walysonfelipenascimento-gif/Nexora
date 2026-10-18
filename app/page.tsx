@@ -163,6 +163,7 @@ export default function Home() {
   const reactionHeldRef = useRef(false);
   const storyVideoRef = useRef<HTMLVideoElement>(null);
   const storyTouchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const storyRailRef = useRef<HTMLElement | null>(null);
   const [storyComposerOpen, setStoryComposerOpen] = useState(false);
   const [storyPreview, setStoryPreview] = useState("");
   const [storyFile, setStoryFile] = useState<File | null>(null);
@@ -208,6 +209,27 @@ export default function Home() {
   const [notesDraft, setNotesDraft] = useState("");
   const [myNote, setMyNote] = useState("");
   const [noteStyle, setNoteStyle] = useState(0);
+
+  // The Stories rail is a clean, panel-free carousel: the profile closest to the center grows smoothly as the user swipes.
+  useEffect(() => {
+    const rail = storyRailRef.current;
+    if (!rail) return;
+    const updateFocus = () => {
+      const railBox = rail.getBoundingClientRect();
+      const center = railBox.left + railBox.width / 2;
+      const range = Math.max(1, railBox.width * 0.58);
+      rail.querySelectorAll<HTMLElement>(".story").forEach((item) => {
+        const itemBox = item.getBoundingClientRect();
+        const distance = Math.abs(itemBox.left + itemBox.width / 2 - center);
+        const focus = Math.max(0, 1 - distance / range);
+        item.style.setProperty("--story-focus", focus.toFixed(3));
+      });
+    };
+    updateFocus();
+    rail.addEventListener("scroll", updateFocus, { passive: true });
+    window.addEventListener("resize", updateFocus);
+    return () => { rail.removeEventListener("scroll", updateFocus); window.removeEventListener("resize", updateFocus); };
+  }, [stories.length]);
 
   // Shared navigation events keep panels responsive without forcing a full-page reload.
   useEffect(() => {
@@ -649,7 +671,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="stories-rail" aria-label={t("stories")}>
+      <section ref={storyRailRef} className="stories-rail" aria-label={t("stories")}>
         {stories.map((story) => (
           <button className="story" key={story.name} onClick={() => { if (story.own) setStoryComposerOpen(true); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
             <span className={`story-ring ${story.own ? "story-own" : ""}`}>
