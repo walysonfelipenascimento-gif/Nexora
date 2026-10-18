@@ -113,6 +113,35 @@ const profileMessages: Record<NexoraLanguage, Record<string, string>> = {
   sv: { send: "Skicka", profilePosts: "Inlägg", profileReels: "Reels", profilePreferences: "Inställningar", profileReposts: "Återpublicerat", repost: "Återpublicera", reposted: "Återpublicerat", comments: "Kommentarer" },
   sw: { send: "Tuma", profilePosts: "Machapisho", profileReels: "Reels", profilePreferences: "Mapendeleo", profileReposts: "Machapisho yaliyoshirikiwa tena", repost: "Shiriki tena", reposted: "Imeshirikiwa tena", comments: "Maoni" },
 };
+
+const profileUiMessages: Record<NexoraLanguage, Record<string, string>> = {
+  "pt-BR": { editProfile: "Editar perfil", viewFollowers: "Ver seguidores", viewFollowing: "Ver quem sigo", followers: "Seguidores", following: "Seguindo", testFollowers: "Seguidores de teste" },
+  "en-US": { editProfile: "Edit profile", viewFollowers: "View followers", viewFollowing: "View following", followers: "Followers", following: "Following", testFollowers: "Test followers" },
+  es: { editProfile: "Editar perfil", viewFollowers: "Ver seguidores", viewFollowing: "Ver seguidos", followers: "Seguidores", following: "Siguiendo", testFollowers: "Seguidores de prueba" },
+  fr: { editProfile: "Modifier le profil", viewFollowers: "Voir les abonnés", viewFollowing: "Voir les abonnements", followers: "Abonnés", following: "Abonnements", testFollowers: "Abonnés de test" },
+  de: { editProfile: "Profil bearbeiten", viewFollowers: "Follower ansehen", viewFollowing: "Abonniert ansehen", followers: "Follower", following: "Folge ich", testFollowers: "Test-Follower" },
+  it: { editProfile: "Modifica profilo", viewFollowers: "Vedi follower", viewFollowing: "Vedi seguiti", followers: "Follower", following: "Seguiti", testFollowers: "Follower di prova" },
+  ja: { editProfile: "プロフィールを編集", viewFollowers: "フォロワーを見る", viewFollowing: "フォロー中を見る", followers: "フォロワー", following: "フォロー中", testFollowers: "テスト用フォロワー" },
+  ko: { editProfile: "프로필 편집", viewFollowers: "팔로워 보기", viewFollowing: "팔로잉 보기", followers: "팔로워", following: "팔로잉", testFollowers: "테스트 팔로워" },
+  "zh-CN": { editProfile: "编辑个人资料", viewFollowers: "查看粉丝", viewFollowing: "查看关注", followers: "粉丝", following: "关注中", testFollowers: "测试粉丝" },
+  "zh-TW": { editProfile: "編輯個人檔案", viewFollowers: "查看追蹤者", viewFollowing: "查看追蹤中", followers: "追蹤者", following: "追蹤中", testFollowers: "測試追蹤者" },
+  ar: { editProfile: "تعديل الملف الشخصي", viewFollowers: "عرض المتابعين", viewFollowing: "عرض الذين أتابعهم", followers: "المتابعون", following: "أتابع", testFollowers: "متابعون تجريبيون" },
+  hi: { editProfile: "प्रोफ़ाइल संपादित करें", viewFollowers: "फ़ॉलोअर देखें", viewFollowing: "जिन्हें फ़ॉलो करते हैं देखें", followers: "फ़ॉलोअर", following: "फ़ॉलो कर रहे हैं", testFollowers: "परीक्षण फ़ॉलोअर" },
+  bn: { editProfile: "প্রোফাইল সম্পাদনা", viewFollowers: "অনুসারী দেখুন", viewFollowing: "যাদের অনুসরণ করি দেখুন", followers: "অনুসারী", following: "অনুসরণ করছি", testFollowers: "পরীক্ষামূলক অনুসারী" },
+  ru: { editProfile: "Редактировать профиль", viewFollowers: "Посмотреть подписчиков", viewFollowing: "Посмотреть подписки", followers: "Подписчики", following: "Подписки", testFollowers: "Тестовые подписчики" },
+  tr: { editProfile: "Profili düzenle", viewFollowers: "Takipçileri gör", viewFollowing: "Takip ettiklerini gör", followers: "Takipçiler", following: "Takip edilenler", testFollowers: "Test takipçileri" },
+  id: { editProfile: "Edit profil", viewFollowers: "Lihat pengikut", viewFollowing: "Lihat yang diikuti", followers: "Pengikut", following: "Mengikuti", testFollowers: "Pengikut uji coba" },
+  ms: { editProfile: "Edit profil", viewFollowers: "Lihat pengikut", viewFollowing: "Lihat yang diikuti", followers: "Pengikut", following: "Mengikuti", testFollowers: "Pengikut ujian" },
+  th: { editProfile: "แก้ไขโปรไฟล์", viewFollowers: "ดูผู้ติดตาม", viewFollowing: "ดูบัญชีที่ติดตาม", followers: "ผู้ติดตาม", following: "กำลังติดตาม", testFollowers: "ผู้ติดตามทดสอบ" },
+  vi: { editProfile: "Chỉnh sửa hồ sơ", viewFollowers: "Xem người theo dõi", viewFollowing: "Xem đang theo dõi", followers: "Người theo dõi", following: "Đang theo dõi", testFollowers: "Người theo dõi thử nghiệm" },
+  fil: { editProfile: "I-edit ang profile", viewFollowers: "Tingnan ang mga follower", viewFollowing: "Tingnan ang mga sinusundan", followers: "Mga follower", following: "Sinusundan", testFollowers: "Mga test follower" },
+  nl: { editProfile: "Profiel bewerken", viewFollowers: "Volgers bekijken", viewFollowing: "Gevolgde accounts bekijken", followers: "Volgers", following: "Volgend", testFollowers: "Testvolgers" },
+  pl: { editProfile: "Edytuj profil", viewFollowers: "Zobacz obserwujących", viewFollowing: "Zobacz obserwowanych", followers: "Obserwujący", following: "Obserwowani", testFollowers: "Testowi obserwujący" },
+  uk: { editProfile: "Редагувати профіль", viewFollowers: "Переглянути підписників", viewFollowing: "Переглянути підписки", followers: "Підписники", following: "Підписки", testFollowers: "Тестові підписники" },
+  sv: { editProfile: "Redigera profil", viewFollowers: "Visa följare", viewFollowing: "Visa följer", followers: "Följare", following: "Följer", testFollowers: "Testföljare" },
+  sw: { editProfile: "Hariri wasifu", viewFollowers: "Tazama wanaokufuata", viewFollowing: "Tazama unaowafuata", followers: "Wanaokufuata", following: "Unaowafuata", testFollowers: "Wafuasi wa majaribio" },
+};
+
 export function getSavedLanguage(): NexoraLanguage {
   if (typeof window === "undefined") return DEFAULT_LANGUAGE;
   try {
@@ -204,5 +233,5 @@ const settingsCategoryMessages: Record<NexoraLanguage, Record<string, string>> =
 };
 
 export function translate(language: NexoraLanguage, key: string): string {
-  return messages[language]?.[key] ?? extraMessages[language]?.[key] ?? profileMessages[language]?.[key] ?? settingsMessages[language]?.[key] ?? settingsCategoryMessages[language]?.[key] ?? messages[DEFAULT_LANGUAGE][key] ?? extraMessages[DEFAULT_LANGUAGE]?.[key] ?? profileMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsCategoryMessages[DEFAULT_LANGUAGE]?.[key] ?? key;
+  return messages[language]?.[key] ?? extraMessages[language]?.[key] ?? profileMessages[language]?.[key] ?? settingsMessages[language]?.[key] ?? settingsCategoryMessages[language]?.[key] ?? profileUiMessages[language]?.[key] ?? messages[DEFAULT_LANGUAGE][key] ?? extraMessages[DEFAULT_LANGUAGE]?.[key] ?? profileMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsCategoryMessages[DEFAULT_LANGUAGE]?.[key] ?? key;
 }
