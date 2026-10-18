@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryNav from "./components/PrimaryNav";
-import NexoraIntro from "./components/NexoraIntro";
 
 type FeedPost = {
   id: number;
@@ -598,7 +597,6 @@ export default function Home() {
 
   return (
     <main className="nexora-app">
-      <NexoraIntro />
       <header className="topbar" style={{position:"relative",zIndex:30}}> 
         <a className="brand" href="/" aria-label="Nexora início">
           <img className="brand-symbol" src="/nexora-logo.svg" alt="" />
