@@ -762,3 +762,80 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
   .message-row { padding-left: 13px; padding-right: 13px; }
   .nexora-primary-nav { left: 3vw; right: 3vw; padding-left: 6px; padding-right: 6px; }
 }
+
+/* Nexora Stories: clean, edge-to-edge profile carousel with a soft center-focus zoom. */
+.stories-rail {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2.5vw, 22px);
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 14px max(18px, calc((100% - 720px) / 2)) 22px;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 42%;
+  scrollbar-width: none;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  -webkit-overflow-scrolling: touch;
+}
+.stories-rail::-webkit-scrollbar { display: none; }
+.stories-rail .story {
+  position: relative;
+  flex: 0 0 78px;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  scroll-snap-align: center;
+  transform: scale(var(--story-scale, .86));
+  transform-origin: center center;
+  opacity: var(--story-opacity, .78);
+  transition: transform .24s cubic-bezier(.2,.8,.2,1), opacity .24s ease;
+  will-change: transform;
+}
+.stories-rail .story-ring {
+  width: 68px;
+  height: 68px;
+  padding: 2.5px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #a000ff20, 0 5px 18px #0005;
+}
+.stories-rail .story-ring img {
+  border: 2px solid #090a12;
+}
+.stories-rail .story-name {
+  width: 90px;
+  max-width: 90px;
+  justify-content: center;
+  overflow: hidden;
+  color: #f4f2ff;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stories-rail .story:focus-visible {
+  outline: 2px solid #65e8ff;
+  outline-offset: 5px;
+  border-radius: 16px;
+}
+@media (min-width: 760px) {
+  .stories-rail { gap: 22px; padding: 22px max(28px, calc((100% - 760px) / 2)) 30px; }
+  .stories-rail .story { flex-basis: 92px; }
+  .stories-rail .story-ring { width: 78px; height: 78px; }
+  .stories-rail .story-name { font-size: 13px; }
+}
+@media (max-width: 430px) {
+  .stories-rail { gap: 8px; padding: 12px 14px 19px; scroll-padding-inline: 40%; }
+  .stories-rail .story { flex-basis: 72px; }
+  .stories-rail .story-ring { width: 62px; height: 62px; }
+  .stories-rail .story-name { width: 82px; max-width: 82px; font-size: 10px; }
+}
