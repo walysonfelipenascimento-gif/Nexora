@@ -273,7 +273,7 @@ export default function ProfilePage() {
       if (typeof data.profileLocation === "string") setProfileLocation(data.profileLocation);
       if (typeof data.profileCategory === "string") setProfileCategory(data.profileCategory);
       if (Array.isArray(data.highlights)) setHighlights(data.highlights.filter((item: Highlight) => !["Minha vida","Resenha","Momentos","Músicas"].includes(item?.title || "")));
-      if (Array.isArray(data.posts)) setPosts(data.posts.filter((post: ProfilePost) => !((post.title === "Nova publicação" && post.emoji === "🖼️") || (post.title === "Novo Reel" && post.emoji === "▶️")))); else setPosts(sampleProfilePosts);
+      if (Array.isArray(data.posts) && data.posts.length) setPosts(data.posts.filter((post: ProfilePost) => !((post.title === "Nova publicação" && post.emoji === "🖼️") || (post.title === "Novo Reel" && post.emoji === "▶️")))); else setPosts(sampleProfilePosts);
       if (Array.isArray(data.reposted)) setReposted(data.reposted);
       if (typeof data.coverIndex === "number") setCoverIndex(Math.max(0, Math.min(covers.length - 1, data.coverIndex)));
       if (data.prefs && typeof data.prefs === "object") setPrefs((p) => ({ ...p, ...data.prefs }));
@@ -545,7 +545,7 @@ export default function ProfilePage() {
         </section>
 
         <div className="profile-tabs" role="tablist" aria-label="Conteúdo do perfil">
-          {tabNames.map((tab) => <button key={tab} role="tab" aria-selected={activeTab===tab} aria-label={profileTabLabels[tab]} title={profileTabLabels[tab]} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}><span className="profile-tab-glyph" aria-hidden="true">{tab === "Publicações" ? "▦" : tab === "Reels" ? "▣" : tab === "Republicados" ? "⟳" : "♙"}</span><span className="profile-tab-label">{profileTabLabels[tab]}</span></button>)}
+          {tabNames.map((tab) => <button key={tab} role="tab" aria-selected={activeTab===tab} aria-label={profileTabLabels[tab]} title={profileTabLabels[tab]} className={`profile-tab ${activeTab===tab?"active":""}`} onClick={() => setActiveTab(tab)}><span className="profile-tab-glyph" aria-hidden="true">{tab === "Publicações" ? "▦" : tab === "Reels" ? "▶" : tab === "Republicados" ? "⟳" : "♙"}</span><span className="profile-tab-label">{profileTabLabels[tab]}</span></button>)}
           <button type="button" role="tab" aria-label="Criar publicação ou Reel" title="Criar" aria-selected={createOpen} className="profile-tab" onClick={() => {setCreateType("post");setPostTitle("");setPostMedia("");setPostMediaKind(null);setCreateOpen(true);}}><span className="profile-tab-glyph" aria-hidden="true">＋</span><span className="profile-tab-label">Criar</span></button>
           <button type="button" role="tab" aria-label="Preferências do perfil" title="Preferências do perfil" aria-selected={activeTab==="Preferências"} className={`profile-tab profile-tab-settings ${activeTab==="Preferências"?"active":""}`} onClick={() => setActiveTab("Preferências")}><span className="profile-tab-glyph" aria-hidden="true">⚙</span><span className="profile-tab-label">Preferências</span></button>
         </div>
