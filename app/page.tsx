@@ -597,19 +597,19 @@ export default function Home() {
 
   return (
     <main className="nexora-app">
-      <header className="topbar">
+      <header className="topbar" style={{position:"relative",zIndex:30}}> 
         <a className="brand" href="/" aria-label="Nexora início">
           <img className="brand-symbol" src="/nexora-logo.svg" alt="" />
           <span>Nexora</span>
         </a>
-        <div className="topbar-actions">
+        <div className="topbar-actions" style={{position:"relative",zIndex:31}}> 
           <a className="round-action" href="/pesquisar" aria-label="Pesquisar pessoas, posts e Reels" title="Pesquisar" style={{display:"grid",placeItems:"center",textDecoration:"none"}}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
           </a>
           <button className="round-action" aria-label="Mensagens" onClick={() => { setMessagesOpen(true); setActiveChatId(null); }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 3 3 10.2l7.1 2.1L12.2 20 21 3Z"/><path d="m10.1 12.3 5-5"/></svg>
           </button>
-          <a className="round-action" href="/notificacoes" aria-label="Abrir notificações e convites de colaboração" title="Abrir notificações" style={{display:"grid",placeItems:"center",textDecoration:"none",position:"relative",zIndex:5,pointerEvents:"auto",cursor:"pointer"}}>
+          <a className="round-action" href="/notificacoes" onClick={(event) => { event.preventDefault(); router.push("/notificacoes"); }} aria-label="Abrir notificações e convites de colaboração" title="Abrir notificações" style={{display:"grid",placeItems:"center",textDecoration:"none",position:"relative",zIndex:32,pointerEvents:"auto",cursor:"pointer",touchAction:"manipulation"}}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/></svg>
           </a>
         </div>
