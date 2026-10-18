@@ -2,16 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import PrimaryNav from "../components/PrimaryNav";
+import { getSupabaseBrowserClient } from "../../lib/supabase";
 
 type Profile = { id: string; username: string; display_name: string | null; bio: string | null; avatar_url: string | null };
 type Post = { id: string; user_id: string; caption: string | null; image_url: string | null; created_at: string };
 type Kind = "todos" | "pessoas" | "posts" | "reels";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase: SupabaseClient | null = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 function Magnifier({ size = 20 }: { size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>;
@@ -32,6 +29,11 @@ export default function PesquisarPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
+  const [supabase, setSupabase] = useState<ReturnType<typeof getSupabaseBrowserClient>>(null);
+
+  useEffect(() => {
+    setSupabase(getSupabaseBrowserClient());
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -67,7 +69,7 @@ export default function PesquisarPage() {
       } finally { if (active) setLoading(false); }
     }, 260);
     return () => { active = false; window.clearTimeout(timer); };
-  }, [query, kind]);
+  }, [query, kind, supabase]);
 
   const showPeople = kind === "todos" || kind === "pessoas";
   const showPosts = kind === "todos" || kind === "posts" || kind === "reels";
@@ -94,7 +96,7 @@ export default function PesquisarPage() {
 
     <section className="discover-content">
       <div className="discover-section-title"><div><span className="discover-spark">✦</span><h2>{heading}</h2></div>{query.trim().length >= 2 && <span className="discover-count">{loading ? "Buscando…" : hasResults ? "Encontrado" : ""}</span>}</div>
-      {!supabase && <div className="discover-state"><span className="discover-state-icon">⌕</span><h3>A pesquisa está pronta para conectar</h3><p>Configure NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY no serviço para carregar perfis e publicações reais.</p></div>}
+      {!supabase && <div className="discover-state"><span className="discover-state-icon">⌕</span><h3>A pesquisa está pronta para conectar</h3><p>Configure NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY no Render para carregar perfis e publicações reais.</p></div>}
       {supabase && query.trim().length < 2 && <div className="discover-welcome"><div className="discover-orbit"><Magnifier size={34}/></div><h3>O que você quer descobrir?</h3><p>Digite pelo menos 2 caracteres para pesquisar perfis e publicações da Nexora.</p><div className="discover-shortcuts"><span>✦ Criadores</span><span>▣ Publicações</span><span>▶ Reels</span></div></div>}
       {loading && <div className="discover-loading"><span/><span/><span/></div>}
       {error && <div className="discover-state"><h3>Não conseguimos pesquisar</h3><p>{error}</p></div>}
