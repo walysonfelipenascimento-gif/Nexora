@@ -290,5 +290,7 @@ const chatMessages: Partial<Record<NexoraLanguage, Record<string, string>>> = {
 };
 
 export function translate(language: NexoraLanguage, key: string): string {
-  return messages[language]?.[key] ?? chatMessages[language]?.[key] ?? chatMessages[DEFAULT_LANGUAGE]?.[key] ?? extraMessages[language]?.[key] ?? profileMessages[language]?.[key] ?? settingsMessages[language]?.[key] ?? settingsCategoryMessages[language]?.[key] ?? profileUiMessages[language]?.[key] ?? profileSectionMessages[language]?.[key] ?? profileSectionMessages[DEFAULT_LANGUAGE][key] ?? messages[DEFAULT_LANGUAGE][key] ?? extraMessages[DEFAULT_LANGUAGE]?.[key] ?? profileMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsCategoryMessages[DEFAULT_LANGUAGE]?.[key] ?? key;
+  // Resolve every available translation for the selected language before falling back to Portuguese.
+  // This prevents missing chat keys from masking translations in profile/settings dictionaries.
+  return messages[language]?.[key] ?? chatMessages[language]?.[key] ?? extraMessages[language]?.[key] ?? profileMessages[language]?.[key] ?? settingsMessages[language]?.[key] ?? settingsCategoryMessages[language]?.[key] ?? profileUiMessages[language]?.[key] ?? profileSectionMessages[language]?.[key] ?? chatMessages[DEFAULT_LANGUAGE]?.[key] ?? profileSectionMessages[DEFAULT_LANGUAGE][key] ?? messages[DEFAULT_LANGUAGE][key] ?? extraMessages[DEFAULT_LANGUAGE]?.[key] ?? profileMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsMessages[DEFAULT_LANGUAGE]?.[key] ?? settingsCategoryMessages[DEFAULT_LANGUAGE]?.[key] ?? key;
 }
