@@ -171,6 +171,22 @@ export default function Home() {
   const [notesDraft, setNotesDraft] = useState("");
   const [myNote, setMyNote] = useState("");
   const [noteStyle, setNoteStyle] = useState(0);
+
+  // Deep links from the shared app navigation must open the intended Home panel.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get("action");
+    const tab = params.get("tab");
+    if (action === "create") setComposerOpen(true);
+    if (tab === "mensagens") {
+      setMessagesOpen(true);
+      setActiveChatId(null);
+    }
+    if (tab === "perfil") setNotice("A área de perfil está sendo preparada para conectar seus dados de conta.");
+    if (tab === "explorar") setNotice("A área Explorar está sendo preparada para descoberta de criadores e publicações.");
+    if (action || tab) window.history.replaceState({}, "", window.location.pathname);
+  }, []);
+
   useEffect(() => {
     try {
       const savedWallpapers = window.localStorage.getItem("nexora-chat-wallpapers-v1");
