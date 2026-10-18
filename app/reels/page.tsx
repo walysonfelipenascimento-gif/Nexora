@@ -89,11 +89,21 @@ export default function ReelsPage() {
   useEffect(() => {
     if (!videoRef.current) return;
     if (paused) videoRef.current.pause();
-    else videoRef.current.play().catch(() => undefined);
+    else { videoRef.current.currentTime = 0; videoRef.current.play().catch(() => undefined); }
   }, [paused, index]);
 
+  useEffect(() => {
+    const handleKeys = (event: KeyboardEvent) => {
+      if (commentsOpen || creatorTools) return;
+      if (event.key === "ArrowDown" || event.key === "PageDown") { event.preventDefault(); move(1); }
+      if (event.key === "ArrowUp" || event.key === "PageUp") { event.preventDefault(); move(-1); }
+    };
+    window.addEventListener("keydown", handleKeys);
+    return () => window.removeEventListener("keydown", handleKeys);
+  }, [commentsOpen, creatorTools]);
+
   function move(delta: number) {
-    setIndex((current) => (current + delta + demoReels.length) % demoReels.length);
+    setIndex((current) => Math.max(0, Math.min(demoReels.length - 1, current + delta)));
     setPaused(false);
     setCommentsOpen(false);
     setCreatorTools(false);
@@ -181,11 +191,13 @@ export default function ReelsPage() {
       </header>
 
       <section className="reel-stage" aria-label="Visualizador de Reels"
-        onTouchStart={(event) => { touchStart.current = event.touches[0]?.clientY ?? null; }}
+        onWheel={(event) => { if (commentsOpen || creatorTools) return; const now = Date.now(); if (Math.abs(event.deltaY) > 35 && now - lastWheelMove.current > 520) { move(event.deltaY > 0 ? 1 : -1); lastWheelMove.current = now; } }}
+        onTouchStart={(event) => { const t = event.touches[0]; touchStart.current = t ? { x: t.clientX, y: t.clientY } : null; }}
         onTouchEnd={(event) => {
-          if (touchStart.current === null) return;
-          const delta = (event.changedTouches[0]?.clientY ?? touchStart.current) - touchStart.current;
-          if (Math.abs(delta) > 55) move(delta < 0 ? 1 : -1);
+          const start = touchStart.current; if (!start || commentsOpen || creatorTools) { touchStart.current = null; return; }
+          const t = event.changedTouches[0]; if (!t) return;
+          const dx = t.clientX - start.x; const dy = t.clientY - start.y;
+          if (Math.abs(dy) > 48 && Math.abs(dy) > Math.abs(dx) * 1.2) move(dy < 0 ? 1 : -1);
           touchStart.current = null;
         }}>
         <video key={reel.id} ref={videoRef} className="reel-video" src={reel.video} playsInline loop muted={muted} onClick={() => setPaused((v) => !v)} onError={() => setPaused(true)} />
