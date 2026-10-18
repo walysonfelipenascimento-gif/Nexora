@@ -424,7 +424,6 @@ export default function ProfilePage() {
         .profile-toast{position:fixed;z-index:150;left:50%;bottom:92px;transform:translateX(-50%);background:#19172a;border:1px solid #8f78ff66;color:#fff;padding:12px 16px;border-radius:14px;font-size:12px;box-shadow:0 8px 30px #0008;width:max-content;max-width:90vw}
         @media(min-width:700px){.profile-shell{padding:0 24px}.profile-cover{height:230px}.profile-identity{padding:0 16px}.profile-tabs{gap:8px}.profile-tab{font-size:12px}.profile-grid{gap:9px}.profile-tile{border-radius:16px}}
         @media(max-width:380px){.profile-cover{height:145px}.profile-identity-actions{gap:5px}.profile-btn{padding:9px 10px;font-size:10px}.profile-name{font-size:20px}.profile-tab{padding:10px 9px;font-size:10px}.highlight-row{gap:9px}}
-      `}
         /* Nexora profile — Instagram-inspired stats, with Nexora neon identity */
         .profile-identity .profile-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:22px 0 8px;padding:0;border:0;background:transparent}
         .profile-identity .profile-stat{min-width:0;text-align:center;border:0}
@@ -437,6 +436,7 @@ export default function ProfilePage() {
         .profile-stats-note{margin:0 0 18px;color:#777e9c;font-size:9px;line-height:1.45;text-align:left}
         @media(min-width:700px){.profile-identity .profile-stats{max-width:480px;gap:24px;margin-top:24px}.profile-identity .profile-stat>span,.profile-identity .profile-stat-button span{font-size:12px}.profile-stats-note{font-size:10px}}
         @media(max-width:380px){.profile-identity .profile-stats{gap:2px;margin-top:18px}.profile-identity .profile-stat>strong,.profile-identity .profile-stat-button strong{font-size:18px}.profile-identity .profile-stat>span,.profile-identity .profile-stat-button span{font-size:10px}}
+      `}
 </style>
 
       <div className="profile-shell">
