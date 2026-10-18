@@ -249,10 +249,11 @@ export default function ProfilePage() {
               <button className="profile-btn primary" onClick={() => addSamplePost("post")}>＋ Criar</button>
             </div>
           </div>
-          <h1 className="profile-name">{profileName || "Seu nome"} <span className="profile-check" title="Identidade visual Nexora">✓</span></h1>
-          <div className="profile-handle">@{profileUsername || "seu.usuario"} · {profileCategory}</div>
+          <h1 className="profile-name">{profileName || "Seu nome"}</h1>
+          <div className="profile-handle">@{profileUsername || "seu.usuario"}</div>
+          <div style={{display:"flex",alignItems:"center",gap:7,marginTop:8,flexWrap:"wrap"}}><span style={{display:"inline-flex",alignItems:"center",gap:6,border:"1px solid #72dfff70",borderRadius:999,padding:"5px 10px",background:"linear-gradient(100deg,#55e8ff12,#a66cff12)",color:"#b9f4ff",fontSize:10,letterSpacing:".2px",backdropFilter:"blur(12px)"}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.8l2.3 1.5 2.8-.1 1.1 2.6 2.4 1.5-.7 2.7.7 2.7-2.4 1.5-1.1 2.6-2.8-.1-2.3 1.5-2.3-1.5-2.8.1-1.1-2.6-2.4-1.5.7-2.7-.7-2.7 2.4-1.5 1.1-2.6 2.8.1L12 2.8Z" fill="#63dfff" fillOpacity=".22" stroke="#74e8ff"/><path d="m8.4 12.2 2.2 2.1 5-5" stroke="#baf8ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>{profileCategory}</span><span style={{fontSize:10,color:"#8588a3"}}>Identidade do perfil</span></div>
           <p className="profile-bio">{profileBio}</p>
-          <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={item.startsWith("http://") || item.startsWith("https://") ? item : "https://" + item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace("https://","").replace("http://","")}</a>)}</div>
+          <div className="profile-bio-meta">{prefs.showLocation && profileLocation ? <span>⌖ {profileLocation}</span> : null}<span>✦ Nexora</span><span>◉ {profileCategory}</span></div>{profileLinks.trim() && <div style={{marginTop:9,fontSize:12,overflowWrap:"anywhere"}}>{profileLinks.split(",").map((item,i)=>item.trim()).filter(Boolean).map((item,i)=><a key={i} href={item.startsWith("http://") || item.startsWith("https://") ? item : "https://" + item} target="_blank" rel="noreferrer" style={{color:"#69dfff",marginRight:10}}>{item.replace("https://","").replace("http://","")}</a>)}</div>}
           <div className="profile-stats">
             <div className="profile-stat"><strong>{posts.length}</strong><span>Publicações</span></div>
             <div className="profile-stat"><strong>—</strong><span>Seguidores</span></div>
