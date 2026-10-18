@@ -609,7 +609,7 @@ export default function Home() {
           <button className="round-action" aria-label="Mensagens" onClick={() => { setMessagesOpen(true); setActiveChatId(null); }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 3 3 10.2l7.1 2.1L12.2 20 21 3Z"/><path d="m10.1 12.3 5-5"/></svg>
           </button>
-          <a className="round-action" href="/notificacoes" aria-label="Notificações e colaborações" title="Notificações" style={{display:"grid",placeItems:"center",textDecoration:"none",position:"relative"}}>
+          <a className="round-action" href="/notificacoes" aria-label="Abrir notificações e convites de colaboração" title="Abrir notificações" style={{display:"grid",placeItems:"center",textDecoration:"none",position:"relative",zIndex:5,pointerEvents:"auto",cursor:"pointer"}}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/></svg>
           </a>
         </div>
