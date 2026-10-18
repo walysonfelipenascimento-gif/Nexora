@@ -209,6 +209,24 @@ export default function Home() {
   const [myNote, setMyNote] = useState("");
   const [noteStyle, setNoteStyle] = useState(0);
 
+  // Shared navigation events keep panels responsive without forcing a full-page reload.
+  useEffect(() => {
+    const openMessages = () => {
+      setMessagesOpen(true);
+      setActiveChatId(null);
+    };
+    const openComposer = () => {
+      setCreateMode("hub");
+      setComposerOpen(true);
+    };
+    window.addEventListener("nexora-open-messages", openMessages);
+    window.addEventListener("nexora-open-composer", openComposer);
+    return () => {
+      window.removeEventListener("nexora-open-messages", openMessages);
+      window.removeEventListener("nexora-open-composer", openComposer);
+    };
+  }, []);
+
   // Deep links from the shared app navigation must open the intended Home panel.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -780,7 +798,7 @@ export default function Home() {
 
       <a href="/club" aria-label="Abrir Nexora Club" title="Nexora Club" style={{position:"fixed",left:10,top:"calc(43% - 2px)",zIndex:45,width:47,height:47,display:"grid",placeItems:"center",border:"1px solid #f0cf83",borderRadius:"16px",background:"linear-gradient(145deg,#49320c,#171006 75%)",boxShadow:"0 0 20px #d6a84735,inset 0 1px #fff4cf35",color:"#f5d98c",textDecoration:"none",touchAction:"manipulation"}}><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 7 5 4 4-7 4 7 5-4-2 12H5L3 7Z"/><path d="M5 16h14M8 21h8"/></svg><span style={{position:"absolute",top:49,fontSize:9,fontWeight:900,color:"#f5d98c",letterSpacing:.6}}>CLUB</span></a>
       <LanguageWelcome />
-      <PrimaryNav active="inicio" />
+      <PrimaryNav active={messagesOpen ? "mensagens" : "inicio"} />
     </main>
   );
 }
