@@ -32,9 +32,8 @@ const demoReels: Reel[] = [
 const navItems = [
   { id: "inicio", label: "Início", icon: "home", href: "/" },
   { id: "reels", label: "Reels", icon: "reels", href: "/reels" },
-  { id: "explorar", label: "Explorar", icon: "search", href: "/?tab=explorar" },
   { id: "criar", label: "Criar", icon: "plus", href: "/?action=create" },
-  { id: "oportunidades", label: "Oportunidades", icon: "creator", href: "/?tab=oportunidades" },
+  { id: "mensagens", label: "Mensagens", icon: "messages", href: "/?tab=mensagens" },
   { id: "perfil", label: "Perfil", icon: "profile", href: "/?tab=perfil" },
 ];
 
@@ -165,9 +164,9 @@ export default function ReelsPage() {
         .reel-progress { position:absolute; bottom:calc(81px + env(safe-area-inset-bottom)); left:15px; right:15px; height:3px; background:#ffffff52; border-radius:9px; overflow:hidden; }
         .reel-progress-fill { height:100%; width:38%; background:linear-gradient(90deg,#4de6ff,#9b6bff,#f06bce); border-radius:9px; transition:width .25s ease; }
         .reels-nav { position:absolute; z-index:10; bottom:0; left:0; right:0; min-height:68px; padding:8px 6px calc(7px + env(safe-area-inset-bottom)); display:flex; justify-content:space-around; align-items:center; background:#080910ed; border-top:1px solid #ffffff13; backdrop-filter:blur(22px); }
-        .reels-nav-item { display:flex; flex:1; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#a5a6b8; font-size:10px; font-weight:650; }
+        .reels-nav-item { display:flex; flex:1; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#a5a6b8; font-size:10px; font-weight:650; transition:color .18s ease, transform .18s ease; }
         .reels-nav-icon { width:35px; height:29px; display:grid; place-items:center; font-size:22px; border-radius:11px; }
-        .reels-nav-item.active { color:#75eaff; }
+        .reels-nav-item:active { transform:scale(.94); } .reels-nav-item.active { color:#75eaff; }
         .reels-nav-item.active .reels-nav-icon { color:#fff; background:linear-gradient(135deg,#367bff,#9c54f5); box-shadow:0 4px 18px #7458ff55; }
         .reels-overlay { position:absolute; z-index:20; inset:0; display:flex; align-items:flex-end; background:#0007; backdrop-filter:blur(5px); }
         .reels-sheet { width:100%; max-height:74%; overflow:auto; border-radius:24px 24px 0 0; padding:16px 17px calc(18px + env(safe-area-inset-bottom)); background:#10111c; border:1px solid #ffffff16; box-shadow:0 -15px 50px #0007; }
