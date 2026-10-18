@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "../../lib/supabase";
+import JamendoDiscovery from "./JamendoDiscovery";
 
 type Track = {
   id: string; title: string; album: string | null; genre: string | null;
@@ -105,6 +106,7 @@ export default function MusicasPage() {
           <a href="https://developer.spotify.com/documentation/web-api" target="_blank" rel="noreferrer"><b>Spotify API ↗</b><small>Descoberta de metadados; não concede direitos de reutilização.</small></a>
         </div>
       </section>
+      <JamendoDiscovery />
       <input className="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar música, artista ou estilo..."/>
       <div className="filters">{genres.map(g => <button key={g} className={genre === g ? "active" : ""} onClick={() => setGenre(g)}>{g}</button>)}</div>
       {loading && <div className="empty">Verificando as licenças das músicas…</div>}
