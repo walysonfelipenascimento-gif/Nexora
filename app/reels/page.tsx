@@ -153,6 +153,12 @@ export default function ReelsPage() {
         const items = Array.isArray(profile.posts) ? profile.posts : [];
         const reels = items.filter((item: any) => item && item.type === "reel" && item.mediaKind === "video" && typeof item.media === "string" && item.media.trim()).map((item: any) => ({ id: Number(item.id), user: username, name, avatar, caption: String(item.title || ""), song: String(item.song || "Som original · Nexora"), likes: Number(item.likes || 0), comments: Number(item.comments || 0), shares: Number(item.shares || 0), video: item.media, tint: "violet" })).filter((item: Reel) => Number.isFinite(item.id));
         setPublishedReels(reels);
+        const likedIds: number[] = Array.isArray(profile.likedPosts) ? profile.likedPosts : [];
+        const savedIds: number[] = Array.isArray(profile.savedPosts) ? profile.savedPosts : [];
+        const repostedIds: string[] = Array.isArray(profile.reposted) ? profile.reposted : [];
+        setLiked((current) => ({ ...current, ...Object.fromEntries(reels.map((item) => [item.id, likedIds.includes(item.id)])) }));
+        setSaved((current) => ({ ...current, ...Object.fromEntries(reels.map((item) => [item.id, savedIds.includes(item.id)])) }));
+        setReposted((current) => ({ ...current, ...Object.fromEntries(reels.map((item) => [item.id, repostedIds.includes(String(item.id))])) }));
         setIndex((current) => Math.min(current, reels.length + demoReels.length - 1));
       } catch { setPublishedReels([]); }
     };
@@ -231,6 +237,7 @@ export default function ReelsPage() {
   }
 
   function shareReel() {
+    syncProfileReel("share", reel.id);
     const url = window.location.origin + "/reels#reel-" + reel.id;
     if (navigator.share) {
       navigator.share({ title: "Reels da Nexora", text: reel.caption, url }).catch(() => undefined);
