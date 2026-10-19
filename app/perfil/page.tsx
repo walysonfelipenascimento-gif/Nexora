@@ -20,8 +20,8 @@ const sampleProfilePosts: ProfilePost[] = [
   { id: 91001, title: "Quem resiste a esses focinhos? 🐶", emoji: "🐶", type: "post", likes: 128, demoImage: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=700&q=85", demoLabel: "FOTO · DEMONSTRAÇÃO" },
   { id: 91002, title: "Pequenos momentos, muita fofura 🐰", emoji: "🐰", type: "post", likes: 86, demoImage: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&w=700&q=85", demoLabel: "FOTO · DEMONSTRAÇÃO" },
   { id: 91003, title: "Meu momento de skincare ✨", emoji: "🧴", type: "post", likes: 243, demoImage: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85", demoLabel: "FOTO · DEMONSTRAÇÃO" },
-  { id: 91004, title: "POV: o dia melhora com um pet 😂", emoji: "🐕", type: "reel", views: 1840, demoImage: "https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=600&h=1000&q=85", demoLabel: "REEL · VÍDEO EXEMPLO" },
-  { id: 91005, title: "Rotina rápida de cuidados 💜", emoji: "✨", type: "reel", views: 3260, demoImage: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?auto=format&fit=crop&w=600&h=1000&q=85", demoLabel: "REEL · VÍDEO EXEMPLO" },
+  { id: 91004, title: "POV: o dia melhora com um pet 😂", emoji: "🐕", type: "reel", mediaKind: "video", media: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", views: 1840, demoImage: "https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=600&h=1000&q=85", demoLabel: "REEL · VÍDEO EXEMPLO" },
+  { id: 91005, title: "Rotina rápida de cuidados 💜", emoji: "✨", type: "reel", mediaKind: "video", media: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", views: 3260, demoImage: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?auto=format&fit=crop&w=600&h=1000&q=85", demoLabel: "REEL · VÍDEO EXEMPLO" },
 ];
 const tabNames = ["Publicações", "Reels", "Republicados", "Marcados"] as const;
 
