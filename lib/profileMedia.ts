@@ -1,6 +1,7 @@
 const DATABASE_NAME = "nexora-media-v1";
 const STORE_NAME = "media";
 const VIDEO_PREFIX = "nexora-idb-video:";
+const resolvedUrlCache = new Map<string, string>();
 
 function openMediaDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -44,6 +45,8 @@ export async function resolveProfileMedia(media: string): Promise<string> {
 
   const key = media.slice(VIDEO_PREFIX.length);
   if (!key) return "";
+  const cachedUrl = resolvedUrlCache.get(key);
+  if (cachedUrl) return cachedUrl;
 
   let database: IDBDatabase;
   try {
@@ -58,7 +61,9 @@ export async function resolveProfileMedia(media: string): Promise<string> {
     request.onsuccess = () => {
       const value = request.result;
       if (value instanceof Blob) {
-        resolve(URL.createObjectURL(value));
+        const url = URL.createObjectURL(value);
+        resolvedUrlCache.set(key, url);
+        resolve(url);
       } else {
         resolve("");
       }
