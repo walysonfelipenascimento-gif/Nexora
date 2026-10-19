@@ -344,9 +344,9 @@ export default function ProfilePage() {
       if (Array.isArray(data.highlights)) setHighlights(data.highlights.filter((item: Highlight) => !["Minha vida","Resenha","Momentos","Músicas"].includes(item?.title || "")));
       if (Array.isArray(data.posts) && data.posts.length) {
         const loadedPosts = data.posts.filter((post: ProfilePost) => !((post.title === "Nova publicação" && post.emoji === "🖼️") || (post.title === "Novo Reel" && post.emoji === "▶️"))).map((post: ProfilePost) => post.type === "reel" && (post.id === 91004 || post.id === 91005) && !post.mediaKind ? { ...post, mediaKind: "video" as const, media: post.id === 91004 ? "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" : "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" } : post);
-        setPosts(loadedPosts);
+        setPosts((current) => { const combined = [...loadedPosts, ...current.filter((post) => post.databaseId)]; return combined.filter((post, index) => combined.findIndex((other) => other.id === post.id) === index); });
         void Promise.all(loadedPosts.filter((post: ProfilePost) => post.mediaKind === "video" && typeof post.media === "string").map(async (post: ProfilePost) => [post.id, await resolveProfileMedia(post.media as string)] as const)).then((entries) => setResolvedMediaUrls(Object.fromEntries(entries.filter((entry) => entry[1]))));
-      } else setPosts(sampleProfilePosts);
+      } else setPosts((current) => [...sampleProfilePosts, ...current.filter((post) => post.databaseId)]);
       if (Array.isArray(data.reposted)) setReposted(data.reposted);
       if (Array.isArray(data.likedPosts)) setLikedPosts(data.likedPosts.filter((id: unknown): id is number => typeof id === "number"));
       if (Array.isArray(data.savedPosts)) setSavedPosts(data.savedPosts.filter((id: unknown): id is number => typeof id === "number"));
