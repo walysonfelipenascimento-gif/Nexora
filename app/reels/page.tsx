@@ -115,6 +115,7 @@ function compactNumber(value: number) {
 
 export default function ReelsPage() {
   const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
+  const [publishedReels, setPublishedReels] = useState<Reel[]>([]);
   const [index, setIndex] = useState(0);
   const [liked, setLiked] = useState<Record<number, boolean>>({});
   const [saved, setSaved] = useState<Record<number, boolean>>({});
@@ -135,9 +136,32 @@ export default function ReelsPage() {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const lastWheelMove = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const reel = demoReels[index];
-  const availableVideoSources = reel.id === 1 ? [reel.video] : Array.from(new Set(demoReels.map((item) => item.video)));
+  const allReels = [...publishedReels, ...demoReels];
+  const reel = allReels[Math.min(index, allReels.length - 1)];
+  const availableVideoSources = reel.id === 1 ? [reel.video] : Array.from(new Set(allReels.map((item) => item.video)));
   const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
+
+  useEffect(() => {
+    const syncProfileReels = () => {
+      try {
+        const raw = window.localStorage.getItem("nexora-profile-v1");
+        if (!raw) { setPublishedReels([]); return; }
+        const profile = JSON.parse(raw);
+        const username = typeof profile.profileUsername === "string" ? profile.profileUsername : "criador";
+        const name = typeof profile.profileName === "string" ? profile.profileName : username;
+        const avatar = typeof profile.avatarData === "string" && profile.avatarData ? profile.avatarData : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop";
+        const items = Array.isArray(profile.posts) ? profile.posts : [];
+        const reels = items.filter((item: any) => item && item.type === "reel" && item.mediaKind === "video" && typeof item.media === "string" && item.media.trim()).map((item: any) => ({ id: Number(item.id), user: username, name, avatar, caption: String(item.title || ""), song: String(item.song || "Som original · Nexora"), likes: Number(item.likes || 0), comments: Number(item.comments || 0), shares: Number(item.shares || 0), video: item.media, tint: "violet" })).filter((item: Reel) => Number.isFinite(item.id));
+        setPublishedReels(reels);
+        setIndex((current) => Math.min(current, reels.length + demoReels.length - 1));
+      } catch { setPublishedReels([]); }
+    };
+    syncProfileReels();
+    const syncProfileStorage = (event: StorageEvent) => { if (event.key === "nexora-profile-v1") syncProfileReels(); };
+    window.addEventListener("storage", syncProfileStorage);
+    window.addEventListener("focus", syncProfileReels);
+    return () => { window.removeEventListener("storage", syncProfileStorage); window.removeEventListener("focus", syncProfileReels); };
+  }, []);
 
   useEffect(() => {
     try { const stored = window.localStorage.getItem("nexora-comments-v1"); if (stored) setComments(current => ({ ...current, ...JSON.parse(stored) })); } catch { /* Mantém comentários da sessão se o armazenamento estiver indisponível. */ }
@@ -176,7 +200,7 @@ export default function ReelsPage() {
   }, [commentsOpen, creatorTools]);
 
   function move(delta: number) {
-    setIndex((current) => Math.max(0, Math.min(demoReels.length - 1, current + delta)));
+    setIndex((current) => Math.max(0, Math.min(allReels.length - 1, current + delta)));
     setPaused(false);
     setCommentsOpen(false);
     setCreatorTools(false);
