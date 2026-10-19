@@ -152,7 +152,7 @@ export default function ReelsPage() {
         const name = typeof profile.profileName === "string" ? profile.profileName : username;
         const avatar = typeof profile.avatarData === "string" && profile.avatarData ? profile.avatarData : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop";
         const items = Array.isArray(profile.posts) ? profile.posts : [];
-        const reels = items.filter((item: any) => item && item.type === "reel" && item.mediaKind === "video" && typeof item.media === "string" && item.media.trim()).map((item: any) => ({ id: Number(item.id), user: username, name, avatar, caption: String(item.title || ""), song: String(item.song || "Som original · Nexora"), likes: Number(item.likes || 0), comments: Number(item.comments || 0), shares: Number(item.shares || 0), video: item.media, tint: "violet" })).filter((item: Reel) => Number.isFinite(item.id));
+        const reels = items.filter((item: any) => item && item.type === "reel" && item.mediaKind === "video" && typeof item.media === "string" && item.media.trim()).map((item: any) => ({ id: Number(item.id), user: username, name, avatar, caption: String(item.title || ""), song: String(item.song || "Som original · Nexora"), likes: Number(item.likes || 0), comments: Number(item.comments || 0), shares: Number(item.shares || 0), views: Number(item.views || 0), video: item.media, tint: "violet" })).filter((item: Reel) => Number.isFinite(item.id));
         setPublishedReels(reels);
         const likedIds: number[] = Array.isArray(profile.likedPosts) ? profile.likedPosts : [];
         const savedIds: number[] = Array.isArray(profile.savedPosts) ? profile.savedPosts : [];
@@ -182,6 +182,18 @@ export default function ReelsPage() {
     window.addEventListener("storage", syncComments);
     return () => window.removeEventListener("storage", syncComments);
   }, []);
+
+  useEffect(() => {
+    const match = window.location.hash.match(/#reel-(\\d+)/);
+    if (!match) return;
+    const targetId = Number(match[1]);
+    const targetIndex = allReels.findIndex((item) => item.id === targetId);
+    if (targetIndex >= 0) setIndex(targetIndex);
+  }, [publishedReels]);
+
+  useEffect(() => {
+    syncProfileReel("view", reel.id);
+  }, [reel.id]);
 
   useEffect(() => {
     setLanguage(getSavedLanguage());
@@ -219,7 +231,7 @@ export default function ReelsPage() {
     setCreatorTools(false);
   }
 
-  function syncProfileReel(action: "like" | "save" | "repost" | "comment" | "share", id: number, value?: string) {
+  function syncProfileReel(action: "like" | "save" | "repost" | "comment" | "share" | "view", id: number, value?: string) {
     if (!publishedReels.some((item) => item.id === id)) return;
     try {
       const raw = window.localStorage.getItem("nexora-profile-v1");
@@ -232,8 +244,10 @@ export default function ReelsPage() {
       if (action === "repost") { const ids: string[] = Array.isArray(profile.reposted) ? profile.reposted : []; profile.reposted = value === "true" ? Array.from(new Set([...ids, String(id)])) : ids.filter((item) => item !== String(id)); }
       if (action === "comment" && typeof value === "string") { const comments = profile.commentsByPost && typeof profile.commentsByPost === "object" ? profile.commentsByPost : {}; comments[String(id)] = [...(Array.isArray(comments[String(id)]) ? comments[String(id)] : []), value]; profile.commentsByPost = comments; }
       if (action === "share") post.shares = Number(post.shares || 0) + 1;
+      if (action === "view") post.views = Number(post.views || 0) + 1;
       profile.posts = posts;
       if (action === "share") setPublishedReels((current) => current.map((item) => item.id === id ? { ...item, shares: Number(item.shares || 0) + 1 } : item));
+      if (action === "view") setPublishedReels((current) => current.map((item) => item.id === id ? { ...item, views: Number(item.views || 0) + 1 } : item));
       window.localStorage.setItem("nexora-profile-v1", JSON.stringify(profile));
     } catch { /* Mantém a interação disponível mesmo se o armazenamento local falhar. */ }
   }
