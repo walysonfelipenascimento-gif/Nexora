@@ -135,11 +135,16 @@ export async function fetchStoredReels(): Promise<StoredReel[]> {
     .limit(100);
   if (error) throw error;
 
-  return (data || []).map((row: any) => ({
-    id: row.id,
-    user_id: row.user_id,
-    caption: row.caption || "",
-    image_url: row.image_url || null,
+  return (data || []).map((row: any) => {
+    // Reconstroi a URL pública pelo caminho do Storage se image_url estiver ausente.
+    const storageUrl = row.media_path
+      ? supabase.storage.from("nexora-reels").getPublicUrl(row.media_path).data.publicUrl
+      : null;
+    return {
+      id: row.id,
+      user_id: row.user_id,
+      caption: row.caption || "",
+      image_url: row.image_url || storageUrl || null,
     media_path: row.media_path || null,
     media_type: row.media_type,
     post_type: row.post_type,
@@ -148,8 +153,9 @@ export async function fetchStoredReels(): Promise<StoredReel[]> {
     share_count: Number(row.share_count || 0),
     profile: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles || { username: "criador", display_name: "Criador Nexora", avatar_url: null },
     likes_count: Number(row.likes?.[0]?.count || 0),
-    comments_count: Number(row.comments?.[0]?.count || 0),
-  }));
+      comments_count: Number(row.comments?.[0]?.count || 0),
+    };
+  });
 }
 
 export async function toggleStoredLike(postId: string, liked: boolean) {
