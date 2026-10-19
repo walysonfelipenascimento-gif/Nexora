@@ -41,6 +41,8 @@ export async function saveProfileMedia(file: Blob): Promise<string> {
 
 /** Converte referências IndexedDB em URLs temporárias reproduzíveis no navegador. */
 export async function resolveProfileMedia(media: string): Promise<string> {
+  // Marcador temporário de uma versão antiga, não uma URL reproduzível.
+  if (media === "pending-video") return "";
   if (!media.startsWith(VIDEO_PREFIX)) return media;
 
   const key = media.slice(VIDEO_PREFIX.length);
