@@ -302,7 +302,7 @@ export default function ProfilePage() {
       if (typeof data.profileLocation === "string") setProfileLocation(data.profileLocation);
       if (typeof data.profileCategory === "string") setProfileCategory(data.profileCategory);
       if (Array.isArray(data.highlights)) setHighlights(data.highlights.filter((item: Highlight) => !["Minha vida","Resenha","Momentos","Músicas"].includes(item?.title || "")));
-      if (Array.isArray(data.posts) && data.posts.length) setPosts(data.posts.filter((post: ProfilePost) => !((post.title === "Nova publicação" && post.emoji === "🖼️") || (post.title === "Novo Reel" && post.emoji === "▶️")))); else setPosts(sampleProfilePosts);
+      if (Array.isArray(data.posts) && data.posts.length) setPosts(data.posts.filter((post: ProfilePost) => !((post.title === "Nova publicação" && post.emoji === "🖼️") || (post.title === "Novo Reel" && post.emoji === "▶️"))).map((post: ProfilePost) => post.type === "reel" && (post.id === 91004 || post.id === 91005) && !post.mediaKind ? { ...post, mediaKind: "video", media: post.id === 91004 ? "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" : "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" } : post)); else setPosts(sampleProfilePosts);
       if (Array.isArray(data.reposted)) setReposted(data.reposted);
       if (Array.isArray(data.likedPosts)) setLikedPosts(data.likedPosts.filter((id: unknown): id is number => typeof id === "number"));
       if (Array.isArray(data.savedPosts)) setSavedPosts(data.savedPosts.filter((id: unknown): id is number => typeof id === "number"));
