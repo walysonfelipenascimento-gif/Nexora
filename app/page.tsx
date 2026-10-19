@@ -765,7 +765,7 @@ export default function Home() {
 
   const publishStory = async () => {
     if (!storyFile || !storyPreview) return;
-    const caption = [storyOverlayText.trim(), storyLocation, storyCaption.trim(), storySticker].filter(Boolean).join(" · ");
+    const caption = [storyOverlayText.trim(), storyLocation, storyCaption.trim(), storySticker].filter(Boolean).join(" · ").slice(0, 180);
     const supabase = getSupabaseBrowserClient();
     if (supabase) {
       try {
@@ -780,9 +780,8 @@ export default function Home() {
             .maybeSingle();
           if (profileLookupError) throw profileLookupError;
           if (!existingProfile) {
-            const suggestedUsername = String(user.user_metadata?.username || "nx_" + user.id.slice(0, 12))
-              .toLowerCase().replace(/[^a-z0-9_.]/g, "").slice(0, 30);
-            await ensureOwnProfile(user.id, suggestedUsername.length >= 3 ? suggestedUsername : "nx_" + user.id.slice(0, 12), String(user.user_metadata?.display_name || "Pessoa Nexora"));
+            const suggestedUsername = "nx_" + user.id.replace(/-/g, "").slice(0, 12);
+            await ensureOwnProfile(user.id, suggestedUsername, String(user.user_metadata?.display_name || "Pessoa Nexora"));
           }
           const uploaded = await uploadNexoraMedia(storyFile, user.id);
           const { data: savedStory, error: insertError } = await supabase
