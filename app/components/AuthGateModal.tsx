@@ -58,7 +58,7 @@ export default function AuthGateModal({ open, onClose, onSuccess }: Props) {
           <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha (mínimo 8 caracteres)" autoComplete={mode==="signin"?"current-password":"new-password"} minLength={8} required style={fieldStyle}/>
           {error&&<p role="alert" style={{margin:0,color:"#ff9db5",fontSize:12,lineHeight:1.45}}>{error}</p>}
           {notice&&<p role="status" style={{margin:0,color:"#7deac7",fontSize:12,lineHeight:1.45}}>{notice}</p>}
-          <button type="submit" disabled={busy} style={{marginTop:3,padding:"13px 15px",border:0,borderRadius:14,color:"#080914",fontWeight:900,background:"linear-gradient(100deg,#5be9ff,#a17aff)",opacity:busy?.7:1}}>{busy?"Aguarde…":mode==="signin"?"Entrar":"Criar conta"}</button>
+          <button type="submit" disabled={busy} style={{marginTop:3,padding:"13px 15px",border:0,borderRadius:14,color:"#080914",fontWeight:900,background:"linear-gradient(100deg,#5be9ff,#a17aff)",opacity:busy ? 0.7 : 1}}>{busy?"Aguarde…":mode==="signin"?"Entrar":"Criar conta"}</button>
         </form>
         <button type="button" onClick={()=>{setMode(mode==="signin"?"signup":"signin");setError("");setNotice("");}} style={{marginTop:15,width:"100%",padding:9,border:0,background:"transparent",color:"#bcb9ff",fontSize:12,fontWeight:750}}>{mode==="signin"?"Ainda não tem conta? Criar conta":"Já tem conta? Entrar"}</button>
       </section>
