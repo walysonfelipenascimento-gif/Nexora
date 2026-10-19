@@ -330,7 +330,7 @@ export default function ProfilePage() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem("nexora-profile-v1");
-      if (!raw) { setPosts(sampleProfilePosts); return; }
+      if (!raw) { setPosts((current) => [...sampleProfilePosts, ...current.filter((post) => post.databaseId)]); return; }
       const data = JSON.parse(raw);
       if (typeof data.note === "string") setNote(data.note);
       if (typeof data.profileName === "string") setProfileName(data.profileName);
