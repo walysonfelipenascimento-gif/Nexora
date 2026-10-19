@@ -372,9 +372,9 @@ export default function ReelsPage() {
             <button className="reel-follow" onClick={() => setFollowing((v) => ({ ...v, [reel.user]: !v[reel.user] }))}>{following[reel.user] ? "✓ Seguindo" : "+ Seguir"}</button>
           </div>
           <p className="reel-caption">{reel.caption}</p>
-          <div className="reel-audio"><span><UiIcon name="music" size={14} /></span><span>{reel.song}</span><span>·</span><span>{index + 1}/{demoReels.length}</span></div>
+          <div className="reel-audio"><span><UiIcon name="music" size={14} /></span><span>{reel.song}</span><span>·</span><span>{index + 1}/{allReels.length}</span></div>
         </div>
-        <div className="reel-progress"><div className="reel-progress-fill" style={{ width: `${((index + 1) / demoReels.length) * 100}%` }} /></div>
+        <div className="reel-progress"><div className="reel-progress-fill" style={{ width: `${((index + 1) / allReels.length) * 100}%` }} /></div>
       </section>
 
       <PrimaryNav active="reels" />
