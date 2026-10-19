@@ -185,7 +185,7 @@ export default function ReelsPage() {
   }, []);
 
   useEffect(() => {
-    const match = window.location.hash.match(/#reel-(\\d+)/);
+    const match = window.location.hash.match(/#reel-(\d+)/);
     if (!match) return;
     const targetId = Number(match[1]);
     const targetIndex = allReels.findIndex((item) => item.id === targetId);
