@@ -17,6 +17,20 @@ export type StoredReel = {
   comments_count: number;
 };
 
+async function ensureUserProfile(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>, user: User) {
+  const { data, error } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  if (error) throw error;
+  if (data) return;
+  const metadata = user.user_metadata || {};
+  const username = typeof metadata.username === "string" && metadata.username.trim().length >= 3
+    ? metadata.username
+    : "user_" + user.id.replace(/-/g, "").slice(0, 12);
+  const displayName = typeof metadata.display_name === "string" && metadata.display_name.trim()
+    ? metadata.display_name
+    : username;
+  await ensureOwnProfile(user.id, username, displayName);
+}
+
 export async function getCurrentNexoraUser(): Promise<User | null> {
   const supabase = getSupabaseBrowserClient();
   if (!supabase) return null;
@@ -30,6 +44,7 @@ export async function signInNexora(email: string, password: string) {
   if (!supabase) throw new Error("A conexão segura com o Supabase não está configurada.");
   const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
   if (error) throw error;
+  if (data.user) await ensureUserProfile(supabase, data.user);
   return data.user;
 }
 
@@ -142,6 +157,7 @@ export async function toggleStoredLike(postId: string, liked: boolean) {
   if (!supabase) throw new Error("Supabase não está configurado.");
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Entre na sua conta para curtir.");
+  await ensureUserProfile(supabase, user);
   if (liked) {
     const { error } = await supabase.from("likes").delete().eq("post_id", postId).eq("user_id", user.id);
     if (error) throw error;
@@ -156,6 +172,7 @@ export async function toggleStoredRelation(table: "post_saves" | "post_reposts",
   if (!supabase) throw new Error("Supabase não está configurado.");
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Entre na sua conta para usar este recurso.");
+  await ensureUserProfile(supabase, user);
   if (active) {
     const { error } = await supabase.from(table).delete().eq("post_id", postId).eq("user_id", user.id);
     if (error) throw error;
@@ -170,6 +187,7 @@ export async function addStoredComment(postId: string, body: string) {
   if (!supabase) throw new Error("Supabase não está configurado.");
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Entre na sua conta para comentar.");
+  await ensureUserProfile(supabase, user);
   const { error } = await supabase.from("comments").insert({ post_id: postId, user_id: user.id, body: body.trim().slice(0, 1000) });
   if (error) throw error;
 }
@@ -198,6 +216,7 @@ export async function recordStoredView(postId: string) {
   if (!supabase) return;
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
+  await ensureUserProfile(supabase, user);
   const { error } = await supabase.from("post_views").upsert({ post_id: postId, user_id: user.id }, { onConflict: "post_id,user_id", ignoreDuplicates: true });
   if (error) throw error;
 }
@@ -207,6 +226,7 @@ export async function recordStoredShare(postId: string) {
   if (!supabase) throw new Error("Supabase não está configurado.");
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Entre na sua conta para registrar o compartilhamento.");
+  await ensureUserProfile(supabase, user);
   const { error } = await supabase.from("post_shares").insert({ post_id: postId, user_id: user.id });
   if (error) throw error;
 }
