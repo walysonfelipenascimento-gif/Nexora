@@ -224,7 +224,7 @@ export default function ReelsPage() {
   }, []);
 
   useEffect(() => {
-    const match = window.location.hash.match(/#reel-(\d+)/);
+    const match = window.location.hash.match(/#reel-([A-Za-z0-9-]+)/);
     if (!match) return;
     const targetId = match[1];
     const targetIndex = allReels.findIndex((item) => String(item.id) === targetId);
@@ -480,6 +480,8 @@ export default function ReelsPage() {
           <form className="reels-comment-form" onSubmit={submitComment}><input value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder={translate(language, "comment")} maxLength={500} /><button type="submit">{translate(language, "send")}</button></form>
         </section>
       </div>}
+
+      <AuthGateModal open={authOpen} onClose={() => setAuthOpen(false)} onSuccess={() => { setSignedIn(true); window.location.reload(); }} />
 
       {creatorTools && <div className="reels-overlay" onClick={() => setCreatorTools(false)}>
         <section className="reels-sheet" onClick={(event) => event.stopPropagation()}>
