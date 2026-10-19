@@ -144,7 +144,7 @@ export async function fetchStoredReels(): Promise<StoredReel[]> {
       id: row.id,
       user_id: row.user_id,
       caption: row.caption || "",
-      image_url: row.image_url || storageUrl || null,
+      image_url: storageUrl || row.image_url || null,
     media_path: row.media_path || null,
     media_type: row.media_type,
     post_type: row.post_type,
