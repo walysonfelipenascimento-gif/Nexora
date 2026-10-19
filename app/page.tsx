@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import PrimaryNav from "./components/PrimaryNav";
 import LanguageWelcome from "./components/LanguageWelcome";
 import { getSavedLanguage, translate, type NexoraLanguage } from "../lib/i18n";
+import { ensureOwnProfile, getSupabaseBrowserClient, uploadNexoraMedia } from "../lib/supabase";
 
 type FeedPost = {
   id: number;
@@ -176,6 +177,39 @@ export default function Home() {
   const [storyOverlayText, setStoryOverlayText] = useState("");
   const [storyLocation, setStoryLocation] = useState("");
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadRemoteStories = async () => {
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) return;
+      const { data, error } = await supabase
+        .from("stories")
+        .select("id,user_id,media_url,media_type,caption,created_at,profiles(display_name,username,avatar_url)")
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (cancelled || error || !data) return;
+      const remoteStories: StoryItem[] = data.map((row: any) => {
+        const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+        return {
+          id: row.id,
+          name: profile?.display_name || profile?.username || "Pessoa Nexora",
+          own: row.user_id === authData.user.id,
+          image: row.media_url,
+          mediaType: row.media_type === "video" ? "video" : "image",
+          caption: row.caption || "",
+        };
+      });
+      if (!cancelled && remoteStories.length) {
+        setStories(current => [...remoteStories, ...current.filter(item => !item.id || !remoteStories.some(remote => remote.id === item.id))]);
+      }
+    };
+    void loadRemoteStories();
+    return () => { cancelled = true; };
+  }, []);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [chatSearch, setChatSearch] = useState("");
@@ -729,6 +763,93 @@ export default function Home() {
     setStoryRecording(false);
   };
 
+  const publishStory = async () => {
+    if (!storyFile || !storyPreview) return;
+    const caption = [storyOverlayText.trim(), storyLocation, storyCaption.trim(), storySticker].filter(Boolean).join(" · ");
+    const supabase = getSupabaseBrowserClient();
+    if (supabase) {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        const user = authData.user;
+        if (user) {
+          const { data: existingProfile, error: profileLookupError } = await supabase
+            .from("profiles")
+            .select("id,username,display_name")
+            .eq("id", user.id)
+            .maybeSingle();
+          if (profileLookupError) throw profileLookupError;
+          if (!existingProfile) {
+            const suggestedUsername = String(user.user_metadata?.username || "nx_" + user.id.slice(0, 12))
+              .toLowerCase().replace(/[^a-z0-9_.]/g, "").slice(0, 30);
+            await ensureOwnProfile(user.id, suggestedUsername.length >= 3 ? suggestedUsername : "nx_" + user.id.slice(0, 12), String(user.user_metadata?.display_name || "Pessoa Nexora"));
+          }
+          const uploaded = await uploadNexoraMedia(storyFile, user.id);
+          const { data: savedStory, error: insertError } = await supabase
+            .from("stories")
+            .insert({
+              user_id: user.id,
+              media_url: uploaded.signedUrl,
+              media_type: storyFile.type.startsWith("video/") ? "video" : "image",
+              caption,
+            })
+            .select("id")
+            .single();
+          if (insertError) throw insertError;
+          const ownStory: StoryItem = {
+            id: savedStory.id,
+            name: String(user.user_metadata?.display_name || existingProfile?.display_name || existingProfile?.username || "Você"),
+            own: true,
+            image: uploaded.signedUrl,
+            mediaType: storyFile.type.startsWith("video/") ? "video" : "image",
+            caption,
+          };
+          setStories(current => [ownStory, ...current.filter(item => !item.own || !item.image)]);
+          setActiveStoryIndex(0);
+          setActiveStory(ownStory);
+          stopStoryCamera();
+          setStoryComposerOpen(false);
+          setStoryFile(null);
+          setStoryPreview("");
+          setStoryCaption("");
+          setStoryOverlayText("");
+          setStorySticker("");
+          setStoryLocation("");
+          setStoryLens("none");
+          setStoryEffect("none");
+          setNotice("Story publicado na Nexora. Ele ficará disponível por 24 horas.");
+          return;
+        }
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : "erro desconhecido";
+        setNotice("Não foi possível publicar o Story na conta: " + detail);
+        return;
+      }
+    }
+    const localStory: StoryItem = {
+      name: "Licinhosz.bb",
+      own: true,
+      image: storyPreview,
+      mediaType: storyFile.type.startsWith("video/") ? "video" : "image",
+      caption,
+      id: "local-" + Date.now(),
+    };
+    setStories(current => [current[0], localStory, ...current.slice(1).filter(item => !item.own || !item.image)]);
+    setActiveStoryIndex(1);
+    setActiveStory(localStory);
+    stopStoryCamera();
+    setStoryComposerOpen(false);
+    setStoryFile(null);
+    setStoryPreview("");
+    setStoryCaption("");
+    setStoryOverlayText("");
+    setStorySticker("");
+    setStoryLocation("");
+    setStoryLens("none");
+    setStoryEffect("none");
+    setNotice("Story salvo apenas nesta sessão. Para publicar entre contas, é necessário entrar em uma conta Nexora.");
+  };
+
   return (
     <main className="nexora-app">
       <header className="topbar" style={{position:"relative",zIndex:30}}> 
@@ -891,9 +1012,9 @@ export default function Home() {
 <div aria-label="Efeitos da câmera" style={{display:"flex",gap:13,overflowX:"auto",padding:"4px 3px 14px",scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>{([{id:"none",label:"Original",icon:"◉"},{id:"soft",label:"Suave",icon:"✧"},{id:"warm",label:"Dourado",icon:"☼"},{id:"mono",label:"P&B",icon:"◐"},{id:"neon",label:"Neon",icon:"✦"},{id:"blur",label:"Desfoque",icon:"◌"},{id:"aurora",label:"Aurora",icon:"❋"},{id:"dream",label:"Dream",icon:"✧"},{id:"vintage",label:"Vintage",icon:"◍"},{id:"rose",label:"Rose",icon:"♡"},{id:"cool",label:"Frio",icon:"❄"},{id:"cinema",label:"Cinema",icon:"▣"},{id:"sunset",label:"Pôr do sol",icon:"◉"},{id:"invert",label:"Invertido",icon:"◐"},{id:"glow",label:"Brilho",icon:"✦"}] as const).map(lens=><button type="button" key={lens.id} onClick={()=>{setStoryLens(lens.id);setStoryEffect(lens.id==="none"?"none":lens.id==="warm"?"warm":lens.id==="mono"?"mono":lens.id==="glow"?"glow":lens.id==="dream"?"dream":"none");}} aria-pressed={storyLens===lens.id} style={{flex:"0 0 58px",display:"flex",flexDirection:"column",alignItems:"center",gap:6,border:0,background:"transparent",color:"#fff",fontSize:10,opacity:storyLens===lens.id?1:.76}}><span style={{width:50,height:50,display:"grid",placeItems:"center",borderRadius:"50%",border:storyLens===lens.id?"2px solid #fff":"2px solid #ffffff40",outline:storyLens===lens.id?"2px solid #111":"none",outlineOffset:2,background:({none:"#24242b",soft:"linear-gradient(135deg,#ddd,#777)",warm:"linear-gradient(135deg,#ffd58c,#a55b2b)",mono:"linear-gradient(135deg,#fff,#111)",neon:"linear-gradient(135deg,#28e5ff,#e13bff)",blur:"linear-gradient(135deg,#9ba7c4,#353746)",aurora:"linear-gradient(135deg,#34e6bc,#744dff)",dream:"linear-gradient(135deg,#f3b7ff,#7ebaff)",vintage:"linear-gradient(135deg,#d5a66a,#61452c)",rose:"linear-gradient(135deg,#ffb0d1,#9b4f85)",cool:"linear-gradient(135deg,#a7e8ff,#4354a4)",cinema:"linear-gradient(135deg,#555,#171717)",sunset:"linear-gradient(135deg,#ffb35c,#ab397a)",invert:"linear-gradient(135deg,#000,#fff)",glow:"linear-gradient(135deg,#fff3a1,#ff75dc)"} as Record<string,string>)[lens.id],fontSize:21}}>{lens.icon}</span><span>{lens.label}</span></button>)}</div>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
 <button type="button" onClick={()=>storyInputRef.current?.click()} aria-label="Abrir galeria" style={{width:54,height:54,flex:"0 0 54px",borderRadius:10,border:"2px solid #ffffff65",background:"#29292f",color:"#fff",fontSize:23}}>{storyPreview?"✓":"▧"}</button>
-<button type="button" onClick={()=>{if(storyCameraActive){if(storyRecording)stopStoryRecording();else startStoryRecording();}else if(storyPreview){setNotice("Prévia pronta. Você pode compartilhar o Story.");}else startStoryCamera();}} aria-label={storyRecording?"Parar gravação":storyCameraActive?"Gravar vídeo":"Abrir câmera"} style={{width:76,height:76,flex:"0 0 76px",borderRadius:"50%",border:"5px solid #fff",background:storyRecording?"#e52b49":"#ffffff20",boxShadow:"0 0 0 2px #ffffff30",display:"grid",placeItems:"center",padding:5}}><span style={{width:storyRecording?25:56,height:storyRecording?25:56,borderRadius:storyRecording?5:"50%",background:storyRecording?"#e52b49":"#fff",display:"block"}}/></button>
-<button type="button" onClick={()=>{if(!storyPreview||!storyFile){storyInputRef.current?.click();return;}const a=document.createElement("a");a.href=storyPreview;a.download=storyFile.name||("nexora-story-"+Date.now());document.body.appendChild(a);a.click();a.remove();setNotice("Mídia preparada para salvar no dispositivo.");}} aria-label="Baixar mídia" title="Baixar mídia" style={{width:54,height:54,flex:"0 0 54px",borderRadius:"50%",border:"1px solid #ffffff35",background:"#202027",color:"#fff",fontSize:22}}>↓</button></div>
-{storyFile&&storyPreview&&<div style={{display:"flex",gap:8,marginTop:12,alignItems:"center"}}><input value={storyCaption} onChange={event=>setStoryCaption(event.target.value)} maxLength={180} placeholder="Escreva uma legenda..." style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:22,border:"1px solid #ffffff22",background:"#17171d",color:"#fff",outline:"none"}}/><button type="button" onClick={()=>{if(!storyFile||!storyPreview)return;const caption=[storyOverlayText.trim(),storyLocation,storyCaption.trim(),storySticker].filter(Boolean).join(" · ");const ownStory:StoryItem={name:"Licinhosz.bb",own:true,image:storyPreview,mediaType:storyFile.type.startsWith("video/")?"video":"image",caption,id:"local-"+Date.now()};setStories(current=>[current[0],ownStory,...current.slice(1).filter(item=>!item.own||!item.image)]);setActiveStoryIndex(1);setActiveStory(ownStory);stopStoryCamera();setStoryComposerOpen(false);setStoryFile(null);setStoryPreview("");setStoryCaption("");setStoryOverlayText("");setStorySticker("");setStoryLocation("");setStoryLens("none");setStoryEffect("none");setNotice("Story adicionado ao Feed nesta sessão do navegador. A publicação entre contas ainda requer armazenamento conectado.");}} disabled={!storyFile||!storyPreview} style={{padding:"11px 15px",border:0,borderRadius:22,background:!storyFile||!storyPreview?"#35353b":"linear-gradient(100deg,#50e5ff,#8e67ff 65%,#e45bd5)",color:!storyFile||!storyPreview?"#85858d":"#080916",fontWeight:800,whiteSpace:"nowrap"}}>Compartilhar</button></div>}
+<button type="button" onClick={()=>{if(storyCameraActive){if(storyRecording)stopStoryRecording();else captureStoryPhoto();}else if(storyPreview){setNotice("Prévia pronta. Você pode compartilhar o Story.");}else startStoryCamera();}} aria-label={storyRecording?"Parar gravação":storyCameraActive?"Capturar foto":"Abrir câmera"} style={{width:76,height:76,flex:"0 0 76px",borderRadius:"50%",border:"5px solid #fff",background:storyRecording?"#e52b49":"#ffffff20",boxShadow:"0 0 0 2px #ffffff30",display:"grid",placeItems:"center",padding:5}}><span style={{width:storyRecording?25:56,height:storyRecording?25:56,borderRadius:storyRecording?5:"50%",background:storyRecording?"#e52b49":"#fff",display:"block"}}/></button>
+<button type="button" onClick={()=>{if(storyRecording){stopStoryRecording();return;}if(storyCameraActive){startStoryRecording();return;}if(!storyPreview||!storyFile){storyInputRef.current?.click();return;}const a=document.createElement("a");a.href=storyPreview;a.download=storyFile.name||("nexora-story-"+Date.now());document.body.appendChild(a);a.click();a.remove();setNotice("Mídia preparada para salvar no dispositivo.");}} aria-label={storyRecording?"Parar gravação":storyCameraActive?"Gravar vídeo":"Baixar mídia"} title={storyCameraActive?"Gravar vídeo":"Baixar mídia"} style={{width:54,height:54,flex:"0 0 54px",borderRadius:"50%",border:"1px solid #ffffff35",background:"#202027",color:"#fff",fontSize:22}}>↓</button></div>
+{storyFile&&storyPreview&&<div style={{display:"flex",gap:8,marginTop:12,alignItems:"center"}}><input value={storyCaption} onChange={event=>setStoryCaption(event.target.value)} maxLength={180} placeholder="Escreva uma legenda..." style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:22,border:"1px solid #ffffff22",background:"#17171d",color:"#fff",outline:"none"}}/><button type="button" onClick={publishStory} disabled={!storyFile||!storyPreview} style={{padding:"11px 15px",border:0,borderRadius:22,background:!storyFile||!storyPreview?"#35353b":"linear-gradient(100deg,#50e5ff,#8e67ff 65%,#e45bd5)",color:!storyFile||!storyPreview?"#85858d":"#080916",fontWeight:800,whiteSpace:"nowrap"}}>Compartilhar</button></div>}
 <div style={{textAlign:"center",fontSize:10,color:"#777783",paddingTop:8}}>Foto ou vídeo · até 50 MB · confira a prévia antes de publicar</div></div>
 </section></div>}      {composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title" style={{maxHeight:"min(88dvh,760px)",overflowY:"auto"}}><header><div><small>NEXORA · CENTRAL DE CRIAÇÃO</small><h2 id="composer-title">{createMode === "hub" ? "O que vamos criar?" : createMode === "post" ? "Nova publicação" : createMode === "reel" ? "Criar Reel" : "Preparar Live"}</h2></div><button onClick={() => {setComposerOpen(false);setCreateMode("hub");}} aria-label="Fechar">×</button></header>
         {createMode === "hub" ? <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,marginTop:16}}>
