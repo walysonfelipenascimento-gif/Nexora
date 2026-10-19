@@ -211,14 +211,15 @@ export async function fetchStoredComments(postId: string) {
   }));
 }
 
-export async function recordStoredView(postId: string) {
+export async function recordStoredView(postId: string): Promise<boolean> {
   const supabase = getSupabaseBrowserClient();
-  if (!supabase) return;
+  if (!supabase) return false;
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return false;
   await ensureUserProfile(supabase, user);
-  const { error } = await supabase.from("post_views").upsert({ post_id: postId, user_id: user.id }, { onConflict: "post_id,user_id", ignoreDuplicates: true });
+  const { data, error } = await supabase.from("post_views").upsert({ post_id: postId, user_id: user.id }, { onConflict: "post_id,user_id", ignoreDuplicates: true }).select("post_id");
   if (error) throw error;
+  return Boolean(data?.length);
 }
 
 export async function recordStoredShare(postId: string) {
