@@ -4,11 +4,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isIndexedProfileMedia, resolveProfileMedia, saveProfileMedia } from "../../lib/profileMedia";
+import AuthGateModal from "../components/AuthGateModal";
+import { fetchStoredReels, getCurrentNexoraUser, publishReelToSupabase } from "../../lib/reelsRepository";
 import PrimaryNav from "../components/PrimaryNav";
 import { NEXORA_LANGUAGES, LANGUAGE_STORAGE_KEY, getSavedLanguage, translate, type NexoraLanguage } from "../../lib/i18n";
 
 type Highlight = { id: number; title: string; emoji: string; tone: string };
-type ProfilePost = { id:number; title:string; emoji:string; type:"post"|"reel"; media?:string; mediaKind?:"image"|"video"; demoImage?:string; createdAt?:number; likes?:number; views?:number; comments?:number; shares?:number; song?:string; demoTone?:string; demoLabel?:string };
+type ProfilePost = { id:number; databaseId?:string; title:string; emoji:string; type:"post"|"reel"; media?:string; mediaKind?:"image"|"video"; demoImage?:string; createdAt?:number; likes?:number; views?:number; comments?:number; shares?:number; song?:string; demoTone?:string; demoLabel?:string };
 const covers = [
   "radial-gradient(ellipse at 15% 110%,#00d9ff88,transparent 42%),radial-gradient(ellipse at 85% 0%,#df35ff88,transparent 44%),linear-gradient(130deg,#070b1b,#18113d 55%,#090713)",
   "radial-gradient(ellipse at 50% 120%,#ff4fa888,transparent 48%),linear-gradient(135deg,#140b23,#4b1756,#080817)",
@@ -256,10 +258,13 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<ProfilePost[]>(sampleProfilePosts);
   const [resolvedMediaUrls, setResolvedMediaUrls] = useState<Record<number, string>>({});
   const [createOpen, setCreateOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [createType, setCreateType] = useState<"post"|"reel">("post");
   const [postTitle, setPostTitle] = useState("");
   const [postMedia, setPostMedia] = useState("");
   const [postMediaPreview, setPostMediaPreview] = useState("");
+  const [postMediaFile, setPostMediaFile] = useState<File | null>(null);
   const [postMediaKind, setPostMediaKind] = useState<"image"|"video"|null>(null);
   const [reposted, setReposted] = useState<string[]>([]);
   const [openedPost, setOpenedPost] = useState<ProfilePost | null>(null);
@@ -279,6 +284,36 @@ export default function ProfilePage() {
   const [reelPaused, setReelPaused] = useState(false);
   const [reelFollowing, setReelFollowing] = useState(false);
   useEffect(() => { if (openedPost?.type === "reel") { setReelMuted(true); setReelPaused(false); setReelFollowing(false); } }, [openedPost?.id, openedPost?.type]);
+  useEffect(() => {
+    let alive = true;
+    getCurrentNexoraUser().then((user) => {
+      if (!alive) return;
+      setSignedIn(Boolean(user));
+      if (!user) return;
+      void fetchStoredReels().then((rows) => {
+        if (!alive) return;
+        const own = rows.filter((row) => row.user_id === user.id).map((row) => ({
+          id: Number.parseInt(row.id.replace(/-/g, "").slice(0, 8), 16),
+          databaseId: row.id,
+          title: row.caption,
+          emoji: "▶️",
+          type: "reel" as const,
+          media: row.image_url || undefined,
+          mediaKind: "video" as const,
+          createdAt: new Date(row.created_at).getTime(),
+          likes: row.likes_count,
+          comments: row.comments_count,
+          shares: row.share_count,
+          views: row.view_count,
+        }));
+        setPosts((current) => {
+          const merged = [...current.filter((post) => !post.databaseId), ...own];
+          return merged.filter((post, index) => merged.findIndex((other) => other.id === post.id) === index);
+        });
+      }).catch(() => undefined);
+    });
+    return () => { alive = false; };
+  }, []);
   const profileReelVideoRef = useRef<HTMLVideoElement | null>(null);
   const [hiddenPosts, setHiddenPosts] = useState<number[]>([]);
   const [pinnedPosts, setPinnedPosts] = useState<number[]>([]);
@@ -778,7 +813,7 @@ export default function ProfilePage() {
             <div className="profile-avatar"><div className="profile-avatar-inner" style={avatarData ? {backgroundImage:"url("+avatarData+")",backgroundSize:"cover",backgroundPosition:"center",fontSize:0} : undefined}>{avatarData ? "" : "👑"}</div></div>
             <div className="profile-identity-actions">
               <button className="profile-btn" onClick={() => { setNoteDraft(note); setEditOpen(true); }}>{translate(uiLanguage, "editProfile")}</button><button className="profile-btn" onClick={() => setPreviewOpen(true)}>Prévia</button>
-              <button className="profile-btn primary" onClick={() => { window.location.href = "/?action=create"; }}>＋ Criar</button>
+              <button className="profile-btn primary" onClick={() => { setCreateOpen(true); setCreateType("reel"); }}>＋ Criar</button>
             </div>
           </div>
           <h1 className="profile-name">{profileName || "Seu nome"}</h1>
