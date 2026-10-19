@@ -5,6 +5,7 @@ import { extraReels, imageForCaption } from "./extraReels";
 import { useEffect, useRef, useState } from "react";
 import { getSavedLanguage, translate, type NexoraLanguage } from "../../lib/i18n";
 import { useRouter } from "next/navigation";
+import { resolveProfileMedia } from "../../lib/profileMedia";
 
 type Reel = {
   id: number;
@@ -148,7 +149,7 @@ export default function ReelsPage() {
   const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
 
   useEffect(() => {
-    const syncProfileReels = () => {
+    const syncProfileReels = async () => {
       try {
         const raw = window.localStorage.getItem("nexora-profile-v1");
         if (!raw) { setPublishedReels([]); return; }
@@ -157,7 +158,20 @@ export default function ReelsPage() {
         const name = typeof profile.profileName === "string" ? profile.profileName : username;
         const avatar = typeof profile.avatarData === "string" && profile.avatarData ? profile.avatarData : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop";
         const items = Array.isArray(profile.posts) ? profile.posts : [];
-        const reels = items.filter((item: any) => item && item.type === "reel" && item.mediaKind === "video" && typeof item.media === "string" && item.media.trim()).map((item: any) => ({ id: Number(item.id), user: username, name, avatar, caption: String(item.title || ""), song: String(item.song || "Som original · Nexora"), likes: Number(item.likes || 0), comments: Number(item.comments || 0), shares: Number(item.shares || 0), views: Number(item.views || 0), video: item.media, tint: "violet" })).filter((item: Reel) => Number.isFinite(item.id));
+        const reels = (await Promise.all(items.filter((item: any) => item && item.type === "reel" && item.mediaKind === "video" && typeof item.media === "string" && item.media.trim()).map(async (item: any) => ({
+          id: Number(item.id),
+          user: username,
+          name,
+          avatar,
+          caption: String(item.title || ""),
+          song: String(item.song || "Som original · Nexora"),
+          likes: Number(item.likes || 0),
+          comments: Number(item.comments || 0),
+          shares: Number(item.shares || 0),
+          views: Number(item.views || 0),
+          video: await resolveProfileMedia(item.media),
+          tint: "violet",
+        })))).filter((item: Reel) => Number.isFinite(item.id) && Boolean(item.video));
         setPublishedReels(reels);
         const likedIds: number[] = Array.isArray(profile.likedPosts) ? profile.likedPosts : [];
         const savedIds: number[] = Array.isArray(profile.savedPosts) ? profile.savedPosts : [];
