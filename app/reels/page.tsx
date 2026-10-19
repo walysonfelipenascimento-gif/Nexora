@@ -177,14 +177,30 @@ export default function ReelsPage() {
           video: await resolveProfileMedia(item.media),
           tint: "violet",
         })))).filter((item: Reel) => Number.isFinite(item.id) && Boolean(item.video));
-        setPublishedReels(reels);
+        let storedReels: Reel[] = [];
+        try {
+          const rows = await fetchStoredReels();
+          storedReels = rows.filter((row) => Boolean(row.image_url)).map((row) => ({
+            id: row.id, databaseId: row.id, user: row.profile?.username || "criador",
+            name: row.profile?.display_name || row.profile?.username || "Criador Nexora",
+            avatar: row.profile?.avatar_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop",
+            caption: row.caption, song: "Som original · Nexora", likes: row.likes_count, comments: row.comments_count,
+            shares: row.share_count, views: row.view_count, video: row.image_url as string, tint: "violet",
+          }));
+          const relations = await getStoredUserRelations(storedReels.map((item) => String(item.databaseId)));
+          setLiked((current) => ({ ...current, ...Object.fromEntries(relations.liked.map((id) => [id, true])) }));
+          setSaved((current) => ({ ...current, ...Object.fromEntries(relations.saved.map((id) => [id, true])) }));
+          setReposted((current) => ({ ...current, ...Object.fromEntries(relations.reposted.map((id) => [id, true])) }));
+        } catch { /* Se a rede falhar, preserva os Reels locais e demonstrativos. */ }
+        const localReels = reels.filter((item: Reel) => !items.some((post: any) => post && post.databaseId && Number(post.id) === Number(item.id)));
+        setPublishedReels([...storedReels, ...localReels]);
         const likedIds: number[] = Array.isArray(profile.likedPosts) ? profile.likedPosts : [];
         const savedIds: number[] = Array.isArray(profile.savedPosts) ? profile.savedPosts : [];
         const repostedIds: string[] = Array.isArray(profile.reposted) ? profile.reposted : [];
-        setLiked((current) => ({ ...current, ...Object.fromEntries(reels.map((item) => [item.id, likedIds.includes(item.id)])) }));
-        setSaved((current) => ({ ...current, ...Object.fromEntries(reels.map((item) => [item.id, savedIds.includes(item.id)])) }));
-        setReposted((current) => ({ ...current, ...Object.fromEntries(reels.map((item) => [item.id, repostedIds.includes(String(item.id))])) }));
-        setIndex((current) => Math.min(current, reels.length + demoReels.length - 1));
+        setLiked((current) => ({ ...current, ...Object.fromEntries(localReels.map((item) => [item.id, likedIds.includes(Number(item.id))])) }));
+        setSaved((current) => ({ ...current, ...Object.fromEntries(localReels.map((item) => [item.id, savedIds.includes(Number(item.id))])) }));
+        setReposted((current) => ({ ...current, ...Object.fromEntries(localReels.map((item) => [item.id, repostedIds.includes(String(item.id))])) }));
+        setIndex((current) => Math.min(current, storedReels.length + localReels.length + demoReels.length - 1));
       } catch { setPublishedReels([]); }
     };
     syncProfileReels();
@@ -210,13 +226,19 @@ export default function ReelsPage() {
   useEffect(() => {
     const match = window.location.hash.match(/#reel-(\d+)/);
     if (!match) return;
-    const targetId = Number(match[1]);
-    const targetIndex = allReels.findIndex((item) => item.id === targetId);
+    const targetId = match[1];
+    const targetIndex = allReels.findIndex((item) => String(item.id) === targetId);
     if (targetIndex >= 0) setIndex(targetIndex);
   }, [publishedReels]);
 
   useEffect(() => {
     setReturnToProfile(new URLSearchParams(window.location.search).get("origem") === "perfil");
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    getCurrentNexoraUser().then((user) => { if (alive) setSignedIn(Boolean(user)); });
+    return () => { alive = false; };
   }, []);
 
   useEffect(() => {
