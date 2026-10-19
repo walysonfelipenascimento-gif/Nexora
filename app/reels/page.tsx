@@ -4,6 +4,7 @@ import PrimaryNav from "../components/PrimaryNav";
 import { extraReels, imageForCaption } from "./extraReels";
 import { useEffect, useRef, useState } from "react";
 import { getSavedLanguage, translate, type NexoraLanguage } from "../../lib/i18n";
+import { useRouter } from "next/navigation";
 
 type Reel = {
   id: number;
@@ -115,6 +116,8 @@ function compactNumber(value: number) {
 }
 
 export default function ReelsPage() {
+  const router = useRouter();
+  const [returnToProfile, setReturnToProfile] = useState(false);
   const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
   const [publishedReels, setPublishedReels] = useState<Reel[]>([]);
   const [index, setIndex] = useState(0);
@@ -137,6 +140,7 @@ export default function ReelsPage() {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const lastWheelMove = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const viewedReels = useRef(new Set<number>());
   const allReels = [...publishedReels, ...demoReels];
   const reel = allReels[Math.min(index, allReels.length - 1)];
   const isPublishedReel = publishedReels.some((item) => item.id === reel.id);
@@ -193,8 +197,8 @@ export default function ReelsPage() {
   }, [publishedReels]);
 
   useEffect(() => {
-    syncProfileReel("view", reel.id);
-  }, [reel.id]);
+    setReturnToProfile(new URLSearchParams(window.location.search).get("origem") === "perfil");
+  }, []);
 
   useEffect(() => {
     setLanguage(getSavedLanguage());
@@ -253,15 +257,23 @@ export default function ReelsPage() {
     } catch { /* Mantém a interação disponível mesmo se o armazenamento local falhar. */ }
   }
 
-  function shareReel() {
-    syncProfileReel("share", reel.id);
+  async function shareReel() {
     const url = window.location.origin + "/reels#reel-" + reel.id;
-    if (navigator.share) {
-      navigator.share({ title: "Reels da Nexora", text: reel.caption, url }).catch(() => undefined);
-    } else if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => alert("Link demonstrativo copiado!")).catch(() => alert(url));
-    } else {
-      alert(url);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Reels da Nexora", text: reel.caption, url });
+        syncProfileReel("share", reel.id);
+        setToast("Compartilhamento concluído.");
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        syncProfileReel("share", reel.id);
+        setToast("Link do Reel copiado para compartilhar.");
+      } else {
+        window.prompt("Copie o link para compartilhar:", url);
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setToast("Não foi possível compartilhar agora. Tente copiar o link novamente.");
     }
   }
 
@@ -350,7 +362,10 @@ export default function ReelsPage() {
 
       <header className="reels-top">
         <div className="reels-brand"><span className="reels-mark"><UiIcon name="reels" size={21} /></span><span>Nexora <span style={{ color: "#77eaff" }}>Reels</span></span></div>
-        <button className="reels-top-label" onClick={() => setCreatorTools(true)}>✦ Modo criador</button>
+        <div style={{display:"flex",alignItems:"center",gap:7}}>
+          {returnToProfile && <button className="reels-top-label" onClick={() => router.push("/perfil")} aria-label="Voltar ao perfil">‹ Perfil</button>}
+          <button className="reels-top-label" onClick={() => setCreatorTools(true)}>✦ Modo criador</button>
+        </div>
       </header>
 
       <section className="reel-stage" aria-label="Visualizador de Reels"
@@ -363,7 +378,7 @@ export default function ReelsPage() {
           if (Math.abs(dy) > 48 && Math.abs(dy) > Math.abs(dx) * 1.2) move(dy < 0 ? 1 : -1);
           touchStart.current = null;
         }}>
-        {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop preload="auto" muted={muted} autoPlay onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
+        {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop preload="auto" muted={muted} autoPlay onPlay={() => { if (!viewedReels.current.has(reel.id)) { viewedReels.current.add(reel.id); syncProfileReel("view", reel.id); } }} onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
         {!isPublishedReel && (reel.id === 1 ? <div className="reel-nature-label" key="nature-reel-label"><span>✦ NATUREZA EM MOVIMENTO</span><strong>Um momento de beleza natural</strong></div> : <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>)}
         {!isPublishedReel && reel.id !== 1 && <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>}
         <div className="reel-vignette" />
