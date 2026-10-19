@@ -676,11 +676,17 @@ export default function ProfilePage() {
         .profile-lower .profile-tile-post{aspect-ratio:1/1!important}
         /* Miniaturas de Reels no perfil são retratos 3:4; o player mantém o vídeo vertical 9:16. */
         .profile-lower .profile-tile-reel{aspect-ratio:3/4!important}
-        .profile-lower .profile-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center}
-        .profile-lower .profile-tab{min-width:0;min-height:48px;display:flex;justify-content:center;align-items:center;padding:10px 2px;font-size:20px}
-        .profile-lower .profile-tab-glyph{font-size:clamp(18px,5vw,22px);line-height:1}
-        .profile-lower .profile-tab-settings{border-left:1px solid #ffffff12}
-        .profile-lower .profile-tab:focus-visible{outline:2px solid #55e8ff;outline-offset:-3px}
+        /* Abas do perfil: quatro destinos, ícones vetoriais consistentes com a navegação moderna da Nexora. */
+        .profile-lower .profile-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:7px;margin:24px 0 0;padding:6px;border:1px solid #ffffff12;border-radius:17px;background:linear-gradient(115deg,#ffffff06,#8e68ff08);box-shadow:inset 0 1px #ffffff05}
+        .profile-lower .profile-tab{position:relative;min-width:0;min-height:49px;display:flex;justify-content:center;align-items:center;padding:10px 3px;border:1px solid transparent;border-radius:12px;color:#8589a4;background:transparent;transition:color .18s ease,background .18s ease,border-color .18s ease,transform .18s ease}
+        .profile-lower .profile-tab:active{transform:scale(.96)}
+        .profile-lower .profile-tab-glyph{display:grid;place-items:center;width:23px;height:23px;font-size:0;line-height:1}
+        .profile-lower .profile-tab-glyph svg{display:block;width:22px;height:22px;overflow:visible;stroke:currentColor;transition:transform .18s ease,filter .18s ease}
+        .profile-lower .profile-tab.active{color:#f8fbff;border-color:#8e7bff55;background:linear-gradient(145deg,#38dfff18,#765aff22 58%,#e45bff12);box-shadow:inset 0 1px #ffffff12,0 4px 18px #7155ff12}
+        .profile-lower .profile-tab.active .profile-tab-glyph svg{transform:scale(1.06);filter:drop-shadow(0 0 5px #6c9dff65)}
+        .profile-lower .profile-tab.active:after{content:"";position:absolute;left:25%;right:25%;bottom:-1px;height:2px;border-radius:4px;background:linear-gradient(90deg,#42e4ff,#8b6cff,#dc62f5)}
+        .profile-lower .profile-tab:focus-visible{outline:2px solid #55e8ff;outline-offset:2px}
+        @media(max-width:360px){.profile-lower .profile-tabs{gap:4px;padding:4px}.profile-lower .profile-tab{min-height:45px}.profile-lower .profile-tab-glyph,.profile-lower .profile-tab-glyph svg{width:20px;height:20px}}
         .profile-lower .profile-tile-engagement{gap:clamp(5px,1.6vw,12px);font-size:clamp(9px,2.4vw,12px)}
         .profile-lower .profile-tile img,.profile-lower .profile-tile video{display:block}
         @media(max-width:360px){.profile-lower .profile-tab{padding-inline:1px}.profile-lower .profile-tab-glyph{font-size:17px}.profile-lower .profile-grid{gap:2px}}
