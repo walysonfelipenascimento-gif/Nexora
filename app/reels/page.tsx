@@ -277,8 +277,8 @@ export default function ReelsPage() {
     setCreatorTools(false);
   }
 
-  function syncProfileReel(action: "like" | "save" | "repost" | "comment" | "share" | "view", id: number, value?: string) {
-    if (!publishedReels.some((item) => item.id === id)) return;
+  function syncProfileReel(action: "like" | "save" | "repost" | "comment" | "share" | "view", id: string | number, value?: string) {
+    if (!publishedReels.some((item) => item.id === id) || publishedReels.some((item) => item.id === id && item.databaseId)) return;
     try {
       const raw = window.localStorage.getItem("nexora-profile-v1");
       const profile = raw ? JSON.parse(raw) : {};
@@ -303,25 +303,43 @@ export default function ReelsPage() {
     try {
       if (navigator.share) {
         await navigator.share({ title: "Reels da Nexora", text: reel.caption, url });
-        syncProfileReel("share", reel.id);
-        setToast("Compartilhamento concluído.");
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
-        syncProfileReel("share", reel.id);
         setToast("Link do Reel copiado para compartilhar.");
       } else {
         window.prompt("Copie o link para compartilhar:", url);
+        return;
       }
+      if (reel.databaseId && signedIn) {
+        await recordStoredShare(reel.databaseId);
+        setPublishedReels((current) => current.map((item) => item.id === reel.id ? { ...item, shares: item.shares + 1 } : item));
+      } else {
+        syncProfileReel("share", reel.id);
+      }
+      setToast("Compartilhamento concluído.");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setToast("Não foi possível compartilhar agora. Tente copiar o link novamente.");
     }
   }
 
-  function submitComment(event: React.FormEvent<HTMLFormElement>) {
+  async function submitComment(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = commentDraft.trim();
     if (!text) return;
+    if (reel.databaseId) {
+      if (!signedIn) { setAuthOpen(true); return; }
+      try {
+        await addStoredComment(reel.databaseId, text);
+        const rows = await fetchStoredComments(reel.databaseId);
+        setComments((current) => ({ ...current, [reel.id]: rows.map((row: any) => row.body) }));
+        setPublishedReels((current) => current.map((item) => item.id === reel.id ? { ...item, comments: item.comments + 1 } : item));
+        setCommentDraft("");
+      } catch (error) {
+        setToast(error instanceof Error ? error.message : "Não foi possível publicar o comentário.");
+      }
+      return;
+    }
     setComments((current) => { const next = { ...current, [reel.id]: [...(current[reel.id] || []), text] }; try { window.localStorage.setItem("nexora-comments-v1", JSON.stringify(next)); } catch { /* A interação permanece ativa na sessão. */ } return next; });
     syncProfileReel("comment", reel.id, text);
     setCommentDraft("");
@@ -419,7 +437,7 @@ export default function ReelsPage() {
           if (Math.abs(dy) > 48 && Math.abs(dy) > Math.abs(dx) * 1.2) move(dy < 0 ? 1 : -1);
           touchStart.current = null;
         }}>
-        {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop preload="auto" muted={muted} autoPlay onPlay={() => { if (!viewedReels.current.has(reel.id)) { viewedReels.current.add(reel.id); syncProfileReel("view", reel.id); } }} onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
+        {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop preload="auto" muted={muted} autoPlay onPlay={() => { if (!viewedReels.current.has(reel.id)) { viewedReels.current.add(reel.id); if (reel.databaseId && signedIn) { void recordStoredView(reel.databaseId).then(() => setPublishedReels((current) => current.map((item) => item.id === reel.id ? { ...item, views: Number(item.views || 0) + 1 } : item))).catch(() => undefined); } else { syncProfileReel("view", reel.id); } } }} onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
         {!isPublishedReel && (reel.id === 1 ? <div className="reel-nature-label" key="nature-reel-label"><span>✦ NATUREZA EM MOVIMENTO</span><strong>Um momento de beleza natural</strong></div> : <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>)}
         {!isPublishedReel && reel.id !== 1 && <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>}
         <div className="reel-vignette" />
