@@ -15,6 +15,7 @@ type Reel = {
   likes: number;
   comments: number;
   shares: number;
+  views?: number;
   video: string;
   tint: string;
   image?: string;
