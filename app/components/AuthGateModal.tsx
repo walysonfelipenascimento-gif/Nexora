@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import { signInNexora, signUpNexora } from "../../lib/reelsRepository";
 
 type Props = { open: boolean; onClose: () => void; onSuccess: () => void };
@@ -17,7 +18,7 @@ export default function AuthGateModal({ open, onClose, onSuccess }: Props) {
 
   if (!open) return null;
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setNotice("");
@@ -66,4 +67,4 @@ export default function AuthGateModal({ open, onClose, onSuccess }: Props) {
   );
 }
 
-const fieldStyle: React.CSSProperties = {width:"100%",boxSizing:"border-box",padding:"13px 14px",border:"1px solid #ffffff20",borderRadius:13,background:"#080912",color:"#fff",fontSize:14,outline:"none"};
+const fieldStyle: CSSProperties = {width:"100%",boxSizing:"border-box",padding:"13px 14px",border:"1px solid #ffffff20",borderRadius:13,background:"#080912",color:"#fff",fontSize:14,outline:"none"};
