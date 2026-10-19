@@ -157,8 +157,7 @@ export default function ReelsPage() {
     const syncProfileReels = async () => {
       try {
         const raw = window.localStorage.getItem("nexora-profile-v1");
-        if (!raw) { setPublishedReels([]); return; }
-        const profile = JSON.parse(raw);
+        const profile = raw ? JSON.parse(raw) : {};
         const username = typeof profile.profileUsername === "string" ? profile.profileUsername : "criador";
         const name = typeof profile.profileName === "string" ? profile.profileName : username;
         const avatar = typeof profile.avatarData === "string" && profile.avatarData ? profile.avatarData : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop";
