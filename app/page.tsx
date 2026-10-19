@@ -640,14 +640,47 @@ export default function Home() {
 
   const startStoryCamera = async () => {
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error("Câmera ao vivo indisponível neste navegador.");
+      if (!window.isSecureContext) throw new Error("secure-context");
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error("unsupported");
       storyLiveStreamRef.current?.getTracks().forEach(track => track.stop());
-      const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:storyFacingMode,width:{ideal:1080},height:{ideal:1920}},audio:true});
+
+      // A câmera não deve falhar só porque o microfone foi recusado.
+      const videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: storyFacingMode, width: { ideal: 1080 }, height: { ideal: 1920 } },
+        audio: false
+      });
+      let stream = videoStream;
+      try {
+        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        audioStream.getAudioTracks().forEach(track => videoStream.addTrack(track));
+      } catch {
+        setNotice("Câmera liberada. O microfone não foi autorizado; você ainda pode tirar fotos e gravar vídeo sem áudio.");
+      }
       storyLiveStreamRef.current = stream;
       setStoryCameraActive(true);
-      requestAnimationFrame(() => { if(storyLiveVideoRef.current) storyLiveVideoRef.current.srcObject = stream; });
-    } catch {
-      setNotice("Não foi possível abrir a câmera. Autorize câmera e microfone no navegador e tente novamente.");
+      requestAnimationFrame(() => {
+        const video = storyLiveVideoRef.current;
+        if (video) {
+          video.srcObject = stream;
+          void video.play().catch(() => {});
+        }
+      });
+    } catch (error) {
+      const name = error instanceof DOMException ? error.name : "";
+      const message = !window.isSecureContext
+        ? "A câmera exige uma conexão segura (HTTPS). Abra a Nexora pelo endereço oficial."
+        : !navigator.mediaDevices?.getUserMedia
+          ? "Este navegador não disponibiliza acesso direto à câmera. Atualize o Chrome ou use a galeria."
+          : name === "NotAllowedError" || name === "SecurityError"
+            ? "O acesso à câmera foi bloqueado. No Chrome, toque no cadeado/ícone ao lado do endereço, entre em Permissões e permita Câmera. Depois recarregue a página."
+            : name === "NotFoundError" || name === "DevicesNotFoundError"
+              ? "Não encontramos uma câmera disponível neste dispositivo."
+              : name === "NotReadableError" || name === "TrackStartError"
+                ? "A câmera pode estar sendo usada por outro aplicativo. Feche os outros apps que usam a câmera e tente novamente."
+                : name === "OverconstrainedError"
+                  ? "Este modo de câmera não está disponível. Tente alternar entre a câmera frontal e traseira."
+                  : "Não foi possível iniciar a câmera. Confira as permissões do Chrome e tente novamente ou selecione uma mídia da galeria.";
+      setNotice(message);
       setStoryCameraActive(false);
     }
   };
