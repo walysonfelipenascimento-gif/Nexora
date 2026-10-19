@@ -138,7 +138,8 @@ export default function ReelsPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const allReels = [...publishedReels, ...demoReels];
   const reel = allReels[Math.min(index, allReels.length - 1)];
-  const availableVideoSources = reel.id === 1 ? [reel.video] : Array.from(new Set(allReels.map((item) => item.video)));
+  const isPublishedReel = publishedReels.some((item) => item.id === reel.id);
+  const availableVideoSources = isPublishedReel || reel.id === 1 ? [reel.video] : Array.from(new Set(allReels.map((item) => item.video)));
   const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
 
   useEffect(() => {
@@ -232,6 +233,7 @@ export default function ReelsPage() {
       if (action === "comment" && typeof value === "string") { const comments = profile.commentsByPost && typeof profile.commentsByPost === "object" ? profile.commentsByPost : {}; comments[String(id)] = [...(Array.isArray(comments[String(id)]) ? comments[String(id)] : []), value]; profile.commentsByPost = comments; }
       if (action === "share") post.shares = Number(post.shares || 0) + 1;
       profile.posts = posts;
+      if (action === "share") setPublishedReels((current) => current.map((item) => item.id === id ? { ...item, shares: Number(item.shares || 0) + 1 } : item));
       window.localStorage.setItem("nexora-profile-v1", JSON.stringify(profile));
     } catch { /* Mantém a interação disponível mesmo se o armazenamento local falhar. */ }
   }
@@ -347,8 +349,8 @@ export default function ReelsPage() {
           touchStart.current = null;
         }}>
         {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop preload="auto" muted={muted} autoPlay onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
-        {reel.id === 1 ? <div className="reel-nature-label" key="nature-reel-label"><span>✦ NATUREZA EM MOVIMENTO</span><strong>Um momento de beleza natural</strong></div> : <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>}
-        {reel.id !== 1 && <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>}
+        {!isPublishedReel && (reel.id === 1 ? <div className="reel-nature-label" key="nature-reel-label"><span>✦ NATUREZA EM MOVIMENTO</span><strong>Um momento de beleza natural</strong></div> : <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>)}
+        {!isPublishedReel && reel.id !== 1 && <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>}
         <div className="reel-vignette" />
         <div className="reel-top-controls">
           <span className="glass-chip"><span className="live-dot" /> PARA VOCÊ</span>
@@ -358,7 +360,7 @@ export default function ReelsPage() {
 
         <aside className="reel-side-actions" aria-label="Ações do Reel">
           <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} aria-label={translate(language, "like")} onClick={() => { const next = !liked[reel.id]; setLiked((v) => ({ ...v, [reel.id]: next })); syncProfileReel("like", reel.id, String(next)); }}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
-          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + Math.max(0, (comments[reel.id]?.length || 0) - 2))}</small></button>
+          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + (isPublishedReel ? (comments[reel.id]?.length || 0) : Math.max(0, (comments[reel.id]?.length || 0) - 2)))}</small></button>
           <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => { const next = !saved[reel.id]; setSaved((v) => ({ ...v, [reel.id]: next })); syncProfileReel("save", reel.id, String(next)); }}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "✓" : translate(language, "save")}</small></button>
           <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { const next = !reposted[reel.id]; setReposted((v) => ({ ...v, [reel.id]: next })); syncProfileReel("repost", reel.id, String(next)); setToast(next ? "Reel adicionado às republicações do perfil." : "Republicação removida do perfil."); }} aria-label={reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}</small></button>
           <button className="reel-action" onClick={shareReel} aria-label={translate(language, "share")}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
@@ -369,7 +371,7 @@ export default function ReelsPage() {
           <div className="reel-author-row">
             <img className="reel-avatar" src={reel.avatar} alt={reel.name} />
             <span className="reel-author">@{reel.user}</span>
-            <button className="reel-follow" onClick={() => setFollowing((v) => ({ ...v, [reel.user]: !v[reel.user] }))}>{following[reel.user] ? "✓ Seguindo" : "+ Seguir"}</button>
+            {!isPublishedReel && <button className="reel-follow" onClick={() => setFollowing((v) => ({ ...v, [reel.user]: !v[reel.user] }))}>{following[reel.user] ? "✓ Seguindo" : "+ Seguir"}</button>}
           </div>
           <p className="reel-caption">{reel.caption}</p>
           <div className="reel-audio"><span><UiIcon name="music" size={14} /></span><span>{reel.song}</span><span>·</span><span>{index + 1}/{allReels.length}</span></div>
