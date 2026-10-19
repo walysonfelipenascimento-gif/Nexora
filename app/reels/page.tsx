@@ -137,6 +137,7 @@ export default function ReelsPage() {
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoSourceIndex, setVideoSourceIndex] = useState(0);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [creatorTools, setCreatorTools] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [comments, setComments] = useState<Record<string | number, string[]>>({
@@ -331,7 +332,7 @@ export default function ReelsPage() {
       try {
         await addStoredComment(reel.databaseId, text);
         const rows = await fetchStoredComments(reel.databaseId);
-        setComments((current) => ({ ...current, [reel.id]: rows.map((row: any) => row.body) }));
+        setComments((current) => ({ ...current, [reel.id]: rows.map((row: any) => `@${row.profile?.username || "usuario"}|||${row.body}`) }));
         setPublishedReels((current) => current.map((item) => item.id === reel.id ? { ...item, comments: item.comments + 1 } : item));
         setCommentDraft("");
       } catch (error) {
@@ -409,7 +410,12 @@ export default function ReelsPage() {
         .reels-comment-form { display:flex; gap:8px; margin-top:13px; }
         .reels-comment-form input { flex:1; min-width:0; border:1px solid #ffffff20; background:#070811; color:white; border-radius:13px; padding:12px; outline:none; }
         .reels-comment-form button,.reels-primary { border:0; color:#fff; background:linear-gradient(110deg,#367bff,#9754f5); padding:11px 14px; border-radius:12px; font-weight:800; }
-        .reels-tools { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .reels-share-options { display:grid; gap:10px; }
+         .reels-share-option { display:flex; align-items:center; gap:12px; width:100%; padding:13px; border:1px solid #ffffff18; border-radius:15px; background:linear-gradient(110deg,#ffffff0b,#ffffff04); color:#fff; text-align:left; cursor:pointer; }
+         .reels-share-symbol { width:42px; height:42px; flex:0 0 42px; display:grid; place-items:center; border-radius:14px; color:#8ceeff; background:linear-gradient(145deg,#43dfff22,#9a65ff26); border:1px solid #9b83ff44; font-size:21px; }
+         .reels-share-option strong { display:block; font-size:13px; }
+         .reels-share-option small { display:block; margin-top:4px; color:#aeb0c5; font-size:10px; line-height:1.45; }
+         .reels-tools { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         .reels-tool { text-align:left; padding:13px; border:1px solid #ffffff17; border-radius:14px; background:#ffffff08; color:white; }
         .reels-tool strong { display:block; font-size:12px; margin-bottom:5px; }
         .reels-tool span { display:block; font-size:10px; color:#aaaec4; line-height:1.4; }
@@ -448,10 +454,10 @@ export default function ReelsPage() {
 
         <aside className="reel-side-actions" aria-label="Ações do Reel">
           <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} aria-label={translate(language, "like")} onClick={() => { const next = !liked[reel.id]; if (reel.databaseId) { if (!signedIn) { setAuthOpen(true); return; } setLiked((v) => ({ ...v, [reel.id]: next })); setPublishedReels((items) => items.map((item) => item.id === reel.id ? { ...item, likes: Math.max(0, item.likes + (next ? 1 : -1)) } : item)); void toggleStoredLike(reel.databaseId, Boolean(liked[reel.id])).catch((error) => { setLiked((v) => ({ ...v, [reel.id]: !next })); setPublishedReels((items) => items.map((item) => item.id === reel.id ? { ...item, likes: Math.max(0, item.likes + (next ? -1 : 1)) } : item)); setToast(error instanceof Error ? error.message : "Não foi possível atualizar a curtida."); }); return; } setLiked((v) => ({ ...v, [reel.id]: next })); syncProfileReel("like", reel.id, String(next)); }}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.databaseId ? reel.likes : reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
-          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); if (reel.databaseId) void fetchStoredComments(reel.databaseId).then((rows) => setComments((current) => ({ ...current, [reel.id]: rows.map((row: any) => row.body) }))).catch(() => setToast("Não foi possível carregar os comentários agora.")); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.databaseId ? reel.comments : reel.comments + (isPublishedReel ? (comments[reel.id]?.length || 0) : Math.max(0, (comments[reel.id]?.length || 0) - 2)))}</small></button>
+          <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); if (reel.databaseId) void fetchStoredComments(reel.databaseId).then((rows) => setComments((current) => ({ ...current, [reel.id]: rows.map((row: any) => `@${row.profile?.username || "usuario"}|||${row.body}`) }))).catch(() => setToast("Não foi possível carregar os comentários agora.")); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.databaseId ? reel.comments : reel.comments + (isPublishedReel ? (comments[reel.id]?.length || 0) : Math.max(0, (comments[reel.id]?.length || 0) - 2)))}</small></button>
           <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => { const next = !saved[reel.id]; if (reel.databaseId) { if (!signedIn) { setAuthOpen(true); return; } setSaved((v) => ({ ...v, [reel.id]: next })); void toggleStoredRelation("post_saves", reel.databaseId, Boolean(saved[reel.id])).catch((error) => { setSaved((v) => ({ ...v, [reel.id]: !next })); setToast(error instanceof Error ? error.message : "Não foi possível salvar o Reel."); }); return; } setSaved((v) => ({ ...v, [reel.id]: next })); syncProfileReel("save", reel.id, String(next)); }}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "✓" : translate(language, "save")}</small></button>
           <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { const next = !reposted[reel.id]; if (reel.databaseId) { if (!signedIn) { setAuthOpen(true); return; } setReposted((v) => ({ ...v, [reel.id]: next })); void toggleStoredRelation("post_reposts", reel.databaseId, Boolean(reposted[reel.id])).then(() => setToast(next ? "Reel republicado." : "Republicação removida.")).catch((error) => { setReposted((v) => ({ ...v, [reel.id]: !next })); setToast(error instanceof Error ? error.message : "Não foi possível republicar."); }); return; } setReposted((v) => ({ ...v, [reel.id]: next })); syncProfileReel("repost", reel.id, String(next)); setToast(next ? "Reel adicionado às republicações do perfil." : "Republicação removida do perfil."); }} aria-label={reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}</small></button>
-          <button className="reel-action" onClick={shareReel} aria-label={translate(language, "share")}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
+          <button className="reel-action" onClick={() => setShareOpen(true)} aria-label={translate(language, "share")}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
           <button className="reel-action" onClick={() => setCreatorTools(true)} aria-label="Ferramentas do criador"><span className="reel-disc"><img src={reel.avatar} alt="" /></span><small>Criador</small></button>
         </aside>
 
@@ -475,11 +481,22 @@ export default function ReelsPage() {
       {commentsOpen && <div className="reels-overlay" onClick={() => { setCommentsOpen(false); setPaused(false); }}>
         <section className="reels-sheet" onClick={(event) => event.stopPropagation()}>
           <div className="reels-sheet-head"><span>{translate(language, "viewComments")} <span style={{ color: "#7ceaff" }}>· {(comments[reel.id] || []).length}</span></span><button className="reels-close" onClick={() => { setCommentsOpen(false); setPaused(false); }}>×</button></div>
-          {(comments[reel.id] || []).map((comment, i) => <div className="reels-comment" key={i}><strong>@comunidade</strong> {comment}</div>)}
+          {(comments[reel.id] || []).map((comment, i) => { const [author, body] = comment.includes("|||") ? comment.split("|||", 2) : ["@comunidade", comment]; return <div className="reels-comment" key={i}><strong>{author}</strong> {body}</div>; })}
           <form className="reels-comment-form" onSubmit={submitComment}><input value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder={translate(language, "comment")} maxLength={500} /><button type="submit">{translate(language, "send")}</button></form>
         </section>
       </div>}
 
+      {shareOpen && <div className="reels-overlay" onClick={() => setShareOpen(false)}>
+        <section className="reels-sheet" onClick={(event) => event.stopPropagation()}>
+          <div className="reels-sheet-head"><span>Compartilhar Reel</span><button className="reels-close" onClick={() => setShareOpen(false)} aria-label="Fechar compartilhamento">×</button></div>
+          <p style={{margin:"-4px 0 14px",fontSize:12,lineHeight:1.5,color:"#aeb0c5"}}>Envie este vídeo para alguém ou copie o link para abrir diretamente neste Reel.</p>
+          <div className="reels-share-options">
+            <button className="reels-share-option" onClick={() => { setShareOpen(false); void shareReel(); }}><span className="reels-share-symbol">↗</span><span><strong>Compartilhar com outros apps</strong><small>Usar o menu de compartilhamento do celular, quando disponível</small></span></button>
+            <button className="reels-share-option" onClick={() => { const url = window.location.origin + "/reels#reel-" + reel.id; window.open("https://wa.me/?text=" + encodeURIComponent(reel.caption + " " + url), "_blank", "noopener,noreferrer"); setShareOpen(false); }}><span className="reels-share-symbol">☏</span><span><strong>Enviar pelo WhatsApp</strong><small>Preparar uma mensagem com a legenda e o link do Reel</small></span></button>
+            <button className="reels-share-option" onClick={async () => { const url = window.location.origin + "/reels#reel-" + reel.id; try { if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(url); else { window.prompt("Copie o link do Reel:", url); } if (reel.databaseId && signedIn) { await recordStoredShare(reel.databaseId); setPublishedReels((current) => current.map((item) => item.id === reel.id ? { ...item, shares: item.shares + 1 } : item)); } else if (!reel.databaseId) { syncProfileReel("share", reel.id); } setToast("Link do Reel copiado. Você já pode colar onde quiser."); } catch { setToast("Não foi possível copiar o link. Tente compartilhar por outro aplicativo."); } finally { setShareOpen(false); } }}><span className="reels-share-symbol">⧉</span><span><strong>Copiar link</strong><small>Copiar o endereço direto deste Reel</small></span></button>
+          </div>
+        </section>
+      </div>}
       <AuthGateModal open={authOpen} onClose={() => setAuthOpen(false)} onSuccess={() => { setSignedIn(true); window.location.reload(); }} />
 
       {creatorTools && <div className="reels-overlay" onClick={() => setCreatorTools(false)}>
