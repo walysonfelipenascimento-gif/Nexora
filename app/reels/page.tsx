@@ -164,7 +164,13 @@ export default function ReelsPage() {
   }, []);
 
   useEffect(() => {
-    try { const stored = window.localStorage.getItem("nexora-comments-v1"); if (stored) setComments(current => ({ ...current, ...JSON.parse(stored) })); } catch { /* Mantém comentários da sessão se o armazenamento estiver indisponível. */ }
+    try {
+      const stored = window.localStorage.getItem("nexora-comments-v1");
+      let merged: Record<number, string[]> = stored ? JSON.parse(stored) : {};
+      const profileRaw = window.localStorage.getItem("nexora-profile-v1");
+      if (profileRaw) { const profile = JSON.parse(profileRaw); const profileComments = profile.commentsByPost || {}; for (const [id, list] of Object.entries(profileComments)) if (Array.isArray(list)) merged[Number(id)] = list as string[]; }
+      setComments(current => ({ ...current, ...merged }));
+    } catch { /* Mantém comentários da sessão se o armazenamento estiver indisponível. */ }
     const syncComments = (event: StorageEvent) => { if (event.key !== "nexora-comments-v1" || !event.newValue) return; try { setComments(current => ({ ...current, ...JSON.parse(event.newValue as string) })); } catch { /* Ignora dados locais inválidos. */ } };
     window.addEventListener("storage", syncComments);
     return () => window.removeEventListener("storage", syncComments);
@@ -206,8 +212,26 @@ export default function ReelsPage() {
     setCreatorTools(false);
   }
 
+  function syncProfileReel(action: "like" | "save" | "repost" | "comment" | "share", id: number, value?: string) {
+    if (!publishedReels.some((item) => item.id === id)) return;
+    try {
+      const raw = window.localStorage.getItem("nexora-profile-v1");
+      const profile = raw ? JSON.parse(raw) : {};
+      const posts = Array.isArray(profile.posts) ? profile.posts : [];
+      const post = posts.find((item: any) => Number(item.id) === id && item.type === "reel");
+      if (!post) return;
+      if (action === "like") { const ids: number[] = Array.isArray(profile.likedPosts) ? profile.likedPosts : []; profile.likedPosts = value === "true" ? Array.from(new Set([...ids, id])) : ids.filter((item) => item !== id); }
+      if (action === "save") { const ids: number[] = Array.isArray(profile.savedPosts) ? profile.savedPosts : []; profile.savedPosts = value === "true" ? Array.from(new Set([...ids, id])) : ids.filter((item) => item !== id); }
+      if (action === "repost") { const ids: string[] = Array.isArray(profile.reposted) ? profile.reposted : []; profile.reposted = value === "true" ? Array.from(new Set([...ids, String(id)])) : ids.filter((item) => item !== String(id)); }
+      if (action === "comment" && typeof value === "string") { const comments = profile.commentsByPost && typeof profile.commentsByPost === "object" ? profile.commentsByPost : {}; comments[String(id)] = [...(Array.isArray(comments[String(id)]) ? comments[String(id)] : []), value]; profile.commentsByPost = comments; }
+      if (action === "share") post.shares = Number(post.shares || 0) + 1;
+      profile.posts = posts;
+      window.localStorage.setItem("nexora-profile-v1", JSON.stringify(profile));
+    } catch { /* Mantém a interação disponível mesmo se o armazenamento local falhar. */ }
+  }
+
   function shareReel() {
-    const url = window.location.href + "#reel-" + reel.id;
+    const url = window.location.origin + "/reels#reel-" + reel.id;
     if (navigator.share) {
       navigator.share({ title: "Reels da Nexora", text: reel.caption, url }).catch(() => undefined);
     } else if (navigator.clipboard) {
@@ -222,6 +246,7 @@ export default function ReelsPage() {
     const text = commentDraft.trim();
     if (!text) return;
     setComments((current) => { const next = { ...current, [reel.id]: [...(current[reel.id] || []), text] }; try { window.localStorage.setItem("nexora-comments-v1", JSON.stringify(next)); } catch { /* A interação permanece ativa na sessão. */ } return next; });
+    syncProfileReel("comment", reel.id, text);
     setCommentDraft("");
   }
 
@@ -325,10 +350,10 @@ export default function ReelsPage() {
         {paused && <button className="reel-center-play" onClick={() => setPaused(false)} aria-label="Reproduzir">▶</button>}
 
         <aside className="reel-side-actions" aria-label="Ações do Reel">
-          <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} aria-label={translate(language, "like")} onClick={() => setLiked((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
+          <button className={`reel-action ${liked[reel.id] ? "active" : ""}`} aria-label={translate(language, "like")} onClick={() => { const next = !liked[reel.id]; setLiked((v) => ({ ...v, [reel.id]: next })); syncProfileReel("like", reel.id, String(next)); }}><span className="reel-action-icon"><UiIcon name="heart" size={24} /></span><small>{compactNumber(reel.likes + (liked[reel.id] ? 1 : 0))}</small></button>
           <button className="reel-action" onClick={() => { setCommentsOpen(true); setPaused(true); }}><span className="reel-action-icon"><UiIcon name="comment" size={23} /></span><small>{compactNumber(reel.comments + Math.max(0, (comments[reel.id]?.length || 0) - 2))}</small></button>
-          <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => setSaved((v) => ({ ...v, [reel.id]: !v[reel.id] }))}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "✓" : translate(language, "save")}</small></button>
-          <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { setReposted((v) => ({ ...v, [reel.id]: !v[reel.id] })); setToast(reposted[reel.id] ? "Republicação removida nesta demonstração." : "Reel republicado no seu perfil nesta demonstração."); }} aria-label={reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}</small></button>
+          <button className={`reel-action ${saved[reel.id] ? "active" : ""}`} onClick={() => { const next = !saved[reel.id]; setSaved((v) => ({ ...v, [reel.id]: next })); syncProfileReel("save", reel.id, String(next)); }}><span className="reel-action-icon"><UiIcon name="bookmark" size={22} /></span><small>{saved[reel.id] ? "✓" : translate(language, "save")}</small></button>
+          <button className={`reel-action ${reposted[reel.id] ? "active" : ""}`} onClick={() => { const next = !reposted[reel.id]; setReposted((v) => ({ ...v, [reel.id]: next })); syncProfileReel("repost", reel.id, String(next)); setToast(next ? "Reel adicionado às republicações do perfil." : "Republicação removida do perfil."); }} aria-label={reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}><span className="reel-action-icon"><UiIcon name="repeat" size={22} /></span><small>{reposted[reel.id] ? translate(language, "reposted") : translate(language, "repost")}</small></button>
           <button className="reel-action" onClick={shareReel} aria-label={translate(language, "share")}><span className="reel-action-icon"><UiIcon name="share" size={22} /></span><small>{compactNumber(reel.shares)}</small></button>
           <button className="reel-action" onClick={() => setCreatorTools(true)} aria-label="Ferramentas do criador"><span className="reel-disc"><img src={reel.avatar} alt="" /></span><small>Criador</small></button>
         </aside>
