@@ -6,9 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { getSavedLanguage, translate, type NexoraLanguage } from "../../lib/i18n";
 import { useRouter } from "next/navigation";
 import { resolveProfileMedia } from "../../lib/profileMedia";
+import AuthGateModal from "../components/AuthGateModal";
+import { addStoredComment, fetchStoredComments, fetchStoredReels, getCurrentNexoraUser, getStoredUserRelations, recordStoredShare, recordStoredView, toggleStoredLike, toggleStoredRelation } from "../../lib/reelsRepository";
 
 type Reel = {
-  id: number;
+  id: string | number;
+  databaseId?: string;
   user: string;
   name: string;
   avatar: string;
@@ -119,12 +122,14 @@ function compactNumber(value: number) {
 export default function ReelsPage() {
   const router = useRouter();
   const [returnToProfile, setReturnToProfile] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
   const [publishedReels, setPublishedReels] = useState<Reel[]>([]);
   const [index, setIndex] = useState(0);
-  const [liked, setLiked] = useState<Record<number, boolean>>({});
-  const [saved, setSaved] = useState<Record<number, boolean>>({});
-  const [reposted, setReposted] = useState<Record<number, boolean>>({});
+  const [liked, setLiked] = useState<Record<string | number, boolean>>({});
+  const [saved, setSaved] = useState<Record<string | number, boolean>>({});
+  const [reposted, setReposted] = useState<Record<string | number, boolean>>({});
   const [toast, setToast] = useState("");
   const [following, setFollowing] = useState<Record<string, boolean>>({});
   const [paused, setPaused] = useState(false);
@@ -134,14 +139,14 @@ export default function ReelsPage() {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [creatorTools, setCreatorTools] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
-  const [comments, setComments] = useState<Record<number, string[]>>({
+  const [comments, setComments] = useState<Record<string | number, string[]>>({
     1: ["Que paz esse vídeo! 💜", "Precisava ver isso hoje ✨"],
     2: ["Amei a energia!", "Mais vídeos assim, por favor 💙"],
   });
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const lastWheelMove = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const viewedReels = useRef(new Set<number>());
+  const viewedReels = useRef(new Set<string | number>());
   const allReels = [...publishedReels, ...demoReels];
   const reel = allReels[Math.min(index, allReels.length - 1)];
   const isPublishedReel = publishedReels.some((item) => item.id === reel.id);
