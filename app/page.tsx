@@ -680,6 +680,21 @@ export default function Home() {
     setDrafts(current => ({ ...current, [id]: "" }));
   }
 
+  useEffect(() => {
+    const video = storyLiveVideoRef.current;
+    const stream = storyLiveStreamRef.current;
+    if (!storyCameraActive || !video || !stream) return;
+    video.srcObject = stream;
+    video.muted = true;
+    video.playsInline = true;
+    void video.play().catch(() => {
+      setNotice("A câmera foi autorizada, mas a prévia não iniciou. Toque em Abrir câmera novamente.");
+    });
+    return () => {
+      if (video.srcObject === stream) video.srcObject = null;
+    };
+  }, [storyCameraActive]);
+
   const stopStoryCamera = () => {
     if (storyRecorderTimerRef.current) { clearTimeout(storyRecorderTimerRef.current); storyRecorderTimerRef.current = null; }
     if (storyRecorderRef.current && storyRecorderRef.current.state !== "inactive") storyRecorderRef.current.stop();
@@ -708,14 +723,9 @@ export default function Home() {
         setNotice("Câmera liberada. O microfone não foi autorizado; você ainda pode tirar fotos e gravar vídeo sem áudio.");
       }
       storyLiveStreamRef.current = stream;
+      // A tag <video> só existe depois que o estado ativa a prévia.
+      // O useEffect abaixo conecta o stream após a renderização, evitando tela preta.
       setStoryCameraActive(true);
-      requestAnimationFrame(() => {
-        const video = storyLiveVideoRef.current;
-        if (video) {
-          video.srcObject = stream;
-          void video.play().catch(() => {});
-        }
-      });
     } catch (error) {
       const name = error instanceof DOMException ? error.name : "";
       const message = !window.isSecureContext
