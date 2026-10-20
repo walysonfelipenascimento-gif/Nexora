@@ -1076,7 +1076,7 @@ export default function Home() {
 <span style={{width:42,height:42,display:"grid",placeItems:"center",borderRadius:"50%",border:storyLens===lens.id?"2px solid #fff":"1px solid #ffffff55",outline:storyLens===lens.id?"2px solid #38dfff":"none",outlineOffset:3,background:lens.tone,filter:lens.filter,boxShadow:storyLens===lens.id?"0 0 14px #38dfff45":"none"}}/>
 <span style={{whiteSpace:"nowrap"}}>{lens.label}</span></button>)}
 </div>
-<div aria-hidden="true" style={{pointerEvents:"none",position:"absolute",left:"50%",top:9,width:48,height:48,transform:"translateX(-50%)",borderRadius:"50%",border:"2px solid #38dfff",boxShadow:"0 0 0 2px #ffffffdd,0 0 18px #38dfff88,0 0 28px #8b5cff55",zIndex:4}} />
+
 </div>
 </div>
 <div style={{textAlign:"center",fontSize:10,color:"#8d8d9c",paddingTop:8}}>{storyLivePhotoMode?"LIVE PHOTO · clipe de 3 s":`Vídeo até ${storyRecordingDuration}s · toque para foto, segure para gravar`}</div>
