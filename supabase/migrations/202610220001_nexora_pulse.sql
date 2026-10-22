@@ -93,7 +93,7 @@ using (exists (
   select 1 from public.pulse_connections pc
   where pc.id = pulse_memories.connection_id
     and (pc.user_low = auth.uid() or pc.user_high = auth.uid())
-    and (pc.status = 'active' or pc.created_by = auth.uid())
+    and (pc.status = 'active' or pulse_memories.created_by = auth.uid())
 ));
 
 -- Mutations are deliberately available only through these validated RPCs.
