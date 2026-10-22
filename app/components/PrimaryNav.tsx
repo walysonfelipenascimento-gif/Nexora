@@ -34,7 +34,7 @@ export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "m
   const labels: Record<string, string> = { inicio: "home", reels: "reels", criar: "create", mensagens: "messages", loja: "store", perfil: "profile", pulse: "pulse" };
   return <nav className="nexora-primary-nav" aria-label={translate(language, "mainNavigation")}>
     {items.map((item) => {
-      const label = item.id === "pulse" ? "Pulse" : translate(language, labels[item.id] || item.id);
+      const label = item.id === "pulse" ? "Pulse" : item.id === "global" ? "Global" : translate(language, labels[item.id] || item.id);
       return <Link key={item.id} href={item.href} onClick={() => { if (item.id === "mensagens") window.dispatchEvent(new Event("nexora-open-messages")); if (item.id === "criar") window.dispatchEvent(new Event("nexora-open-composer")); }} className={`nexora-nav-item ${item.id === active ? "active" : ""} ${item.id === "criar" ? "create" : ""}`} aria-current={item.id === active ? "page" : undefined} aria-label={label}>
         <span className="nexora-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true">{item.icon}</svg></span>
         <span className="nexora-nav-label">{label}</span>
