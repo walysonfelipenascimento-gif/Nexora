@@ -77,5 +77,5 @@ as $$
   end;
 $$;
 
-revoke all on function public.pulse_global_leaderboard(text, boolean) from public, anon;
-grant execute on function public.pulse_global_leaderboard(text, boolean) to authenticated;
+revoke all on function public.pulse_global_leaderboard(text, boolean) from public;
+grant execute on function public.pulse_global_leaderboard(text, boolean) to anon, authenticated;
