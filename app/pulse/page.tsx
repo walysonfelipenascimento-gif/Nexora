@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import PrimaryNav from "../components/PrimaryNav";
 import "./pulse.css";
@@ -17,8 +18,8 @@ type Connection = {
 type Memory = { id: string; connection_id: string; created_by: string; title: string; note: string; approved_by_other: boolean; visible_on_profiles: boolean; created_at: string };
 const levelNames = ["Faísca", "Faísca", "Sintonia", "Sintonia", "Órbita", "Órbita", "Supernova", "Supernova"];
 const levelColors = ["#50dfff", "#50dfff", "#9b8cff", "#9b8cff", "#d17cff", "#d17cff", "#ff80d5", "#ff80d5"];
-const buttonStyle: React.CSSProperties = { border: "1px solid rgba(113,222,255,.35)", background: "linear-gradient(110deg,rgba(58,215,255,.18),rgba(160,105,255,.18))", color: "#f7f8ff", padding: "10px 13px", borderRadius: 12, fontWeight: 800, cursor: "pointer" };
-const fieldStyle: React.CSSProperties = { width: "100%", boxSizing: "border-box", background: "#080d1c", color: "#f5f7ff", border: "1px solid #303a59", borderRadius: 12, padding: "12px 13px", outline: "none" };
+const buttonStyle: CSSProperties = { border: "1px solid rgba(113,222,255,.35)", background: "linear-gradient(110deg,rgba(58,215,255,.18),rgba(160,105,255,.18))", color: "#f7f8ff", padding: "10px 13px", borderRadius: 12, fontWeight: 800, cursor: "pointer" };
+const fieldStyle: CSSProperties = { width: "100%", boxSizing: "border-box", background: "#080d1c", color: "#f5f7ff", border: "1px solid #303a59", borderRadius: 12, padding: "12px 13px", outline: "none" };
 
 export default function NexoraPulsePage() {
   const supabase = getSupabaseBrowserClient();
@@ -54,6 +55,7 @@ export default function NexoraPulsePage() {
       setLoading(false);
       return;
     }
+    setError("");
     const { data: authData } = await supabase.auth.getUser();
     const uid = knownUserId || authData.user?.id || "";
     if (!uid) {
@@ -217,7 +219,7 @@ export default function NexoraPulsePage() {
 
           {selected && <section className="pulse-card pulse-detail">
             <div className="pulse-detail-top"><div className="pulse-detail-person"><span className={"pulse-big-orb stage-" + level}>✦</span><div><span className="pulse-eyebrow">PULSE ATIVO</span><h2>{partner?.display_name || partner?.username || "Sua conexão"}</h2><p>@{partner?.username || "Nexora"} · {levelNames[level]}</p></div></div><span className="pulse-level-badge" style={{ color: levelColors[level], borderColor: levelColors[level] + "66" }}>NÍVEL {level}/7</span></div>
-            <div className="pulse-progress-label"><span>Próximo marco</span><strong>{level >= 7 ? "Supernova máxima" : (5 - (selected.experience % 5)) + " interações para evoluir"}</strong></div>
+            <div className="pulse-progress-label"><span>Próximo marco</span><strong>{level >= 7 ? "Supernova máxima" : (5 - (selected.experience % 5)) + " dias em sintonia para evoluir"}</strong></div>
             <div className="pulse-progress"><span style={{ width: level >= 7 ? "100%" : progress + "%", background: "linear-gradient(90deg,#48dfff," + levelColors[level] + ",#ff80d5)" }} /></div>
             <div className="pulse-stats"><div><strong>{selected.total_interactions}</strong><span>interações válidas</span></div><div><strong>{dayCount}</strong><span>dias de conexão</span></div><div><strong>{selected.last_interaction_at ? new Date(selected.last_interaction_at).toLocaleDateString("pt-BR") : "—"}</strong><span>última atividade</span></div></div>
             <button className="pulse-button pulse-button-wide" disabled={busy || level >= 7} onClick={() => void celebrate(selected)}>✦ Enviar energia para esta conexão</button>
