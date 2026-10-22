@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import PrimaryNav from "../components/PrimaryNav";
+import "./pulse.css";
 import { getSupabaseBrowserClient } from "../../lib/supabase";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
