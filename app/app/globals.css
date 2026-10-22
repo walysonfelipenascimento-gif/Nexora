@@ -1478,3 +1478,59 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 @keyframes nexora-aura-ring-settle{0%{opacity:0;scale:.35;rotate:-28deg}28%{opacity:1}100%{scale:1;rotate:0deg}}
 @keyframes nexora-aura-glyph-settle{0%{transform:rotate(-25deg) scale(.65)}65%{transform:rotate(8deg) scale(1.1)}100%{transform:rotate(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.nexora-aura-orbit-entry,.nexora-aura-orbit-ring,.nexora-aura-orbit-entry .nexora-aura-glyph{animation:none!important}}
+
+
+/* Nexora messaging refresh — clean, compact, touch-first */
+.chat-thread-topline{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;padding:8px 12px!important;background:rgba(9,14,32,.78)!important;border-bottom:1px solid rgba(107,131,255,.12)!important;color:#91a6ca!important;font-size:10px!important;letter-spacing:.15px!important}
+.chat-thread-topline svg{color:#6de7ff;flex:none;filter:drop-shadow(0 0 5px #47cfff33)}
+.messages-topbar{gap:7px!important;border-bottom:1px solid rgba(123,145,255,.16)!important;background:rgba(8,11,25,.96)!important;backdrop-filter:blur(20px)!important}
+.messages-back,.messages-head-action,.messages-close,.messages-new{display:grid!important;place-items:center!important;border:1px solid rgba(131,151,255,.18)!important;background:linear-gradient(145deg,rgba(35,47,82,.86),rgba(19,21,43,.92))!important;color:#dceaff!important;border-radius:13px!important;transition:transform .18s ease,border-color .18s ease,background .18s ease!important}
+.messages-back{width:36px!important;height:36px!important;font-size:25px!important;line-height:1!important}
+.messages-head-action{width:36px!important;height:36px!important;min-width:36px!important}
+.messages-head-action svg{width:18px!important;height:18px!important;opacity:.92}
+.messages-head-action:active,.messages-back:active,.messages-new:active{transform:scale(.94)!important;border-color:#5de8ff88!important}
+.messages-person{min-width:0!important;gap:10px!important}
+.messages-person img{width:39px!important;height:39px!important;border:1.5px solid rgba(91,222,255,.62)!important;box-shadow:0 0 0 3px rgba(79,117,255,.09)!important}
+.messages-person strong{font-size:13px!important;letter-spacing:.05px!important}
+.messages-person small{font-size:10px!important;color:#93a5c6!important}
+.chat-messages{gap:12px!important;padding:16px 13px 22px!important;overscroll-behavior:contain!important}
+.chat-message-line{position:relative!important;max-width:min(84%,460px)!important;touch-action:pan-y!important;transition:transform .2s ease!important}
+.chat-bubble{position:relative!important;padding:10px 13px 8px!important;font-size:13px!important;line-height:1.48!important;overflow:visible!important;box-shadow:0 4px 15px rgba(0,0,0,.14),inset 0 1px rgba(255,255,255,.06)!important}
+.chat-message-line.mine .chat-bubble{background:linear-gradient(135deg,#174d83,#34368c 62%,#512b83)!important;border:1px solid rgba(115,154,255,.45)!important;border-radius:18px 18px 5px 18px!important}
+.chat-message-line.theirs .chat-bubble{background:linear-gradient(145deg,#171f34,#20253a)!important;border:1px solid rgba(151,171,215,.15)!important;border-radius:18px 18px 18px 5px!important}
+.chat-message-meta{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;margin:5px 0 0 auto!important;min-height:11px!important;font-size:9px!important;font-weight:600!important;color:#b8c7e8!important;line-height:1!important;white-space:nowrap!important}
+.chat-message-status{color:#7be7ff!important;font-size:9px!important;letter-spacing:-.25px!important}
+.chat-message-time{display:inline-block!important;max-width:0!important;opacity:0!important;overflow:hidden!important;transform:translateX(5px)!important;transition:max-width .2s ease,opacity .18s ease,transform .2s ease!important}
+.chat-message-line.time-revealed .chat-message-time{max-width:64px!important;opacity:.9!important;transform:translateX(0)!important}
+.chat-message-line.time-revealed{transform:translateX(3px)!important}
+.chat-message-actions{margin-top:4px!important}
+.chat-reaction-trigger{width:29px!important;height:29px!important;min-height:29px!important;border-radius:50%!important;background:rgba(15,21,43,.94)!important;border-color:rgba(119,145,255,.22)!important;color:#cfe7ff!important}
+.chat-composer{gap:8px!important;padding:10px 11px calc(10px + env(safe-area-inset-bottom,0px))!important;background:rgba(8,11,25,.97)!important;border-top:1px solid rgba(119,143,255,.15)!important;backdrop-filter:blur(18px)!important}
+.chat-add,.chat-send{width:39px!important;height:39px!important;min-width:39px!important;border-radius:14px!important;display:grid!important;place-items:center!important}
+.chat-add{background:rgba(31,43,73,.82)!important;border:1px solid rgba(122,146,255,.2)!important;color:#b9d7ff!important}
+.chat-send{background:linear-gradient(135deg,#4cdff8,#7b78ff 62%,#c36aff)!important;color:#080d20!important;box-shadow:0 4px 16px rgba(83,129,255,.2)!important}
+.chat-input-wrap{min-height:43px!important;border-radius:17px!important;border:1px solid rgba(123,145,255,.2)!important;background:#10162a!important;box-shadow:inset 0 1px rgba(255,255,255,.025)!important}
+.chat-input-wrap input{font-size:13px!important}
+.chat-read-receipt{display:none!important}
+.message-row{padding:12px 13px!important;border-bottom:1px solid rgba(137,154,209,.08)!important}
+.message-row-meta{min-width:9px!important}
+.message-row-meta>small{display:none!important}
+.message-row-meta>i{background:linear-gradient(135deg,#55e8ff,#8b7cff)!important;color:#091022!important}
+@keyframes nexora-message-screen-enter{0%{opacity:0;transform:translateY(18px) scale(.985);filter:brightness(1.45)}65%{opacity:1;transform:translateY(-2px) scale(1.005)}100%{opacity:1;transform:translateY(0) scale(1);filter:none}}
+.chat-messages{animation:nexora-message-screen-enter .42s cubic-bezier(.18,.72,.18,1) both}
+.pulse-orb-wrap{animation:pulse-hero-arrive 2.2s cubic-bezier(.16,1,.3,1) both}
+.pulse-orb-wrap .pulse-orb{animation:pulse-hero-core 2.2s cubic-bezier(.16,1,.3,1) both,pulse-orb-glow 3.2s ease-in-out 2.2s infinite!important}
+.pulse-orb-wrap .pulse-orbit{animation:pulse-hero-ring 2.2s cubic-bezier(.16,1,.3,1) both, pulse-orbit-spin 14s linear 2.2s infinite!important}
+.global-orbit{animation:global-hero-arrive 2.25s cubic-bezier(.16,1,.3,1) both}
+.global-orbit .global-core{animation:global-core-settle 2.25s cubic-bezier(.16,1,.3,1) both}
+.global-orbit .global-ring{animation:global-ring-settle 2.25s cubic-bezier(.16,1,.3,1) both,global-ring-spin 16s linear 2.25s infinite}
+@keyframes pulse-hero-arrive{0%{opacity:0;transform:scale(1.26) translateY(10px);filter:brightness(1.7) saturate(1.6)}62%{opacity:1;transform:scale(1.04);filter:brightness(1.2)}100%{opacity:1;transform:scale(1);filter:none}}
+@keyframes pulse-hero-core{0%{transform:scale(1.32);filter:hue-rotate(100deg) brightness(1.8)}68%{transform:scale(1.06)}100%{transform:scale(1);filter:none}}
+@keyframes pulse-hero-ring{0%{opacity:0;scale:.45;rotate:-30deg}28%{opacity:1}100%{opacity:.8;scale:1;rotate:0deg}}
+@keyframes pulse-orbit-spin{to{rotate:360deg}}
+@keyframes global-hero-arrive{0%{opacity:0;transform:scale(1.3) translateY(12px);filter:brightness(1.8) saturate(1.7)}65%{opacity:1;transform:scale(1.04);filter:brightness(1.2)}100%{opacity:1;transform:scale(1);filter:none}}
+@keyframes global-core-settle{0%{transform:scale(1.28) rotate(-12deg);filter:hue-rotate(100deg) brightness(1.8)}70%{transform:scale(.97) rotate(4deg)}100%{transform:scale(1) rotate(0);filter:none}}
+@keyframes global-ring-settle{0%{opacity:0;scale:.4;rotate:-24deg}30%{opacity:1}100%{opacity:.7;scale:1;rotate:0}}
+@keyframes global-ring-spin{to{rotate:360deg}}
+@media(max-width:430px){.messages-head-action{width:32px!important;height:32px!important;min-width:32px!important}.messages-person img{width:35px!important;height:35px!important}.chat-message-line{max-width:89%!important}.chat-bubble{padding:9px 11px 7px!important}.chat-composer{gap:6px!important}}
+@media(prefers-reduced-motion:reduce){.chat-messages,.pulse-orb-wrap,.pulse-orb-wrap .pulse-orb,.pulse-orb-wrap .pulse-orbit,.global-orbit,.global-orbit .global-core,.global-orbit .global-ring{animation:none!important}.chat-message-time{transition:none!important}}
