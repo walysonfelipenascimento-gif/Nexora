@@ -440,6 +440,7 @@ export default function Home() {
     const now = new Date();
     const previousPulse = chatPulseById[activeChat.id];
     const stillActive = previousPulse && now.getTime() - previousPulse.lastInteraction < 72*60*60*1000;
+    if (!stillActive) setAuraHint({ chatId: activeChat.id, text: "Sem aura! ✨ Farme aura interagindo nesta conversa — sua primeira mensagem reacende a faísca.", nonce: Date.now() });
     const dayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
     const activeDays = Array.from(new Set([...(previousPulse?.activeDays || []), dayKey])).slice(-365);
     const nextPulse = { level: Math.min(7, (stillActive ? previousPulse.level : 0) + 1), lastInteraction: now.getTime(), totalInteractions: (previousPulse?.totalInteractions || 0) + 1, activeDays };
