@@ -11,6 +11,8 @@ create table if not exists public.pulse_connections (
   last_interaction_at timestamptz,
   active_days date[] not null default '{}',
   visible_on_profiles boolean not null default false,
+  visible_low_opt_in boolean not null default false,
+  visible_high_opt_in boolean not null default false,
   accepted_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -242,18 +244,62 @@ as $$
 declare v_actor uuid := auth.uid();
 begin
   if v_actor is null then raise exception 'Entre na Nexora para alterar a privacidade.'; end if;
+  update public.pulse_connections pc
+  set visible_low_opt_in = case when pc.user_low = v_actor then p_visible else pc.visible_low_opt_in end,
+      visible_high_opt_in = case when pc.user_high = v_actor then p_visible else pc.visible_high_opt_in end,
+      visible_on_profiles = case
+        when pc.user_low = v_actor then p_visible and pc.visible_high_opt_in
+        when pc.user_high = v_actor then p_visible and pc.visible_low_opt_in
+        else false
+      end,
+      updated_at = now()
+  where pc.id = p_connection_id and pc.status = 'active'
+    and (pc.user_low = v_actor or pc.user_high = v_actor);
+  if not found then raise exception 'Pulse não encontrado ou inativo.'; end if;
+end;
+$$;
+
+create or replace function public.pulse_create_memory(p_connection_id uuid, p_title text, p_note text default '')
+returns uuid
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare v_actor uuid := auth.uid(); v_memory_id uuid;
+begin
+  if v_actor is null then raise exception 'Entre na Nexora para guardar uma memória.'; end if;
+  if char_length(trim(coalesce(p_title,''))) not between 1 and 80 or char_length(coalesce(p_note,'')) > 500 then
+    raise exception 'Título ou descrição fora do limite permitido.';
+  end if;
   if not exists (select 1 from public.pulse_connections where id = p_connection_id and status = 'active' and (user_low = v_actor or user_high = v_actor)) then
     raise exception 'Pulse não encontrado ou inativo.';
   end if;
-  -- Public display requires both people to explicitly opt in.
-  if p_visible then
-    update public.pulse_connections set visible_on_profiles = true, updated_at = now()
-    where id = p_connection_id and status = 'active'
-      and (user_low = v_actor or user_high = v_actor);
-  else
-    update public.pulse_connections set visible_on_profiles = false, updated_at = now()
-    where id = p_connection_id and (user_low = v_actor or user_high = v_actor);
-  end if;
+  insert into public.pulse_memories(connection_id, created_by, title, note)
+  values (p_connection_id, v_actor, trim(p_title), coalesce(p_note,''))
+  returning id into v_memory_id;
+  return v_memory_id;
+end;
+$$;
+
+create or replace function public.pulse_approve_memory(p_memory_id uuid, p_approve boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare v_actor uuid := auth.uid();
+begin
+  if v_actor is null then raise exception 'Entre na Nexora para responder à memória.'; end if;
+  update public.pulse_memories pm
+  set approved_by_other = p_approve
+  where pm.id = p_memory_id
+    and pm.created_by <> v_actor
+    and exists (
+      select 1 from public.pulse_connections pc
+      where pc.id = pm.connection_id and pc.status = 'active'
+        and (pc.user_low = v_actor or pc.user_high = v_actor)
+    );
+  if not found then raise exception 'Memória não encontrada ou não autorizada.'; end if;
 end;
 $$;
 
@@ -261,10 +307,14 @@ revoke all on function public.pulse_invite(uuid) from public, anon;
 revoke all on function public.pulse_respond(uuid, boolean) from public, anon;
 revoke all on function public.pulse_record_activity(uuid, text, text) from public, anon;
 revoke all on function public.pulse_set_profile_visibility(uuid, boolean) from public, anon;
+revoke all on function public.pulse_create_memory(uuid, text, text) from public, anon;
+revoke all on function public.pulse_approve_memory(uuid, boolean) from public, anon;
 grant execute on function public.pulse_invite(uuid) to authenticated;
 grant execute on function public.pulse_respond(uuid, boolean) to authenticated;
 grant execute on function public.pulse_record_activity(uuid, text, text) to authenticated;
 grant execute on function public.pulse_set_profile_visibility(uuid, boolean) to authenticated;
+grant execute on function public.pulse_create_memory(uuid, text, text) to authenticated;
+grant execute on function public.pulse_approve_memory(uuid, boolean) to authenticated;
 
 do $$
 begin
