@@ -175,6 +175,15 @@ export default function NexoraPulsePage() {
     }, approve ? "Memória aprovada." : "Memória não aprovada.");
   }
 
+  async function endConnection(connection: Connection) {
+    if (!supabase || !window.confirm("Encerrar este Pulse? As conquistas e memórias serão preservadas, mas a conexão deixará de ficar ativa.")) return;
+    await runAction(async () => {
+      const { error: rpcError } = await supabase.rpc("pulse_end_connection", { p_connection_id: connection.id });
+      if (rpcError) throw rpcError;
+      setSelectedId("");
+    }, "Conexão encerrada. Os registros foram preservados e a exibição no perfil foi desativada.");
+  }
+
   async function toggleVisibility(connection: Connection) {
     if (!supabase || !myProfile) return;
     const myConsent = connection.user_low === myProfile.id ? connection.visible_low_opt_in : connection.visible_high_opt_in;
@@ -225,6 +234,7 @@ export default function NexoraPulsePage() {
             <button className="pulse-button pulse-button-wide" disabled={busy || level >= 7} onClick={() => void celebrate(selected)}>✦ Enviar energia para esta conexão</button>
             <p className="pulse-footnote">Até 8 contribuições por pessoa a cada dia. A evolução só avança quando os dois contribuem no mesmo dia. O conteúdo das mensagens privadas não é copiado para o histórico do Pulse.</p>
             <div className="pulse-privacy"><div><strong>Exibir esta conexão no perfil?</strong><small>Precisa da autorização de vocês dois.</small></div><button className="pulse-button" disabled={busy} onClick={() => void toggleVisibility(selected)}>{(selected.user_low === userId ? selected.visible_low_opt_in : selected.visible_high_opt_in) ? "Retirar meu consentimento" : "Autorizar exibição"}</button></div>
+            <div className="pulse-end-row"><span>Você pode encerrar esta conexão a qualquer momento.</span><button className="pulse-decline" disabled={busy} onClick={() => void endConnection(selected)}>Encerrar conexão</button></div>
             <div className="pulse-memory-section"><div className="pulse-section-title"><div><span className="pulse-eyebrow">MOMENTOS QUE FICAM</span><h3>Memórias compartilhadas</h3></div><span className="pulse-count">{memories.length}</span></div>
               <form onSubmit={(event) => { event.preventDefault(); void saveMemory(); }} className="pulse-memory-form"><input value={memoryTitle} onChange={(event) => setMemoryTitle(event.target.value)} placeholder="Título do momento" maxLength={80} required style={fieldStyle}/><textarea value={memoryNote} onChange={(event) => setMemoryNote(event.target.value)} placeholder="Uma lembrança (opcional)" maxLength={500} rows={2} style={fieldStyle}/><button className="pulse-button" disabled={busy || !memoryTitle.trim()}>Guardar memória privada</button></form>
               {memories.map((memory) => <article className="pulse-memory" key={memory.id}><div><strong>{memory.title}</strong><p>{memory.note || "Um momento especial da conexão."}</p><small>{new Date(memory.created_at).toLocaleDateString("pt-BR")} · {memory.approved_by_other ? "Aprovada pela outra pessoa" : memory.created_by === userId ? "Aguardando a outra pessoa" : "Aguardando sua aprovação"}</small></div>{memory.created_by !== userId && !memory.approved_by_other && <button className="pulse-button" disabled={busy} onClick={() => void approveMemory(memory, true)}>Aprovar</button>}</article>)}
