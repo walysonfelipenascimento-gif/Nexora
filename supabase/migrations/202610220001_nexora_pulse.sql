@@ -265,7 +265,7 @@ begin
       active_days = (select coalesce(array_agg(d order by d), '{}'::date[])
         from (select distinct unnest(pc.active_days || v_today) as d order by d desc limit 365) days),
       experience = pc.experience + case when v_low_active and v_high_active and not v_awarded then 1 else 0 end,
-      level = least(7, floor((pc.experience + case when v_low_active and v_high_active and not v_awarded then 1 else 0)::numeric / 5)::smallint),
+      level = least(7, floor((pc.experience + case when v_low_active and v_high_active and not v_awarded then 1 else 0 end)::numeric / 5)::smallint),
       updated_at = now()
   where pc.id = p_connection_id
   returning pc.level, pc.experience, pc.total_interactions
