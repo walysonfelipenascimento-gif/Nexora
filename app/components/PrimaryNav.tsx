@@ -12,11 +12,12 @@ const items: NavItem[] = [
   { id: "criar", label: "Criar", href: "/?action=create", icon: <path d="M12 5v14M5 12h14"/> },
   { id: "mensagens", label: "Mensagens", href: "/?tab=mensagens", icon: <><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-6A7.5 7.5 0 1 1 20 11.5Z"/><path d="M7.5 11.5h.01M12 11.5h.01M16.5 11.5h.01"/></> },
   { id: "pulse", label: "Pulse", href: "/pulse", icon: <><circle cx="12" cy="12" r="8"/><path d="m13.5 5.5-4 6h4l-3 7 5-8h-4z"/></> },
+  { id: "global", label: "Global", href: "/global", icon: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></> },
   { id: "loja", label: "Loja", href: "/loja", icon: <><path d="M3 8h18l-1.4 12H4.4L3 8Z"/><path d="M7 8a5 5 0 0 1 10 0M9 12v.01M15 12v.01"/></> },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: <><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></> },
 ];
 
-export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "mensagens" | "perfil" | "loja" | "pulse" }) {
+export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "mensagens" | "perfil" | "loja" | "pulse" | "global" }) {
   const [language, setLanguage] = useState<NexoraLanguage>("pt-BR");
   useEffect(() => {
     setLanguage(getSavedLanguage());
