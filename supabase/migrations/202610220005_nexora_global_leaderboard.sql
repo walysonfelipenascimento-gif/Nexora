@@ -5,7 +5,7 @@ create or replace function public.pulse_global_leaderboard(
   p_me_only boolean default false
 )
 returns table (
-  position bigint,
+  "position" bigint,
   user_id uuid,
   username text,
   display_name text,
