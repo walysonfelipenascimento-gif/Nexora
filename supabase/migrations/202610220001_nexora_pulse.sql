@@ -31,6 +31,16 @@ create table if not exists public.pulse_events (
   constraint pulse_events_idempotency unique (actor_id, idempotency_key)
 );
 
+create table if not exists public.pulse_daily_progress (
+  connection_id uuid not null references public.pulse_connections(id) on delete cascade,
+  activity_day date not null,
+  user_low_active boolean not null default false,
+  user_high_active boolean not null default false,
+  reward_awarded boolean not null default false,
+  updated_at timestamptz not null default now(),
+  primary key (connection_id, activity_day)
+);
+
 create table if not exists public.pulse_memories (
   id uuid primary key default gen_random_uuid(),
   connection_id uuid not null references public.pulse_connections(id) on delete cascade,
@@ -46,6 +56,16 @@ create index if not exists pulse_connections_user_low_status_idx on public.pulse
 create index if not exists pulse_connections_user_high_status_idx on public.pulse_connections(user_high, status);
 create index if not exists pulse_events_connection_created_idx on public.pulse_events(connection_id, created_at desc);
 create index if not exists pulse_memories_connection_created_idx on public.pulse_memories(connection_id, created_at desc);
+
+alter table public.pulse_daily_progress enable row level security;
+drop policy if exists "Pulse participants can view daily progress" on public.pulse_daily_progress;
+create policy "Pulse participants can view daily progress"
+on public.pulse_daily_progress for select to authenticated
+using (exists (
+  select 1 from public.pulse_connections pc
+  where pc.id = pulse_daily_progress.connection_id
+    and (pc.user_low = auth.uid() or pc.user_high = auth.uid())
+));
 
 alter table public.pulse_connections enable row level security;
 alter table public.pulse_events enable row level security;
@@ -80,7 +100,8 @@ using (exists (
 revoke insert, update, delete on public.pulse_connections from anon, authenticated;
 revoke insert, update, delete on public.pulse_events from anon, authenticated;
 revoke insert, update, delete on public.pulse_memories from anon, authenticated;
-grant select on public.pulse_connections, public.pulse_events, public.pulse_memories to authenticated;
+revoke insert, update, delete on public.pulse_daily_progress from anon, authenticated;
+grant select on public.pulse_connections, public.pulse_events, public.pulse_memories, public.pulse_daily_progress to authenticated;
 
 create or replace function public.pulse_invite(p_target_user_id uuid)
 returns uuid
@@ -179,10 +200,13 @@ as $$
 declare
   v_actor uuid := auth.uid();
   v_today date := (now() at time zone 'utc')::date;
+  v_low uuid;
+  v_high uuid;
   v_count_today integer;
-  v_new_xp integer;
-  v_new_level smallint;
   v_inserted uuid;
+  v_low_active boolean;
+  v_high_active boolean;
+  v_awarded boolean;
 begin
   if v_actor is null then raise exception 'Entre na Nexora para interagir.'; end if;
   if p_event_type not in ('message','reaction','check_in','memory') then
@@ -192,16 +216,19 @@ begin
     raise exception 'Identificador de interação inválido.';
   end if;
 
-  if not exists (
-    select 1 from public.pulse_connections
-    where id = p_connection_id and status = 'active'
-      and (user_low = v_actor or user_high = v_actor)
-  ) then raise exception 'Pulse não encontrado ou inativo.'; end if;
+  -- Serialize concurrent activity for the same connection before checking daily limits.
+  select pc.user_low, pc.user_high
+  into v_low, v_high
+  from public.pulse_connections pc
+  where pc.id = p_connection_id and pc.status = 'active'
+    and (pc.user_low = v_actor or pc.user_high = v_actor)
+  for update;
+  if not found then raise exception 'Pulse não encontrado ou inativo.'; end if;
 
   select count(*) into v_count_today
   from public.pulse_events
   where connection_id = p_connection_id and actor_id = v_actor
-    and created_at >= date_trunc('day', now() at time zone 'utc') at time zone 'utc';
+    and created_at >= (date_trunc('day', now() at time zone 'utc') at time zone 'utc');
 
   if v_count_today >= 8 then
     raise exception 'Você já contribuiu bastante hoje. Volte amanhã para continuar evoluindo o Pulse.';
@@ -213,23 +240,42 @@ begin
   returning id into v_inserted;
 
   if v_inserted is null then
-    select level, experience, total_interactions into new_level, new_experience, new_total_interactions
-    from public.pulse_connections where id = p_connection_id;
+    select pc.level, pc.experience, pc.total_interactions
+    into new_level, new_experience, new_total_interactions
+    from public.pulse_connections pc where pc.id = p_connection_id;
     return next;
     return;
   end if;
 
+  insert into public.pulse_daily_progress(connection_id, activity_day)
+  values (p_connection_id, v_today)
+  on conflict (connection_id, activity_day) do nothing;
+
+  update public.pulse_daily_progress dp
+  set user_low_active = dp.user_low_active or (v_actor = v_low),
+      user_high_active = dp.user_high_active or (v_actor = v_high),
+      updated_at = now()
+  where dp.connection_id = p_connection_id and dp.activity_day = v_today
+  returning dp.user_low_active, dp.user_high_active, dp.reward_awarded
+  into v_low_active, v_high_active, v_awarded;
+
   update public.pulse_connections pc
-  set experience = pc.experience + 1,
-      level = least(7, floor((pc.experience + 1)::numeric / 5)::smallint),
-      total_interactions = pc.total_interactions + 1,
+  set total_interactions = pc.total_interactions + 1,
       last_interaction_at = now(),
       active_days = (select coalesce(array_agg(d order by d), '{}'::date[])
         from (select distinct unnest(pc.active_days || v_today) as d order by d desc limit 365) days),
+      experience = pc.experience + case when v_low_active and v_high_active and not v_awarded then 1 else 0 end,
+      level = least(7, floor((pc.experience + case when v_low_active and v_high_active and not v_awarded then 1 else 0)::numeric / 5)::smallint),
       updated_at = now()
   where pc.id = p_connection_id
   returning pc.level, pc.experience, pc.total_interactions
   into new_level, new_experience, new_total_interactions;
+
+  if v_low_active and v_high_active and not v_awarded then
+    update public.pulse_daily_progress
+    set reward_awarded = true, updated_at = now()
+    where connection_id = p_connection_id and activity_day = v_today;
+  end if;
 
   return next;
 end;
