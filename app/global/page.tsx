@@ -71,6 +71,7 @@ export default function NexoraGlobalPage() {
   async function searchPeople(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSearched(true);
+    setMyPosition(null);
     setSearching(true);
     setError("");
     if (!supabase || query.trim().length < 2) { setMatches([]); setSearching(false); return; }
