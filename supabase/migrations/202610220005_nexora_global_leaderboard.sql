@@ -22,6 +22,7 @@ as $$
   with event_scores as (
     select pe.actor_id, count(*)::bigint as interaction_count
     from public.pulse_events pe
+    join public.pulse_connections active_pc on active_pc.id = pe.connection_id and active_pc.status = 'active'
     group by pe.actor_id
   ),
   connection_scores as (
