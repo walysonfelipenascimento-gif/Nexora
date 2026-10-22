@@ -1,0 +1,26 @@
+name: Nexora Pulse build validation
+
+on:
+  push:
+    branches:
+      - feat/nexora-pulse-foundation
+  pull_request:
+    branches:
+      - nexora/primeira-etapa-base-segura
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Build production bundle
+        run: npm run build
