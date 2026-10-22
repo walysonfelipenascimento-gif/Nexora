@@ -25,7 +25,7 @@ export default function PulseProfileBadge() {
       const ids = rows.map((row: SharedPulse) => row.user_low === userId ? row.user_high : row.user_low);
       const { data: people } = await supabase.from("profiles").select("id,username,display_name").in("id", ids);
       if (cancelled) return;
-      const byId = new Map((people || []).map((person: Person) => [person.id, person]));
+      const byId = new Map<string, Person>((people || []).map((person: Person) => [person.id, person] as [string, Person]));
       setItems((rows as SharedPulse[]).flatMap((connection) => {
         const otherId = connection.user_low === userId ? connection.user_high : connection.user_low;
         const person = byId.get(otherId);
