@@ -418,7 +418,7 @@ export default function Home() {
     }
   }
 
-  function handleMessageTouchEnd(event: React.TouchEvent<HTMLDivElement>, messageId: number) {
+  function handleMessageTouchEnd(event: React.TouchEvent<HTMLElement>, messageId: number) {
     const start = messageTouchStart.current;
     if (!start || start.id !== messageId) return;
     const touch = event.changedTouches[0];
