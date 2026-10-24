@@ -23,6 +23,35 @@ export default function NexiPage() {
   const [engineStatus, setEngineStatus] = useState("Verificando motor da Nexi...");
   const [signedInUserId, setSignedInUserId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [memory, setMemory] = useState("");
+  const [memoryOpen, setMemoryOpen] = useState(false);
+  const [memoryReady, setMemoryReady] = useState(false);
+
+  useEffect(() => {
+    setMemoryReady(false);
+    if (!signedInUserId) {
+      setMemory("");
+      setMemoryReady(true);
+      return;
+    }
+    try {
+      const stored = window.localStorage.getItem("nexi-memory-" + signedInUserId);
+      setMemory(stored || "");
+    } catch {
+      setMemory("");
+    }
+    setMemoryReady(true);
+  }, [signedInUserId]);
+
+  useEffect(() => {
+    if (!memoryReady || !signedInUserId) return;
+    try {
+      if (memory.trim()) window.localStorage.setItem("nexi-memory-" + signedInUserId, memory.slice(0, 4000));
+      else window.localStorage.removeItem("nexi-memory-" + signedInUserId);
+    } catch {
+      setNotice("Não foi possível guardar a memória neste navegador.");
+    }
+  }, [memory, memoryReady, signedInUserId]);
 
   useEffect(() => {
     let active = true;
@@ -126,7 +155,7 @@ export default function NexiPage() {
       const response = await fetch("/api/nexi/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages.slice(-12), webSearch }),
+        body: JSON.stringify({ messages: nextMessages.slice(-12), webSearch, memory: memory.slice(0, 4000) }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -179,6 +208,17 @@ export default function NexiPage() {
           <h1>Olá! Eu sou a <span>Nexi.</span></h1>
           <p className="nexi-subtitle">Conectando ideias. Criando possibilidades.</p>
           <p className="nexi-description">Uma nova forma de criar, descobrir e organizar ideias — integrada à experiência Nexora.</p>
+        </section>
+
+        <section className="nexi-memory-panel" aria-label="Memória da Nexi">
+          <button className="nexi-memory-toggle" type="button" onClick={() => setMemoryOpen(value => !value)} aria-expanded={memoryOpen}>
+            <span aria-hidden="true">◇</span> Memória inteligente <small>{signedInUserId ? "Privada neste navegador · controlada por você" : "Entre na conta para usar memória por conta"}</small><b>{memoryOpen ? "−" : "+"}</b>
+          </button>
+          {memoryOpen && <div className="nexi-memory-editor">
+            <p>Adicione preferências e informações que você quer que a Nexi considere em novas conversas. Esse texto fica neste navegador e é enviado junto com suas mensagens para dar contexto; não é uma memória automática nem sincronizada entre dispositivos.</p>
+            <textarea value={memory} onChange={event => setMemory(event.target.value.slice(0, 4000))} maxLength={4000} rows={4} placeholder="Ex.: prefiro respostas em português brasileiro; estou criando a Nexora; gosto de ideias originais para Reels..." disabled={!signedInUserId} />
+            <div><span>{memory.length}/4.000</span><button type="button" onClick={() => setMemory("")} disabled={!signedInUserId || !memory}>Limpar memória</button></div>
+          </div>}
         </section>
 
         <section className="nexi-suggestions" aria-label="Sugestões para começar">
@@ -240,6 +280,10 @@ export default function NexiPage() {
         .nexi-hero h1 span{background:linear-gradient(100deg,#6beaff,#b1a0ff 56%,#f29bff);color:transparent;background-clip:text}
         .nexi-subtitle{font-size:14px;color:#c6b9ff;margin:13px 0 8px}
         .nexi-description{max-width:440px;margin:0 auto;color:#9298b4;font-size:12px;line-height:1.7}
+        .nexi-memory-panel{margin:0 0 13px;border:1px solid rgba(130,190,255,.2);border-radius:15px;background:rgba(16,21,43,.72);overflow:hidden}
+        .nexi-memory-toggle{width:100%;display:flex;align-items:center;gap:9px;text-align:left;padding:12px 14px;border:0;background:transparent;color:#c9d9ff;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+        .nexi-memory-toggle>span{font-size:17px;color:#8ceeff}.nexi-memory-toggle small{margin-left:auto;color:#818cad;font-size:9px;font-weight:500}.nexi-memory-toggle>b{color:#92edff;font-size:16px}
+        .nexi-memory-editor{padding:0 12px 12px}.nexi-memory-editor p{font-size:10px;line-height:1.6;color:#9099b8;margin:0 0 8px}.nexi-memory-editor textarea{box-sizing:border-box;width:100%;resize:vertical;padding:10px;border:1px solid rgba(155,170,230,.2);border-radius:10px;background:#080b18;color:#eef2ff;font:inherit;font-size:11px;line-height:1.6}.nexi-memory-editor textarea:focus{outline:1px solid #7beaff}.nexi-memory-editor textarea:disabled{opacity:.5}.nexi-memory-editor>div{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:9px;color:#7d86a8}.nexi-memory-editor button{border:1px solid rgba(150,164,255,.25);border-radius:8px;background:rgba(109,91,205,.12);color:#c9c4ff;padding:6px 9px;font:inherit;cursor:pointer}.nexi-memory-editor button:disabled{opacity:.4;cursor:not-allowed}
         .nexi-suggestions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 15px}
         .nexi-suggestion{position:relative;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:145px;padding:15px 13px;border:1px solid rgba(155,160,255,.16);border-radius:18px;background:linear-gradient(145deg,rgba(24,28,58,.82),rgba(12,14,29,.94));color:#f3f4ff;cursor:pointer;transition:border-color .18s,transform .18s}
         .nexi-suggestion:focus-visible,.nexi-suggestion:hover{border-color:rgba(106,224,255,.55);transform:translateY(-2px);outline:none}
