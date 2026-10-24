@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import PrimaryNav from "../components/PrimaryNav";
 
@@ -19,6 +19,21 @@ export default function NexiPage() {
   const [notice, setNotice] = useState("");
   const [webSearch, setWebSearch] = useState(false);
   const [citations, setCitations] = useState<{ title: string; url: string }[]>([]);
+  const [engineStatus, setEngineStatus] = useState("Verificando motor da Nexi...");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/nexi/status", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!active) return;
+        setEngineStatus(typeof data.message === "string" ? data.message : "Status do motor indisponível");
+      })
+      .catch(() => {
+        if (active) setEngineStatus("Não foi possível verificar o motor agora");
+      });
+    return () => { active = false; };
+  }, []);
 
   function startNewConversation() {
     if (sending) return;
@@ -75,7 +90,7 @@ export default function NexiPage() {
           </Link>
           <div className="nexi-header-actions">
             {messages.length > 0 && <button className="nexi-new-chat" type="button" onClick={startNewConversation} disabled={sending}>＋ Nova conversa</button>}
-            <span className="nexi-status"><i /> NOVA EXPERIÊNCIA</span>
+            <span className="nexi-status" title={engineStatus}><i /> {engineStatus}</span>
           </div>
         </header>
 
@@ -122,7 +137,7 @@ export default function NexiPage() {
           {notice && <p className="nexi-notice" role="status">{notice}</p>}
         </form>
 
-        <p className="nexi-disclaimer"><span>✧</span> A conversa não é salva no banco nesta etapa. Quando configurado, o modelo externo processará apenas as mensagens enviadas para responder.</p>      </div>
+        <p className="nexi-disclaimer"><span>✧</span> O status acima mostra a configuração detectada pelo servidor. A memória persistente e o motor próprio só estarão ativos quando forem conectados e testados.</p>      </div>
       <PrimaryNav active="nexi" />
       <style jsx>{`
         .nexi-page{min-height:100dvh;padding:16px 14px 112px;color:#f7f7ff;background:radial-gradient(ellipse at 50% 5%,rgba(87,67,190,.19),transparent 42%),radial-gradient(ellipse at 8% 35%,rgba(29,194,237,.08),transparent 36%),#070914;font-family:Inter,system-ui,-apple-system,sans-serif}
