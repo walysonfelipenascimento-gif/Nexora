@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import PrimaryNav from "../components/PrimaryNav";
+import GlobalLeaderboardPanel from "../components/GlobalLeaderboardPanel";
 import "./pulse.css";
+import "../global/global.css";
 import { getSupabaseBrowserClient } from "../../lib/supabase";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
@@ -259,7 +261,8 @@ export default function NexoraPulsePage() {
       </div>
 
       {(notice || error) && <div className={"pulse-toast " + (error ? "is-error" : "")} role={error ? "alert" : "status"}>{error || notice}<button onClick={() => { setError(""); setNotice(""); }} aria-label="Fechar aviso">×</button></div>}
-      <PrimaryNav active="pulse" />
+      <PrimaryNav active="inicio" />
     </div>
+    <GlobalLeaderboardPanel />
   </main>;
 }
