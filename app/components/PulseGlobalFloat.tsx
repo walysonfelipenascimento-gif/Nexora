@@ -31,15 +31,15 @@ export default function PulseGlobalFloat() {
       >
         <span className="nexora-pulse-float-orbit" aria-hidden="true" />
         <span className="nexora-pulse-float-mark" aria-hidden="true">{open ? "×" : "✦"}</span>
-        <span className="nexora-pulse-float-label">Pulse <i /> Global</span>
+        {open && <span className="nexora-pulse-float-label">Pulse <i /> Global</span>}
       </button>
       <style jsx>{`
-        .nexora-pulse-float{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:10px;font-family:inherit}
-        .nexora-pulse-float-trigger{position:relative;display:flex;align-items:center;gap:9px;min-height:48px;padding:0 15px 0 13px;border:1px solid rgba(113,220,255,.55);border-radius:999px;color:#f7fbff;background:linear-gradient(115deg,rgba(8,20,48,.97),rgba(36,17,72,.97));box-shadow:0 0 0 1px rgba(125,83,255,.16),0 7px 25px rgba(0,0,0,.4),0 0 22px rgba(46,198,255,.18);cursor:pointer;overflow:hidden;isolation:isolate}
+        .nexora-pulse-float{position:fixed;right:14px;bottom:calc(104px + env(safe-area-inset-bottom));z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:10px;font-family:inherit}
+        .nexora-pulse-float-trigger{position:relative;display:flex;align-items:center;gap:9px;min-height:44px;width:44px;padding:0;justify-content:center;border:1px solid rgba(113,220,255,.55);border-radius:999px;color:#f7fbff;background:linear-gradient(115deg,rgba(8,20,48,.97),rgba(36,17,72,.97));box-shadow:0 0 0 1px rgba(125,83,255,.16),0 7px 25px rgba(0,0,0,.4),0 0 22px rgba(46,198,255,.18);cursor:pointer;overflow:hidden;isolation:isolate}
         .nexora-pulse-float-trigger:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 15%,rgba(53,213,255,.14),rgba(199,74,255,.16),transparent 85%);transform:translateX(-80%);animation:nexora-float-shimmer 5s ease-in-out infinite}
-        .nexora-pulse-float-orbit{position:absolute;width:34px;height:34px;left:7px;border:1px solid rgba(104,225,255,.45);border-radius:50%;box-shadow:0 0 13px rgba(74,200,255,.2);animation:nexora-float-orbit 4s linear infinite;pointer-events:none}
+        .nexora-pulse-float-orbit{position:absolute;width:34px;height:34px;left:4px;border:1px solid rgba(104,225,255,.45);border-radius:50%;box-shadow:0 0 13px rgba(74,200,255,.2);animation:nexora-float-orbit 4s linear infinite;pointer-events:none}
         .nexora-pulse-float-mark{width:24px;height:24px;display:grid;place-items:center;border-radius:50%;font-size:20px;color:#8ceaff;text-shadow:0 0 12px #35cfff;transition:transform .2s}
-        .nexora-pulse-float-trigger.is-open .nexora-pulse-float-mark{font-size:26px;transform:rotate(90deg)}
+        .nexora-pulse-float-trigger.is-open{width:auto;min-width:44px;padding:0 14px;gap:8px}.nexora-pulse-float-trigger.is-open .nexora-pulse-float-mark{font-size:24px;transform:rotate(90deg)}
         .nexora-pulse-float-label{font-size:12px;font-weight:850;letter-spacing:.15px;white-space:nowrap}
         .nexora-pulse-float-label i{display:inline-block;width:4px;height:4px;margin:0 5px 2px;border-radius:50%;background:#c67bff;box-shadow:0 0 7px #c67bff}
         .nexora-pulse-float-menu{width:min(270px,calc(100vw - 28px));padding:7px;border:1px solid rgba(128,191,255,.24);border-radius:19px;background:rgba(8,10,25,.96);box-shadow:0 14px 44px rgba(0,0,0,.5),0 0 28px rgba(93,76,255,.16);backdrop-filter:blur(18px);animation:nexora-float-in .18s ease-out}
