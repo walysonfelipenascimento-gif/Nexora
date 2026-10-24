@@ -27,7 +27,7 @@ export default function NexiPage() {
           <Link className="nexi-brand" href="/" aria-label="Voltar à Nexora">
             <span className="nexi-mark" aria-hidden="true">✦</span>
             <span><strong>NEXI</strong><small>INTELIGÊNCIA DA NEXORA</small></span>
-          </a>
+          </Link>
           <span className="nexi-status"><i /> NOVA EXPERIÊNCIA</span>
         </header>
 
