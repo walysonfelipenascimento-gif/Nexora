@@ -422,6 +422,7 @@ export default function Home() {
     const start = messageTouchStart.current;
     if (!start || start.id !== messageId) return;
     const touch = event.changedTouches[0];
+    if (!touch) { messageTouchStart.current = null; return; }
     const dx = touch.clientX - start.x;
     const dy = touch.clientY - start.y;
     if (Math.abs(dx) >= 34 && Math.abs(dx) > Math.abs(dy) * 1.25) setRevealedTimestampId(current => current === messageId ? null : messageId);
