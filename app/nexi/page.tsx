@@ -105,6 +105,7 @@ export default function NexiPage() {
         if (assistantSaveError) persistenceWarning = true;
       }
       if (persistenceWarning) setNotice("Resposta recebida, mas o histórico não foi salvo. Confira se sua sessão está ativa e se as políticas do Supabase estão configuradas.");
+      else if (!signedInUserId) setNotice("Você pode conversar normalmente, mas o histórico ainda não será salvo nesta sessão. Entre na sua conta Nexora para usar o histórico persistente.");
       if (Array.isArray(data.citations)) {
         const validCitations = data.citations.filter((item: Record<string, unknown>) => typeof item.title === "string" && typeof item.url === "string" && (item.url.startsWith("https://") || item.url.startsWith("http://"))) as { title: string; url: string }[];
         setCitations(validCitations);
