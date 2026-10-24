@@ -55,7 +55,7 @@ export default function NexiPage() {
       }
       setMessages(current => [...current, { role: "assistant", content: data.reply }]);
       if (Array.isArray(data.citations)) {
-        setCitations(data.citations.filter((item: unknown): item is { title: string; url: string } => Boolean(item && typeof item === "object" && typeof (item as { title?: unknown }).title === "string" && typeof (item as { url?: unknown }).url === "string" && /^https?:\\/\\//.test((item as { url: string }).url)));
+        setCitations(data.citations.filter((item: unknown): item is { title: string; url: string } => Boolean(item && typeof item === "object" && typeof (item as { title?: unknown }).title === "string" && typeof (item as { url?: unknown }).url === "string" && ((item as { url: string }).url.startsWith("https://") || (item as { url: string }).url.startsWith("http://"))));
       }
     } catch {
       setNotice("Não foi possível alcançar o serviço da Nexi. Verifique sua conexão e tente novamente.");
