@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import PrimaryNav from "../components/PrimaryNav";
+import { getSupabaseBrowserClient } from "../../lib/supabase/client";
 
 type NexiMessage = { role: "user" | "assistant"; content: string };
 
@@ -20,10 +21,20 @@ export default function NexiPage() {
   const [webSearch, setWebSearch] = useState(false);
   const [citations, setCitations] = useState<{ title: string; url: string }[]>([]);
   const [engineStatus, setEngineStatus] = useState("Verificando motor da Nexi...");
+  const [signedInUserId, setSignedInUserId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    fetch("/api/nexi/status", { cache: "no-store" })
+    const supabase = getSupabaseBrowserClient();
+    if (supabase) {
+      supabase.auth.getUser().then(({ data, error }) => {
+        if (active && !error) setSignedInUserId(data.user?.id ?? null);
+      }).catch(() => { if (active) setSignedInUserId(null); });
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (active) setSignedInUserId(session?.user?.id ?? null);
+      });
+      fetch("/api/nexi/status", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json();
         if (!active) return;
@@ -32,12 +43,18 @@ export default function NexiPage() {
       .catch(() => {
         if (active) setEngineStatus("Não foi possível verificar o motor agora");
       });
+      return () => { active = false; authListener.subscription.unsubscribe(); };
+    }
+    fetch("/api/nexi/status", { cache: "no-store" })
+      .then(async (response) => { const data = await response.json(); if (active) setEngineStatus(typeof data.message === "string" ? data.message : "Status do motor indisponível"); })
+      .catch(() => { if (active) setEngineStatus("Não foi possível verificar o motor agora"); });
     return () => { active = false; };
   }, []);
 
   function startNewConversation() {
     if (sending) return;
     setMessages([]);
+    setConversationId(null);
     setPrompt("");
     setNotice("");
     setCitations([]);
@@ -53,7 +70,21 @@ export default function NexiPage() {
     setNotice("");
     setCitations([]);
     setSending(true);
+    let activeConversationId = conversationId;
+    let persistenceWarning = false;
+    const supabase = getSupabaseBrowserClient();
     try {
+      if (supabase && signedInUserId) {
+        if (!activeConversationId) {
+          const { data: created, error: createError } = await supabase.from("nexi_conversations").insert({ user_id: signedInUserId, title: text.slice(0, 80) }).select("id").single();
+          if (createError || !created?.id) persistenceWarning = true;
+          else { activeConversationId = created.id as string; setConversationId(activeConversationId); }
+        }
+        if (activeConversationId) {
+          const { error: userSaveError } = await supabase.from("nexi_messages").insert({ conversation_id: activeConversationId, user_id: signedInUserId, role: "user", content: text });
+          if (userSaveError) persistenceWarning = true;
+        }
+      }
       const response = await fetch("/api/nexi/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,6 +100,11 @@ export default function NexiPage() {
         return;
       }
       setMessages(current => [...current, { role: "assistant", content: data.reply }]);
+      if (supabase && signedInUserId && activeConversationId) {
+        const { error: assistantSaveError } = await supabase.from("nexi_messages").insert({ conversation_id: activeConversationId, user_id: signedInUserId, role: "assistant", content: data.reply });
+        if (assistantSaveError) persistenceWarning = true;
+      }
+      if (persistenceWarning) setNotice("Resposta recebida, mas o histórico não foi salvo. Confira se sua sessão está ativa e se as políticas do Supabase estão configuradas.");
       if (Array.isArray(data.citations)) {
         const validCitations = data.citations.filter((item: Record<string, unknown>) => typeof item.title === "string" && typeof item.url === "string" && (item.url.startsWith("https://") || item.url.startsWith("http://"))) as { title: string; url: string }[];
         setCitations(validCitations);
