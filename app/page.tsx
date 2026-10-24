@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryNav from "./components/PrimaryNav";
+import PulseGlobalFloat from "./components/PulseGlobalFloat";
 import LanguageWelcome from "./components/LanguageWelcome";
 import { getSavedLanguage, translate, type NexoraLanguage } from "../lib/i18n";
 import { ensureOwnProfile, getSupabaseBrowserClient, uploadNexoraMedia } from "../lib/supabase";
@@ -1155,6 +1156,7 @@ export default function Home() {
         {createMode === "hub" ? <p style={{marginTop:14,fontSize:10,color:"#858ba9",lineHeight:1.5}}>Escolha um formato. Stories, publicações e Reels usam mídia local nesta etapa; Live exige integração de streaming.</p> : null}
       </section></div>}
       <LanguageWelcome />
+      <PulseGlobalFloat />
       <PrimaryNav active={messagesOpen ? "mensagens" : "inicio"} />
       <style jsx global>{`
         .chat-input-wrap .chat-translate-toggle{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex:0 0 auto;min-width:42px;max-width:84px;height:32px;padding:0 6px;border:1px solid rgba(92,207,255,.24);border-radius:12px;background:linear-gradient(135deg,rgba(40,117,255,.13),rgba(151,69,255,.15));color:#9feeff;font-size:14px;line-height:1;white-space:nowrap;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
