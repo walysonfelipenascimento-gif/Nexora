@@ -61,6 +61,7 @@ export default function NexiPage() {
         .from("nexi_conversations")
         .select("id")
         .eq("user_id", signedInUserId)
+        .order("updated_at", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -116,6 +117,10 @@ export default function NexiPage() {
         if (activeConversationId) {
           const { error: userSaveError } = await supabase.from("nexi_messages").insert({ conversation_id: activeConversationId, user_id: signedInUserId, role: "user", content: text });
           if (userSaveError) persistenceWarning = true;
+          else {
+            const { error: touchError } = await supabase.from("nexi_conversations").update({ updated_at: new Date().toISOString() }).eq("id", activeConversationId).eq("user_id", signedInUserId);
+            if (touchError) persistenceWarning = true;
+          }
         }
       }
       const response = await fetch("/api/nexi/chat", {
@@ -136,6 +141,10 @@ export default function NexiPage() {
       if (supabase && signedInUserId && activeConversationId) {
         const { error: assistantSaveError } = await supabase.from("nexi_messages").insert({ conversation_id: activeConversationId, user_id: signedInUserId, role: "assistant", content: data.reply });
         if (assistantSaveError) persistenceWarning = true;
+        else {
+          const { error: touchError } = await supabase.from("nexi_conversations").update({ updated_at: new Date().toISOString() }).eq("id", activeConversationId).eq("user_id", signedInUserId);
+          if (touchError) persistenceWarning = true;
+        }
       }
       if (persistenceWarning) setNotice("Resposta recebida, mas o histórico não foi salvo. Confira se sua sessão está ativa e se as políticas do Supabase estão configuradas.");
       else if (!signedInUserId) setNotice("Você pode conversar normalmente, mas o histórico ainda não será salvo nesta sessão. Entre na sua conta Nexora para usar o histórico persistente.");
@@ -207,7 +216,7 @@ export default function NexiPage() {
           {notice && <p className="nexi-notice" role="status">{notice}</p>}
         </form>
 
-        <p className="nexi-disclaimer"><span>✧</span> O status acima mostra a configuração detectada pelo servidor. A memória persistente e o motor próprio só estarão ativos quando forem conectados e testados.</p>      </div>
+        <p className="nexi-disclaimer"><span>✧</span> A Nexi usa o motor configurado no servidor. O histórico depende de uma sessão Nexora ativa; recursos como memória de longo prazo e motor próprio exigem integração e testes adicionais.</p>      </div>
       <PrimaryNav active="nexi" />
       <style jsx>{`
         .nexi-page{min-height:100dvh;padding:16px 14px 112px;color:#f7f7ff;background:radial-gradient(ellipse at 50% 5%,rgba(87,67,190,.19),transparent 42%),radial-gradient(ellipse at 8% 35%,rgba(29,194,237,.08),transparent 36%),#070914;font-family:Inter,system-ui,-apple-system,sans-serif}
