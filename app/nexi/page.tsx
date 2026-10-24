@@ -55,14 +55,14 @@ export default function NexiPage() {
       <div className="nexi-shell">
         <header className="nexi-header">
           <Link className="nexi-brand" href="/" aria-label="Voltar à Nexora">
-            <span className="nexi-mark" aria-hidden="true">✦</span>
+            <span className="nexi-mark" aria-hidden="true"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><linearGradient id="nexi-mark-gradient" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#57e9ff"/><stop offset=".56" stop-color="#a99aff"/><stop offset="1" stop-color="#f29bff"/></linearGradient></defs><path d="M7 24V8l18 16V8" fill="none" stroke="url(#nexi-mark-gradient)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="7" r="2.2" fill="#8ff5ff"/><path d="M4 27h8" stroke="#c49aff" stroke-width="2" stroke-linecap="round"/></svg></span>
             <span><strong>NEXI</strong><small>INTELIGÊNCIA DA NEXORA</small></span>
           </Link>
           <span className="nexi-status"><i /> NOVA EXPERIÊNCIA</span>
         </header>
 
         <section className="nexi-hero">
-          <div className="nexi-orb" aria-hidden="true"><span>✦</span><i /><b /></div>
+          <div className="nexi-orb" aria-hidden="true"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><linearGradient id="nexi-core-gradient" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#56e8ff"/><stop offset=".52" stop-color="#9b8aff"/><stop offset="1" stop-color="#f29bff"/></linearGradient></defs><path d="M13 48V16l38 32V16" fill="none" stroke="url(#nexi-core-gradient)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 53h17" fill="none" stroke="#71eaff" stroke-width="2.5" stroke-linecap="round"/><circle cx="51" cy="13" r="4" fill="#a9f6ff"/><circle cx="51" cy="13" r="7" fill="none" stroke="#a9f6ff" stroke-opacity=".35" stroke-width="1.2"/></svg><i /><b /></div>
           <p className="nexi-eyebrow">SUA IDEIA É O COMEÇO DE TUDO</p>
           <h1>Olá! Eu sou a <span>Nexi.</span></h1>
           <p className="nexi-subtitle">Conectando ideias. Criando possibilidades.</p>
@@ -84,7 +84,7 @@ export default function NexiPage() {
           <section className="nexi-conversation" aria-label="Conversa com a Nexi" aria-live="polite">
             {messages.map((message, index) => (
               <article className={"nexi-message " + message.role} key={index + "-" + message.role}>
-                <span className="nexi-message-author">{message.role === "assistant" ? "✦ NEXI" : "VOCÊ"}</span>
+                <span className="nexi-message-author">{message.role === "assistant" ? "NEXI · IA DA NEXORA" : "VOCÊ"}</span>
                 <p>{message.content}</p>
               </article>
             ))}
@@ -109,14 +109,15 @@ export default function NexiPage() {
         .nexi-shell{max-width:850px;margin:0 auto}
         .nexi-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 18px;border-bottom:1px solid rgba(173,157,255,.14)}
         .nexi-brand{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}
-        .nexi-mark{width:43px;height:43px;border-radius:15px;display:grid;place-items:center;font-size:25px;color:#c9f8ff;background:linear-gradient(145deg,rgba(46,212,255,.22),rgba(157,91,255,.28));border:1px solid rgba(122,220,255,.35);box-shadow:0 0 25px rgba(85,122,255,.14)}
+        .nexi-mark{width:43px;height:43px;border-radius:15px;display:grid;place-items:center;color:#c9f8ff;background:linear-gradient(145deg,rgba(46,212,255,.22),rgba(157,91,255,.28));border:1px solid rgba(122,220,255,.35);box-shadow:0 0 25px rgba(85,122,255,.14)}
+        .nexi-mark svg{width:29px;height:29px;display:block;filter:drop-shadow(0 0 7px rgba(91,226,255,.25))}
         .nexi-brand strong{display:block;font-size:16px;letter-spacing:2.3px;background:linear-gradient(95deg,#72f2ff,#b5a0ff 60%,#f0a5ff);color:transparent;background-clip:text}
         .nexi-brand small{display:block;margin-top:4px;font-size:8px;letter-spacing:1.4px;color:#9299bd}
         .nexi-status{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:800;letter-spacing:1px;color:#a6eaf7;border:1px solid rgba(105,221,255,.2);background:rgba(49,166,222,.07);padding:8px 10px;border-radius:999px}
         .nexi-status i{width:6px;height:6px;border-radius:50%;background:#6deaff;box-shadow:0 0 10px #6deaff}
         .nexi-hero{text-align:center;padding:31px 0 27px}
         .nexi-orb{width:90px;height:90px;border-radius:30px;margin:0 auto 22px;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 30% 25%,rgba(89,241,255,.3),rgba(106,82,232,.16) 48%,rgba(220,90,255,.13));border:1px solid rgba(157,179,255,.4);box-shadow:0 0 55px rgba(85,114,255,.18),inset 0 0 25px rgba(124,209,255,.09);transform:rotate(-8deg)}
-        .nexi-orb span{font-size:43px;color:#c8f7ff;text-shadow:0 0 22px rgba(104,225,255,.8);transform:rotate(8deg)}
+        .nexi-orb svg{width:58px;height:58px;transform:rotate(8deg);filter:drop-shadow(0 0 9px rgba(104,225,255,.38))}
         .nexi-orb i,.nexi-orb b{position:absolute;width:7px;height:7px;border-radius:50%;background:#a5f5ff;box-shadow:0 0 15px #73eaff}
         .nexi-orb i{right:-7px;top:14px}.nexi-orb b{left:8px;bottom:-5px;width:5px;height:5px;background:#d9a4ff}
         .nexi-eyebrow{font-size:9px;letter-spacing:2.3px;font-weight:850;color:#91ddf8;margin:0 0 12px}
@@ -154,7 +155,7 @@ export default function NexiPage() {
         .nexi-disclaimer{text-align:center;max-width:550px;margin:17px auto 0;color:#737b9a;font-size:10px;line-height:1.7}
         .nexi-disclaimer span{color:#8c8eff;margin-right:4px}
         @media(prefers-reduced-motion:reduce){.nexi-thinking span{animation:none}}
-        @media(max-width:540px){.nexi-page{padding:12px 12px 108px}.nexi-header{padding-bottom:14px}.nexi-status{font-size:8px;letter-spacing:.5px;padding:7px 8px}.nexi-suggestions{grid-template-columns:1fr;gap:8px}.nexi-suggestion{min-height:0;display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:6px 10px;padding:12px}.nexi-suggestion-icon{grid-row:span 2}.nexi-suggestion strong{grid-column:2}.nexi-suggestion>span:not(.nexi-suggestion-icon){grid-column:2}.nexi-suggestion>b{right:14px;top:18px}.nexi-hero{padding-top:25px}.nexi-orb{width:76px;height:76px;border-radius:25px}.nexi-orb span{font-size:36px}.nexi-composer{padding:13px}.nexi-composer-footer button{padding:10px 11px;font-size:10px}}
+        @media(max-width:540px){.nexi-page{padding:12px 12px 108px}.nexi-header{padding-bottom:14px}.nexi-status{font-size:8px;letter-spacing:.5px;padding:7px 8px}.nexi-suggestions{grid-template-columns:1fr;gap:8px}.nexi-suggestion{min-height:0;display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:6px 10px;padding:12px}.nexi-suggestion-icon{grid-row:span 2}.nexi-suggestion strong{grid-column:2}.nexi-suggestion>span:not(.nexi-suggestion-icon){grid-column:2}.nexi-suggestion>b{right:14px;top:18px}.nexi-hero{padding-top:25px}.nexi-orb{width:76px;height:76px;border-radius:25px}.nexi-orb svg{width:49px;height:49px}.nexi-composer{padding:13px}.nexi-composer-footer button{padding:10px 11px;font-size:10px}}
       `}</style>
     </main>
   );
