@@ -74,9 +74,57 @@ export async function POST(request: NextRequest) {
   }
 
   const webSearch = body.webSearch === true;
+  const engineProvider = (process.env.NEXI_ENGINE_PROVIDER || "openai").toLowerCase();
+
+  // Self-hosted engine path: Ollama-compatible endpoint hosted separately from the Nexora web app.
+  // This does not download or host a model on Render; NEXI_ENGINE_URL must point to the model server.
+  if (engineProvider === "ollama") {
+    const engineUrl = process.env.NEXI_ENGINE_URL?.trim().replace(/\/$/, "");
+    const engineModel = process.env.NEXI_ENGINE_MODEL?.trim() || "qwen2.5:1.5b";
+    if (!engineUrl) {
+      return jsonError("O motor próprio da Nexi foi selecionado, mas NEXI_ENGINE_URL ainda não aponta para o servidor do modelo.", 503);
+    }
+    if (webSearch) {
+      return jsonError("A pesquisa na internet ainda não está conectada ao motor próprio da Nexi. Desative a pesquisa para conversar com o modelo local.", 501);
+    }
+
+    try {
+      const upstream = await fetch(`${engineUrl}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: engineModel,
+          stream: false,
+          messages: [
+            { role: "system", content: NEXI_INSTRUCTIONS },
+            ...messages.map((message) => ({ role: message.role, content: message.content }))
+          ],
+          options: { num_predict: 1100 }
+        }),
+        signal: AbortSignal.timeout(120000),
+        cache: "no-store"
+      });
+
+      if (!upstream.ok) {
+        return jsonError("O servidor do motor próprio da Nexi respondeu com erro. Verifique se o modelo está carregado e o endereço do motor está correto.", 502);
+      }
+
+      const result = await upstream.json();
+      const reply = typeof result?.message?.content === "string" ? result.message.content.trim() : "";
+      if (!reply) return jsonError("O motor próprio não retornou uma resposta válida.", 502);
+
+      return NextResponse.json(
+        { reply, citations: [], searched: false, engine: "self-hosted" },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    } catch {
+      return jsonError("Não foi possível alcançar o servidor do motor próprio da Nexi. Confirme se ele está ativo e acessível pela rede.", 504);
+    }
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return jsonError("A interface da Nexi está pronta, mas falta configurar OPENAI_API_KEY nas variáveis privadas da Render para ativar a IA real. Sua mensagem não foi enviada ao provedor.", 503);
+    return jsonError("A Nexi está configurada para usar a API externa, mas OPENAI_API_KEY não está definida. Para usar o motor próprio, configure NEXI_ENGINE_PROVIDER=ollama e NEXI_ENGINE_URL com o endereço do servidor do modelo.", 503);
   }
 
   try {
