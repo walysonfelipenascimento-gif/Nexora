@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import PrimaryNav from "../components/PrimaryNav";
 
 const suggestions = [
@@ -23,7 +24,7 @@ export default function NexiPage() {
     <main className="nexi-page">
       <div className="nexi-shell">
         <header className="nexi-header">
-          <a className="nexi-brand" href="/" aria-label="Voltar à Nexora">
+          <Link className="nexi-brand" href="/" aria-label="Voltar à Nexora">
             <span className="nexi-mark" aria-hidden="true">✦</span>
             <span><strong>NEXI</strong><small>INTELIGÊNCIA DA NEXORA</small></span>
           </a>
