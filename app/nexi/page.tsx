@@ -51,6 +51,39 @@ export default function NexiPage() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    if (!signedInUserId) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    let active = true;
+    async function restoreLatestConversation() {
+      const { data: conversation, error: conversationError } = await supabase
+        .from("nexi_conversations")
+        .select("id")
+        .eq("user_id", signedInUserId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!active || conversationError || !conversation?.id) return;
+      const { data: savedMessages, error: messagesError } = await supabase
+        .from("nexi_messages")
+        .select("role, content")
+        .eq("conversation_id", conversation.id)
+        .eq("user_id", signedInUserId)
+        .order("created_at", { ascending: true })
+        .limit(100);
+      if (!active || messagesError || !Array.isArray(savedMessages) || savedMessages.length === 0) return;
+      setMessages(current => current.length === 0
+        ? savedMessages.filter((item): item is { role: "user" | "assistant"; content: string } =>
+            (item.role === "user" || item.role === "assistant") && typeof item.content === "string"
+          )
+        : current);
+      setConversationId(current => current ?? conversation.id);
+    }
+    void restoreLatestConversation();
+    return () => { active = false; };
+  }, [signedInUserId]);
+
   function startNewConversation() {
     if (sending) return;
     setMessages([]);
