@@ -110,7 +110,8 @@ export default function NexiPage() {
         .nexi-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 18px;border-bottom:1px solid rgba(173,157,255,.14)}
         .nexi-brand{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}
         .nexi-mark{width:43px;height:43px;border-radius:15px;display:grid;place-items:center;color:#c9f8ff;background:linear-gradient(145deg,rgba(46,212,255,.22),rgba(157,91,255,.28));border:1px solid rgba(122,220,255,.35);box-shadow:0 0 25px rgba(85,122,255,.14)}
-        .nexi-mark svg{width:29px;height:29px;display:block;filter:drop-shadow(0 0 7px rgba(91,226,255,.25))}\n        .nexi-brand strong{display:block;font-size:16px;letter-spacing:2.3px;background:linear-gradient(95deg,#72f2ff,#b5a0ff 60%,#f0a5ff);color:transparent;background-clip:text}
+        .nexi-mark svg{width:29px;height:29px;display:block;filter:drop-shadow(0 0 7px rgba(91,226,255,.25))}
+        .nexi-brand strong{display:block;font-size:16px;letter-spacing:2.3px;background:linear-gradient(95deg,#72f2ff,#b5a0ff 60%,#f0a5ff);color:transparent;background-clip:text}
         .nexi-brand small{display:block;margin-top:4px;font-size:8px;letter-spacing:1.4px;color:#9299bd}
         .nexi-status{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:800;letter-spacing:1px;color:#a6eaf7;border:1px solid rgba(105,221,255,.2);background:rgba(49,166,222,.07);padding:8px 10px;border-radius:999px}
         .nexi-status i{width:6px;height:6px;border-radius:50%;background:#6deaff;box-shadow:0 0 10px #6deaff}
