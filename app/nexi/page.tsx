@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import PrimaryNav from "../components/PrimaryNav";
 
+type NexiMessage = { role: "user" | "assistant"; content: string };
+
 const suggestions = [
   { icon: "✦", title: "Criar conteúdo", detail: "Legendas, memes e ideias para Reels", prompt: "Me ajude a criar uma ideia original para um Reel." },
   { icon: "⌕", title: "Pesquisar e aprender", detail: "Organizar dúvidas e explorar assuntos", prompt: "Quero entender um assunto e organizar as informações principais." },
@@ -12,12 +14,40 @@ const suggestions = [
 
 export default function NexiPage() {
   const [prompt, setPrompt] = useState("");
+  const [messages, setMessages] = useState<NexiMessage[]>([]);
+  const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
 
-  function submitPrompt(event: React.FormEvent<HTMLFormElement>) {
+  async function submitPrompt(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!prompt.trim()) return;
-    setNotice("A interface da Nexi está preparada, mas o modelo de IA ainda não foi conectado. Sua mensagem não foi enviada nem armazenada.");
+    const text = prompt.trim();
+    if (!text || sending) return;
+    const nextMessages: NexiMessage[] = [...messages, { role: "user", content: text }];
+    setMessages(nextMessages);
+    setPrompt("");
+    setNotice("");
+    setSending(true);
+    try {
+      const response = await fetch("/api/nexi/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: nextMessages.slice(-12) }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setNotice(typeof data.error === "string" ? data.error : "Não consegui responder agora. Tente novamente em instantes.");
+        return;
+      }
+      if (typeof data.reply !== "string" || !data.reply.trim()) {
+        setNotice("A Nexi não recebeu uma resposta válida. Tente novamente.");
+        return;
+      }
+      setMessages(current => [...current, { role: "assistant", content: data.reply }]);
+    } catch {
+      setNotice("Não foi possível alcançar o serviço da Nexi. Verifique sua conexão e tente novamente.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -50,18 +80,29 @@ export default function NexiPage() {
           ))}
         </section>
 
+        {messages.length > 0 && (
+          <section className="nexi-conversation" aria-label="Conversa com a Nexi" aria-live="polite">
+            {messages.map((message, index) => (
+              <article className={"nexi-message " + message.role} key={index + "-" + message.role}>
+                <span className="nexi-message-author">{message.role === "assistant" ? "✦ NEXI" : "VOCÊ"}</span>
+                <p>{message.content}</p>
+              </article>
+            ))}
+            {sending && <div className="nexi-thinking"><span /> A Nexi está pensando...</div>}
+          </section>
+        )}
+
         <form className="nexi-composer" onSubmit={submitPrompt}>
           <label htmlFor="nexi-prompt">O que você quer fazer hoje?</label>
-          <textarea id="nexi-prompt" value={prompt} onChange={(event) => { setPrompt(event.target.value); setNotice(""); }} placeholder="Escreva uma ideia, uma dúvida ou algo que queira criar..." maxLength={2000} rows={3} />
+          <textarea id="nexi-prompt" value={prompt} onChange={(event) => { setPrompt(event.target.value); setNotice(""); }} placeholder="Escreva uma ideia, uma dúvida ou algo que queira criar..." maxLength={2000} rows={3} disabled={sending} />
           <div className="nexi-composer-footer">
-            <span>Até 2.000 caracteres</span>
-            <button type="submit" disabled={!prompt.trim()}>Preparar pergunta <span aria-hidden="true">↗</span></button>
+            <span>{prompt.length}/2.000 caracteres</span>
+            <button type="submit" disabled={!prompt.trim() || sending}>{sending ? "Pensando..." : "Enviar para Nexi"} <span aria-hidden="true">{sending ? "…" : "↗"}</span></button>
           </div>
           {notice && <p className="nexi-notice" role="status">{notice}</p>}
         </form>
 
-        <p className="nexi-disclaimer"><span>✧</span> A Nexi está em construção. A conversa real com o modelo será ativada na próxima etapa; por enquanto, nada é enviado.</p>
-      </div>
+        <p className="nexi-disclaimer"><span>✧</span> A conversa não é salva no banco nesta etapa. Quando configurado, o modelo externo processará apenas as mensagens enviadas para responder.</p>      </div>
       <PrimaryNav active="nexi" />
       <style jsx>{`
         .nexi-page{min-height:100dvh;padding:16px 14px 112px;color:#f7f7ff;background:radial-gradient(ellipse at 50% 5%,rgba(87,67,190,.19),transparent 42%),radial-gradient(ellipse at 8% 35%,rgba(29,194,237,.08),transparent 36%),#070914;font-family:Inter,system-ui,-apple-system,sans-serif}
@@ -90,9 +131,19 @@ export default function NexiPage() {
         .nexi-suggestion strong{font-size:12px}
         .nexi-suggestion>span:not(.nexi-suggestion-icon){font-size:10px;line-height:1.55;color:#9ca4c2}
         .nexi-suggestion>b{position:absolute;right:13px;top:16px;color:#7fe9ff;font-size:14px}
+        .nexi-conversation{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+        .nexi-message{max-width:92%;padding:12px 14px;border:1px solid rgba(130,160,255,.18);border-radius:16px;background:rgba(18,22,44,.86);color:#e9ecff}
+        .nexi-message.user{align-self:flex-end;border-color:rgba(111,215,255,.28);background:linear-gradient(135deg,rgba(19,51,78,.82),rgba(39,23,72,.9))}
+        .nexi-message.assistant{align-self:flex-start}
+        .nexi-message-author{display:block;margin-bottom:6px;color:#8feaff;font-size:9px;font-weight:900;letter-spacing:1px}
+        .nexi-message p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.7}
+        .nexi-thinking{align-self:flex-start;display:flex;align-items:center;gap:9px;padding:10px 12px;color:#a9b0d1;font-size:11px}
+        .nexi-thinking span{width:7px;height:7px;border-radius:50%;background:#83eaff;box-shadow:0 0 12px #83eaff;animation:nexi-thinking-pulse 1s ease-in-out infinite alternate}
+        @keyframes nexi-thinking-pulse{to{opacity:.25;transform:scale(.7)}}
         .nexi-composer{padding:16px;border:1px solid rgba(125,158,255,.25);border-radius:20px;background:linear-gradient(145deg,rgba(18,22,44,.96),rgba(11,13,27,.98));box-shadow:0 18px 55px rgba(0,0,0,.16)}
         .nexi-composer label{display:block;font-size:12px;font-weight:800;margin-bottom:10px;color:#e5e7ff}
         .nexi-composer textarea{display:block;box-sizing:border-box;width:100%;resize:vertical;min-height:78px;padding:13px 14px;border:1px solid rgba(158,166,218,.16);border-radius:13px;outline:none;background:#080b18;color:#f8f8ff;font:inherit;font-size:12px;line-height:1.6}
+        .nexi-composer textarea:disabled{opacity:.7}
         .nexi-composer textarea:focus{border-color:rgba(93,220,255,.55);box-shadow:0 0 0 3px rgba(67,185,255,.07)}
         .nexi-composer textarea::placeholder{color:#6f789a}
         .nexi-composer-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
@@ -102,6 +153,7 @@ export default function NexiPage() {
         .nexi-notice{margin:12px 0 0;padding:11px 12px;border:1px solid rgba(255,196,120,.3);border-radius:12px;background:rgba(255,196,120,.06);color:#f2d7a8;font-size:11px;line-height:1.6}
         .nexi-disclaimer{text-align:center;max-width:550px;margin:17px auto 0;color:#737b9a;font-size:10px;line-height:1.7}
         .nexi-disclaimer span{color:#8c8eff;margin-right:4px}
+        @media(prefers-reduced-motion:reduce){.nexi-thinking span{animation:none}}
         @media(max-width:540px){.nexi-page{padding:12px 12px 108px}.nexi-header{padding-bottom:14px}.nexi-status{font-size:8px;letter-spacing:.5px;padding:7px 8px}.nexi-suggestions{grid-template-columns:1fr;gap:8px}.nexi-suggestion{min-height:0;display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:6px 10px;padding:12px}.nexi-suggestion-icon{grid-row:span 2}.nexi-suggestion strong{grid-column:2}.nexi-suggestion>span:not(.nexi-suggestion-icon){grid-column:2}.nexi-suggestion>b{right:14px;top:18px}.nexi-hero{padding-top:25px}.nexi-orb{width:76px;height:76px;border-radius:25px}.nexi-orb span{font-size:36px}.nexi-composer{padding:13px}.nexi-composer-footer button{padding:10px 11px;font-size:10px}}
       `}</style>
     </main>
