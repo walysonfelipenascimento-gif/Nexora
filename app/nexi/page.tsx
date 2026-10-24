@@ -17,12 +17,15 @@ export default function NexiPage() {
   const [messages, setMessages] = useState<NexiMessage[]>([]);
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
+  const [webSearch, setWebSearch] = useState(false);
+  const [citations, setCitations] = useState<{ title: string; url: string }[]>([]);
 
   function startNewConversation() {
     if (sending) return;
     setMessages([]);
     setPrompt("");
     setNotice("");
+    setCitations([]);
   }
 
   async function submitPrompt(event: React.FormEvent<HTMLFormElement>) {
@@ -33,12 +36,13 @@ export default function NexiPage() {
     setMessages(nextMessages);
     setPrompt("");
     setNotice("");
+    setCitations([]);
     setSending(true);
     try {
       const response = await fetch("/api/nexi/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages.slice(-12) }),
+        body: JSON.stringify({ messages: nextMessages.slice(-12), webSearch }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -50,6 +54,9 @@ export default function NexiPage() {
         return;
       }
       setMessages(current => [...current, { role: "assistant", content: data.reply }]);
+      if (Array.isArray(data.citations)) {
+        setCitations(data.citations.filter((item: unknown): item is { title: string; url: string } => Boolean(item && typeof item === "object" && typeof (item as { title?: unknown }).title === "string" && typeof (item as { url?: unknown }).url === "string" && /^https?:\\/\\//.test((item as { url: string }).url)));
+      }
     } catch {
       setNotice("Não foi possível alcançar o serviço da Nexi. Verifique sua conexão e tente novamente.");
     } finally {
@@ -98,12 +105,14 @@ export default function NexiPage() {
                 <p>{message.content}</p>
               </article>
             ))}
-            {sending && <div className="nexi-thinking"><span /> A Nexi está pensando...</div>}
+            {sending && <div className="nexi-thinking"><span /> {webSearch ? "A Nexi está pesquisando e pensando..." : "A Nexi está pensando..."}</div>}
+            {citations.length > 0 && <aside className="nexi-citations" aria-label="Fontes consultadas"><strong>Fontes consultadas</strong>{citations.map((citation) => <a href={citation.url} key={citation.url} target="_blank" rel="noreferrer">{citation.title} <span aria-hidden="true">↗</span></a>)}</aside>}
           </section>
         )}
 
         <form className="nexi-composer" onSubmit={submitPrompt}>
           <label htmlFor="nexi-prompt">O que você quer fazer hoje?</label>
+          <button className={"nexi-search-toggle" + (webSearch ? " active" : "")} type="button" onClick={() => setWebSearch(value => !value)} aria-pressed={webSearch} disabled={sending}><span aria-hidden="true">⌕</span> {webSearch ? "Pesquisa na internet ativada" : "Ativar pesquisa na internet"} <small>{webSearch ? "A Nexi poderá buscar fontes atuais" : "Opcional · pesquisar na web"}</small></button>
           <textarea id="nexi-prompt" value={prompt} onChange={(event) => { setPrompt(event.target.value); setNotice(""); }} placeholder="Escreva uma ideia, uma dúvida ou algo que queira criar..." maxLength={2000} rows={3} disabled={sending} />
           <div className="nexi-composer-footer">
             <span>{prompt.length}/2.000 caracteres</span>
@@ -149,11 +158,13 @@ export default function NexiPage() {
         .nexi-message.assistant{align-self:flex-start}
         .nexi-message-author{display:block;margin-bottom:6px;color:#8feaff;font-size:9px;font-weight:900;letter-spacing:1px}
         .nexi-message p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.7}
+        .nexi-citations{display:flex;flex-direction:column;gap:7px;align-self:stretch;padding:12px 14px;border:1px solid rgba(105,220,255,.2);border-radius:13px;background:rgba(20,35,57,.55)}.nexi-citations strong{font-size:10px;letter-spacing:.8px;color:#91eaff;text-transform:uppercase}.nexi-citations a{font-size:11px;line-height:1.5;color:#c7c8ff;text-decoration:none;overflow-wrap:anywhere}.nexi-citations a:hover{text-decoration:underline;color:#a5f4ff}
         .nexi-thinking{align-self:flex-start;display:flex;align-items:center;gap:9px;padding:10px 12px;color:#a9b0d1;font-size:11px}
         .nexi-thinking span{width:7px;height:7px;border-radius:50%;background:#83eaff;box-shadow:0 0 12px #83eaff;animation:nexi-thinking-pulse 1s ease-in-out infinite alternate}
         @keyframes nexi-thinking-pulse{to{opacity:.25;transform:scale(.7)}}
         .nexi-composer{padding:16px;border:1px solid rgba(125,158,255,.25);border-radius:20px;background:linear-gradient(145deg,rgba(18,22,44,.96),rgba(11,13,27,.98));box-shadow:0 18px 55px rgba(0,0,0,.16)}
         .nexi-composer label{display:block;font-size:12px;font-weight:800;margin-bottom:10px;color:#e5e7ff}
+        .nexi-search-toggle{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;padding:9px 11px;border:1px solid rgba(150,160,220,.2);border-radius:11px;background:rgba(15,18,38,.9);color:#b8c3e5;font:inherit;font-size:10px;font-weight:750;cursor:pointer}.nexi-search-toggle>span{font-size:17px;color:#8feaff}.nexi-search-toggle small{margin-left:auto;color:#7d86a8;font-size:9px;font-weight:500}.nexi-search-toggle.active{border-color:rgba(100,229,255,.55);background:linear-gradient(100deg,rgba(41,172,221,.12),rgba(151,104,255,.13));color:#a4f1ff}.nexi-search-toggle:disabled{opacity:.5;cursor:not-allowed}
         .nexi-composer textarea{display:block;box-sizing:border-box;width:100%;resize:vertical;min-height:78px;padding:13px 14px;border:1px solid rgba(158,166,218,.16);border-radius:13px;outline:none;background:#080b18;color:#f8f8ff;font:inherit;font-size:12px;line-height:1.6}
         .nexi-composer textarea:disabled{opacity:.7}
         .nexi-composer textarea:focus{border-color:rgba(93,220,255,.55);box-shadow:0 0 0 3px rgba(67,185,255,.07)}
