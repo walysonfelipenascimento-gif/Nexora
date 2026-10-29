@@ -157,12 +157,36 @@ export async function POST(request: NextRequest) {
     });
 
     if (!upstream.ok) {
-      if (upstream.status === 429) return jsonError("A Nexi está recebendo muitas solicitações ou o limite do provedor foi atingido. Aguarde um pouco e tente novamente.", 429);
+      // Record only safe provider diagnostics; never log API keys or conversation content.
+      const providerError = await upstream.json().catch(() => ({}));
+      const errorInfo = providerError && typeof providerError === "object"
+        ? (providerError as { error?: { type?: unknown; code?: unknown; message?: unknown } }).error
+        : undefined;
+      const errorType = typeof errorInfo?.type === "string" ? errorInfo.type : "";
+      const errorCode = typeof errorInfo?.code === "string" ? errorInfo.code : "";
+      const requestId = upstream.headers.get("x-request-id") || upstream.headers.get("request-id") || undefined;
+      console.error("[Nexi] External provider request failed", {
+        status: upstream.status,
+        type: errorType || undefined,
+        code: errorCode || undefined,
+        requestId
+      });
+
+      if (upstream.status === 429) {
+        const quotaIssue = errorCode === "insufficient_quota" || errorType === "insufficient_quota";
+        const message = quotaIssue
+          ? "O provedor de IA recusou a solicitação por limite de uso da conta. O responsável pela configuração precisa verificar o uso e o plano do provedor."
+          : "O provedor de IA está limitando solicitações neste momento. Aguarde um pouco e tente novamente.";
+        return NextResponse.json(
+          { error: message, code: quotaIssue ? "PROVIDER_QUOTA_EXCEEDED" : "PROVIDER_RATE_LIMIT", retryable: !quotaIssue, retryAfterSeconds: quotaIssue ? null : 30 },
+          { status: 429, headers: { "Cache-Control": "no-store", ...(upstream.headers.get("retry-after") ? { "Retry-After": upstream.headers.get("retry-after")! } : {}) } }
+        );
+      }
       if (upstream.status === 401 || upstream.status === 403) {
         return jsonError("A configuração segura do provedor de IA precisa ser revisada. A chave nunca é exibida na página.", 503);
       }
       if (upstream.status === 400 && webSearch) {
-        return jsonError("A pesquisa não ficou disponível para o modelo configurado. Confira OPENAI_MODEL na Render e use um modelo compatível com a ferramenta de pesquisa.", 502);
+        return jsonError("A pesquisa não ficou disponível para o modelo configurado. Confira a configuração do modelo e tente novamente sem a pesquisa.", 502);
       }
       return jsonError("O serviço de IA está indisponível no momento. Tente novamente em instantes.", 502);
     }
