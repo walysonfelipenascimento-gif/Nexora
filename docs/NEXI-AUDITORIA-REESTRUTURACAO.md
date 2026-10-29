@@ -26,3 +26,11 @@ Data da auditoria inicial: 2026-10-29
 - Não mexer em tabelas/funções CJS ou outras áreas da Nexora.
 - Não fazer deploy para produção até a alteração ter sido revisada e compilada.
 - Não afirmar que um recurso foi testado sem resultado observável.
+## Verificação complementar de segurança — 2026-10-29
+- As políticas RLS atuais das tabelas Nexi foram consultadas diretamente em `pg_policies` (não houve alteração): conversas permitem SELECT/INSERT/UPDATE/DELETE somente para `authenticated` e com `auth.uid() = user_id`; mensagens permitem SELECT/DELETE por proprietário e INSERT somente quando `user_id) pertence à sessão e a conversa referenciada também pertence ao mesmo usuário.
+- O catálogo atual não registra, por si só, o autor ou a data de criação dessas políticas. Portanto, não é possível afirmar quem as criou nem que o usuário as aceitou. Não remover nem reescrever políticas sem rastrear migrations/auditoria e confirmar impacto.
+- O Security Advisor também apontou avisos em funções SECURITY DEFINER e proteção de senha vazada desativada no projeto, além de avisos em funções Pulse e outras áreas. Essas partes não foram modificadas por estarem fora do escopo autorizado da Nexi; precisam de revisão separada pelo responsável do projeto.
+- O Performance Advisor identificou que as políticas Nexi chamam `auth.uid()` sem encapsular em `(select auth.uid())`, recomendação de otimização. Adiar qualquer alteração até revisar migrations e testar RLS em contas distintas.
+- A rota de chat ainda usa rate limit em memória do processo; isso não é distribuído entre instâncias/reinicializações. É uma limitação conhecida que deve ser corrigida antes de considerar o serviço robusto em produção.
+- A persistência atual grava as duas mensagens em uma operação de insert, mas a criação da conversa, o insert das mensagens e o update de `updated_at` são operações separadas; uma falha parcial pode deixar uma conversa incompleta. Testar e, se necessário, mover a gravação para uma operação transacional segura e restrita à Nexi.
+- Nenhuma política, tabela, função, chave ou configuração do Supabase foi alterada nesta verificação.
