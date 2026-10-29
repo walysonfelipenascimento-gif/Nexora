@@ -28,7 +28,7 @@ export async function GET() {
         return NextResponse.json({
           provider: "external",
           ready: true,
-          message: "Motor externo acessível",
+          message: "Autenticação do provedor aceita; geração de respostas ainda precisa ser testada",
         }, { headers: { "Cache-Control": "no-store" } });
       }
       return NextResponse.json({
