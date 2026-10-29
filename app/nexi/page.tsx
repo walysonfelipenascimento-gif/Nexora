@@ -131,62 +131,86 @@ export default function NexiPage() {
     event.preventDefault();
     const text = prompt.trim();
     if (!text || sending) return;
+
     const nextMessages: NexiMessage[] = [...messages, { role: "user", content: text }];
     setMessages(nextMessages);
     setPrompt("");
     setNotice("");
     setCitations([]);
     setSending(true);
-    let activeConversationId = conversationId;
-    let persistenceWarning = false;
-    const supabase = getSupabaseBrowserClient();
+
     try {
-      if (supabase && signedInUserId) {
-        if (!activeConversationId) {
-          const { data: created, error: createError } = await supabase.from("nexi_conversations").insert({ user_id: signedInUserId, title: text.slice(0, 80) }).select("id").single();
-          if (createError || !created?.id) persistenceWarning = true;
-          else { activeConversationId = created.id as string; setConversationId(activeConversationId); }
-        }
-        if (activeConversationId) {
-          const { error: userSaveError } = await supabase.from("nexi_messages").insert({ conversation_id: activeConversationId, user_id: signedInUserId, role: "user", content: text });
-          if (userSaveError) persistenceWarning = true;
-          else {
-            const { error: touchError } = await supabase.from("nexi_conversations").update({ updated_at: new Date().toISOString() }).eq("id", activeConversationId).eq("user_id", signedInUserId);
-            if (touchError) persistenceWarning = true;
-          }
-        }
-      }
       const response = await fetch("/api/nexi/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: nextMessages.slice(-12), webSearch, memory: memory.slice(0, 4000) }),
       });
       const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        setNotice(typeof data.error === "string" ? data.error : "Não consegui responder agora. Tente novamente em instantes.");
+        setMessages(current => current.length > 0 && current[current.length - 1]?.role === "user" && current[current.length - 1]?.content === text ? current.slice(0, -1) : current);
+        setPrompt(text);
+        const errorMessage = typeof data.error === "string" ? data.error : "Não consegui responder agora. Tente novamente em instantes.";
+        const retryHint = data.retryable === true && typeof data.retryAfterSeconds === "number"
+          ? " Você pode tentar novamente em aproximadamente " + data.retryAfterSeconds + " segundos."
+          : "";
+        setNotice(errorMessage + retryHint);
         return;
       }
       if (typeof data.reply !== "string" || !data.reply.trim()) {
-        setNotice("A Nexi não recebeu uma resposta válida. Tente novamente.");
+        setMessages(current => current.length > 0 && current[current.length - 1]?.role === "user" && current[current.length - 1]?.content === text ? current.slice(0, -1) : current);
+        setPrompt(text);
+        setNotice("A Nexi não recebeu uma resposta válida. Sua mensagem foi preservada para tentar novamente.");
         return;
       }
-      setMessages(current => [...current, { role: "assistant", content: data.reply }]);
-      if (supabase && signedInUserId && activeConversationId) {
-        const { error: assistantSaveError } = await supabase.from("nexi_messages").insert({ conversation_id: activeConversationId, user_id: signedInUserId, role: "assistant", content: data.reply });
-        if (assistantSaveError) persistenceWarning = true;
-        else {
-          const { error: touchError } = await supabase.from("nexi_conversations").update({ updated_at: new Date().toISOString() }).eq("id", activeConversationId).eq("user_id", signedInUserId);
+
+      const assistantMessage: NexiMessage = { role: "assistant", content: data.reply.trim() };
+      setMessages(current => [...current, assistantMessage]);
+
+      // Persist only after the model has returned a valid answer, avoiding orphaned user messages on provider errors.
+      let persistenceWarning = false;
+      const supabase = getSupabaseBrowserClient();
+      if (supabase && signedInUserId) {
+        let activeConversationId = conversationId;
+        if (!activeConversationId) {
+          const { data: created, error: createError } = await supabase
+            .from("nexi_conversations")
+            .insert({ user_id: signedInUserId, title: text.slice(0, 80), model_provider: data.engine === "self-hosted" ? "self-hosted" : "external" })
+            .select("id")
+            .single();
+          if (createError || !created?.id) persistenceWarning = true;
+          else {
+            activeConversationId = created.id as string;
+            setConversationId(activeConversationId);
+          }
+        }
+        if (activeConversationId) {
+          const { error: userSaveError } = await supabase.from("nexi_messages").insert([
+            { conversation_id: activeConversationId, user_id: signedInUserId, role: "user", content: text },
+            { conversation_id: activeConversationId, user_id: signedInUserId, role: "assistant", content: assistantMessage.content }
+          ]);
+          if (userSaveError) persistenceWarning = true;
+          const { error: touchError } = await supabase.from("nexi_conversations")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", activeConversationId)
+            .eq("user_id", signedInUserId);
           if (touchError) persistenceWarning = true;
         }
       }
-      if (persistenceWarning) setNotice("Resposta recebida, mas o histórico não foi salvo. Confira se sua sessão está ativa e se as políticas do Supabase estão configuradas.");
-      else if (!signedInUserId) setNotice("Você pode conversar normalmente, mas o histórico ainda não será salvo nesta sessão. Entre na sua conta Nexora para usar o histórico persistente.");
+
       if (Array.isArray(data.citations)) {
-        const validCitations = data.citations.filter((item: Record<string, unknown>) => typeof item.title === "string" && typeof item.url === "string" && (item.url.startsWith("https://") || item.url.startsWith("http://"))) as { title: string; url: string }[];
+        const validCitations = data.citations.filter((item: Record<string, unknown>) =>
+          typeof item.title === "string" && typeof item.url === "string" &&
+          (item.url.startsWith("https://") || item.url.startsWith("http://"))
+        ) as { title: string; url: string }[];
         setCitations(validCitations);
       }
+      if (persistenceWarning) setNotice("A resposta chegou, mas não foi possível salvar o histórico na sua conta. Tente novamente mais tarde.");
+      else if (!signedInUserId) setNotice("Conversa respondida. Para manter um histórico entre sessões, entre na sua conta Nexora.");
     } catch {
-      setNotice("Não foi possível alcançar o serviço da Nexi. Verifique sua conexão e tente novamente.");
+      setMessages(current => current.length > 0 && current[current.length - 1]?.role === "user" && current[current.length - 1]?.content === text ? current.slice(0, -1) : current);
+      setPrompt(text);
+      setNotice("Não foi possível alcançar o serviço da Nexi. Sua mensagem foi preservada para tentar novamente.");
     } finally {
       setSending(false);
     }
