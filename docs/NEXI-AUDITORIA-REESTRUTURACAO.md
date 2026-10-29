@@ -7,9 +7,9 @@ Data da auditoria inicial: 2026-10-29
 - Render publicou o commit `3faa3ab681a80302a8e98bd3f138f7f1fed04f31` no deploy `dep-dbhsbk2jnfac73c6n45g` (status live).
 - A API usa Responses API quando `NEXI_ENGINE_PROVIDER` não é `ollama`; a checagem de status valida autenticação do provedor, não uma geração real.
 - A memória atual é um texto manual, guardado no localStorage do navegador (máximo 4.000 caracteres), não uma memória automática ou sincronizada.
-- O histórico tenta gravar mensagens no Supabase quando há sessão autenticada; recuperação atual busca apenas a conversa mais recente.
+- A primeira etapa da reestruturação adicionou lista das últimas 30 conversas, abertura de conversa anterior, atualização da lista após resposta salva e limpeza do estado privado ao sair da conta. Ainda precisa de build e teste integrado.
 - Pesquisa web opcional está conectada ao endpoint da Responses API, mas ainda precisa de teste de ponta a ponta.
-- As tabelas `public.nexi_conversations` e `public.nexi_messages` existem; seus campos foram inspecionados. Não fazer mudanças de esquema sem provar necessidade.
+- As tabelas `public.nexi_conversations` e `public.nexi_messages` existem; seus campos e políticas RLS foram inspecionados. As políticas limitam leitura/escrita a `auth.uid()` e verificam que a conversa pertence ao usuário ao inserir mensagens. Nenhuma mudança de esquema foi feita.
 - O projeto Supabase contém outras funções/tabelas fora da Nexi; não alterar essas partes.
 
 ## Plano de trabalho
@@ -21,7 +21,7 @@ Data da auditoria inicial: 2026-10-29
 6. **Segurança:** revisar RLS das duas tabelas Nexi, ownership por `auth.uid()`, limites de payload, rate limiting distribuído e logs sem conteúdo de mensagens nem segredos.
 7. **Testes/publicação:** lint/build/typecheck, endpoints, autenticação, chat sem pesquisa/com pesquisa, histórico e falhas de provedor; publicar só depois dos checks e confirmar o deploy Live.
 
-## Regras de segurança operacional
+## Implementação iniciada nesta branch\n- Branch: `nexi/auditoria-reestruturacao-profissional`.\n- PR draft: https://github.com/walysonfelipenascimento-gif/Nexora/pull/19\n- Commits atuais incluem a documentação, navegação de histórico, ajustes responsivos e limpeza do estado após logout.\n- A branch ainda não está publicada no Render. O CI não retornou workflows associados ao commit; lint/build/typecheck continuam pendentes.\n\n## Regras de segurança operacional
 - Não expor chaves ou segredos.
 - Não mexer em tabelas/funções CJS ou outras áreas da Nexora.
 - Não fazer deploy para produção até a alteração ter sido revisada e compilada.
