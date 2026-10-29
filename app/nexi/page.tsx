@@ -89,10 +89,14 @@ export default function NexiPage() {
   }, []);
 
   useEffect(() => {
+    // Clear the previous account's private conversation state immediately when identity changes.
+    // This prevents a brief cross-account flash while the new account's history is loading.
+    setConversations([]);
+    setMessages([]);
+    setConversationId(null);
+    setCitations([]);
+    setHistoryOpen(false);
     if (!signedInUserId) {
-      setConversations([]);
-      setMessages([]);
-      setConversationId(null);
       setLoadingHistory(false);
       return;
     }
@@ -126,13 +130,16 @@ export default function NexiPage() {
           .order("created_at", { ascending: true })
           .limit(100);
         if (!active) return;
-        if (!messagesError && Array.isArray(savedMessages) && savedMessages.length > 0) {
-          setMessages(current => current.length === 0
+        if (messagesError) {
+          setNotice("O histórico foi localizado, mas não foi possível restaurar as mensagens desta conversa.");
+        } else {
+          const restored = Array.isArray(savedMessages)
             ? savedMessages.filter((item): item is { role: "user" | "assistant"; content: string } =>
                 (item.role === "user" || item.role === "assistant") && typeof item.content === "string"
               )
-            : current);
-          setConversationId(current => current ?? latest.id);
+            : [];
+          setMessages(restored);
+          setConversationId(latest.id);
         }
       }
       setLoadingHistory(false);
