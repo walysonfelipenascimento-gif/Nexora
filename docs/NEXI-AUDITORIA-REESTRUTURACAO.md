@@ -34,3 +34,14 @@ Data da auditoria inicial: 2026-10-29
 - A rota de chat ainda usa rate limit em memória do processo; isso não é distribuído entre instâncias/reinicializações. É uma limitação conhecida que deve ser corrigida antes de considerar o serviço robusto em produção.
 - A persistência atual grava as duas mensagens em uma operação de insert, mas a criação da conversa, o insert das mensagens e o update de `updated_at` são operações separadas; uma falha parcial pode deixar uma conversa incompleta. Testar e, se necessário, mover a gravação para uma operação transacional segura e restrita à Nexi.
 - Nenhuma política, tabela, função, chave ou configuração do Supabase foi alterada nesta verificação.
+
+
+## Progresso operacional — 2026-10-29 (continuação)
+
+### Etapa 1 — base funcional e isolamento de sessão
+- O CI do commit `fc24731d842afa88ceac7b44861bd7fd106ab6ae` passou no PR #19: instalação, lint direcionado aos três arquivos Nexi e build de produção Next.js concluídos com sucesso. O lint global do repositório continua sendo reportado separadamente como baseline legado; não foi usado para mascarar falhas do lint Nexi.
+- Foi identificado um risco real na troca de contas: a tela poderia manter mensagens da conta anterior enquanto carregava o histórico da nova conta. Corrigido na branch com o commit `723060c24abc2303cc35cf141cab972dcf8f1c49`: limpa imediatamente conversas, mensagens, fontes e seleção de conversa ao mudar a identidade; restaura o histórico mais recente da nova conta e trata erro de leitura sem reutilizar mensagens antigas.
+- A correção aguarda execução do CI após o novo commit. Não foi publicada no Render.
+- Ainda não se considera a Etapa 1 concluída: falta validar fluxos integrados de sessão/histórico e revisar o ciclo de envio/persistência. A compilação verde comprova apenas a validação automatizada executada, não o funcionamento ponta a ponta.
+- Limitações já identificadas e mantidas explícitas: memória é manual/local ao navegador; rate limit em memória do processo; persistência em múltiplas operações; geração e pesquisa ainda exigem teste real com as credenciais e sessão do ambiente.
+- Nenhuma alteração foi feita no Supabase, nas políticas RLS, em dados CJS ou em produção.
