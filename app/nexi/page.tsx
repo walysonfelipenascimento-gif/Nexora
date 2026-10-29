@@ -26,9 +26,11 @@ export default function NexiPage() {
   const [memory, setMemory] = useState("");
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [memoryReady, setMemoryReady] = useState(false);
+  const [memoryOwnerId, setMemoryOwnerId] = useState<string | null>(null);
 
   useEffect(() => {
     setMemoryReady(false);
+    setMemoryOwnerId(null);
     if (!signedInUserId) {
       setMemory("");
       setMemoryReady(true);
@@ -37,21 +39,23 @@ export default function NexiPage() {
     try {
       const stored = window.localStorage.getItem("nexi-memory-" + signedInUserId);
       setMemory(stored || "");
+      setMemoryOwnerId(signedInUserId);
     } catch {
       setMemory("");
+      setMemoryOwnerId(signedInUserId);
     }
     setMemoryReady(true);
   }, [signedInUserId]);
 
   useEffect(() => {
-    if (!memoryReady || !signedInUserId) return;
+    if (!memoryReady || !signedInUserId || memoryOwnerId !== signedInUserId) return;
     try {
       if (memory.trim()) window.localStorage.setItem("nexi-memory-" + signedInUserId, memory.slice(0, 4000));
       else window.localStorage.removeItem("nexi-memory-" + signedInUserId);
     } catch {
       setNotice("Não foi possível guardar a memória neste navegador.");
     }
-  }, [memory, memoryReady, signedInUserId]);
+  }, [memory, memoryReady, memoryOwnerId, signedInUserId]);
 
   useEffect(() => {
     let active = true;
