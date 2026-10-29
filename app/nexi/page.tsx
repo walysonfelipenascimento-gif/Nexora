@@ -6,6 +6,7 @@ import PrimaryNav from "../components/PrimaryNav";
 import { getSupabaseBrowserClient } from "../../lib/supabase/client";
 
 type NexiMessage = { role: "user" | "assistant"; content: string };
+type NexiConversation = { id: string; title: string; updated_at: string; created_at: string };
 
 const suggestions = [
   { icon: "✦", title: "Criar conteúdo", detail: "Legendas, memes e ideias para Reels", prompt: "Me ajude a criar uma ideia original para um Reel." },
@@ -23,6 +24,9 @@ export default function NexiPage() {
   const [engineStatus, setEngineStatus] = useState("Verificando motor da Nexi...");
   const [signedInUserId, setSignedInUserId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<NexiConversation[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [memory, setMemory] = useState("");
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [memoryReady, setMemoryReady] = useState(false);
@@ -90,29 +94,42 @@ export default function NexiPage() {
     if (!supabase) return;
     let active = true;
     async function restoreLatestConversation() {
-      const { data: conversation, error: conversationError } = await supabase
+      setLoadingHistory(true);
+      const { data: history, error: historyError } = await supabase
         .from("nexi_conversations")
-        .select("id")
+        .select("id, title, updated_at, created_at")
         .eq("user_id", signedInUserId)
         .order("updated_at", { ascending: false })
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!active || conversationError || !conversation?.id) return;
-      const { data: savedMessages, error: messagesError } = await supabase
-        .from("nexi_messages")
-        .select("role, content")
-        .eq("conversation_id", conversation.id)
-        .eq("user_id", signedInUserId)
-        .order("created_at", { ascending: true })
-        .limit(100);
-      if (!active || messagesError || !Array.isArray(savedMessages) || savedMessages.length === 0) return;
-      setMessages(current => current.length === 0
-        ? savedMessages.filter((item): item is { role: "user" | "assistant"; content: string } =>
-            (item.role === "user" || item.role === "assistant") && typeof item.content === "string"
-          )
-        : current);
-      setConversationId(current => current ?? conversation.id);
+        .limit(30);
+      if (!active) return;
+      if (historyError) {
+        setNotice("Não foi possível carregar o histórico agora. Suas conversas continuam protegidas; tente atualizar a página.");
+        setLoadingHistory(false);
+        return;
+      }
+      const items = Array.isArray(history) ? history as NexiConversation[] : [];
+      setConversations(items);
+      const latest = items[0];
+      if (latest) {
+        const { data: savedMessages, error: messagesError } = await supabase
+          .from("nexi_messages")
+          .select("role, content")
+          .eq("conversation_id", latest.id)
+          .eq("user_id", signedInUserId)
+          .order("created_at", { ascending: true })
+          .limit(100);
+        if (!active) return;
+        if (!messagesError && Array.isArray(savedMessages) && savedMessages.length > 0) {
+          setMessages(current => current.length === 0
+            ? savedMessages.filter((item): item is { role: "user" | "assistant"; content: string } =>
+                (item.role === "user" || item.role === "assistant") && typeof item.content === "string"
+              )
+            : current);
+          setConversationId(current => current ?? latest.id);
+        }
+      }
+      setLoadingHistory(false);
     }
     void restoreLatestConversation();
     return () => { active = false; };
@@ -125,6 +142,34 @@ export default function NexiPage() {
     setPrompt("");
     setNotice("");
     setCitations([]);
+    setHistoryOpen(false);
+  }
+
+  async function openConversation(id: string) {
+    if (sending || !signedInUserId) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    setLoadingHistory(true);
+    setNotice("");
+    const { data, error } = await supabase
+      .from("nexi_messages")
+      .select("role, content")
+      .eq("conversation_id", id)
+      .eq("user_id", signedInUserId)
+      .order("created_at", { ascending: true })
+      .limit(100);
+    setLoadingHistory(false);
+    if (error || !Array.isArray(data)) {
+      setNotice("Não foi possível abrir essa conversa. Tente novamente.");
+      return;
+    }
+    setMessages(data.filter((item): item is NexiMessage =>
+      (item.role === "user" || item.role === "assistant") && typeof item.content === "string"
+    ));
+    setConversationId(id);
+    setCitations([]);
+    setHistoryOpen(false);
+    setPrompt("");
   }
 
   async function submitPrompt(event: React.FormEvent<HTMLFormElement>) {
@@ -225,10 +270,16 @@ export default function NexiPage() {
             <span><strong>NEXI</strong><small>INTELIGÊNCIA DA NEXORA</small></span>
           </Link>
           <div className="nexi-header-actions">
-            {messages.length > 0 && <button className="nexi-new-chat" type="button" onClick={startNewConversation} disabled={sending}>＋ Nova conversa</button>}
-            <span className="nexi-status" title={engineStatus}><i /> {engineStatus}</span>
+            {signedInUserId && <button className="nexi-new-chat" type="button" onClick={() => setHistoryOpen(value => !value)} aria-expanded={historyOpen} disabled={sending}>◷ Histórico {conversations.length ? `(${conversations.length})` : ""}</button>}
+            <button className="nexi-new-chat" type="button" onClick={startNewConversation} disabled={sending}>＋ Nova conversa</button>
+            <span className={"nexi-status" + (/não foi possível|indisponível|sem chave|recusou|não encontrado|inacessível|limitan/i.test(engineStatus) ? " unavailable" : "")} title={engineStatus}><i /> {engineStatus}</span>
           </div>
         </header>
+
+        {historyOpen && <section className="nexi-history" aria-label="Histórico de conversas">
+          <div className="nexi-history-heading"><strong>Suas conversas</strong><span>{loadingHistory ? "Carregando..." : "Últimas 30 conversas"}</span></div>
+          {!signedInUserId ? <p>Entre na sua conta Nexora para consultar o histórico.</p> : conversations.length === 0 ? <p>{loadingHistory ? "Buscando conversas salvas..." : "Ainda não há conversas salvas nesta conta."}</p> : conversations.map((conversation) => <button className={"nexi-history-item" + (conversation.id === conversationId ? " active" : "")} key={conversation.id} type="button" onClick={() => void openConversation(conversation.id)} disabled={sending || loadingHistory}><span>{conversation.title || "Nova conversa"}</span><small>{new Date(conversation.updated_at || conversation.created_at).toLocaleDateString("pt-BR")}</small></button>)}
+        </section>}
 
         <section className="nexi-hero">
           <div className="nexi-orb" aria-hidden="true"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><linearGradient id="nexi-core-gradient" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#56e8ff"/><stop offset=".52" stop-color="#9b8aff"/><stop offset="1" stop-color="#f29bff"/></linearGradient></defs><path d="M13 48V16l38 32V16" fill="none" stroke="url(#nexi-core-gradient)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 53h17" fill="none" stroke="#71eaff" stroke-width="2.5" stroke-linecap="round"/><circle cx="51" cy="13" r="4" fill="#a9f6ff"/><circle cx="51" cy="13" r="7" fill="none" stroke="#a9f6ff" stroke-opacity=".35" stroke-width="1.2"/></svg><i /><b /></div>
@@ -249,16 +300,18 @@ export default function NexiPage() {
           </div>}
         </section>
 
-        <section className="nexi-suggestions" aria-label="Sugestões para começar">
-          {suggestions.map((item) => (
-            <button className="nexi-suggestion" key={item.title} type="button" onClick={() => { setPrompt(item.prompt); setNotice(""); }}>
-              <span className="nexi-suggestion-icon">{item.icon}</span>
-              <strong>{item.title}</strong>
-              <span>{item.detail}</span>
-              <b aria-hidden="true">↗</b>
-            </button>
-          ))}
-        </section>
+        {messages.length === 0 && (
+          <section className="nexi-suggestions" aria-label="Sugestões para começar">
+            {suggestions.map((item) => (
+              <button className="nexi-suggestion" key={item.title} type="button" onClick={() => { setPrompt(item.prompt); setNotice(""); }}>
+                <span className="nexi-suggestion-icon">{item.icon}</span>
+                <strong>{item.title}</strong>
+                <span>{item.detail}</span>
+                <b aria-hidden="true">↗</b>
+              </button>
+            ))}
+          </section>
+        )}
 
         {messages.length > 0 && (
           <section className="nexi-conversation" aria-label="Conversa com a Nexi" aria-live="polite">
@@ -297,7 +350,8 @@ export default function NexiPage() {
         .nexi-brand small{display:block;margin-top:4px;font-size:8px;letter-spacing:1.4px;color:#9299bd}
         .nexi-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.nexi-new-chat{border:1px solid rgba(150,164,255,.28);border-radius:999px;padding:8px 10px;background:rgba(109,91,205,.12);color:#dcd8ff;font:inherit;font-size:10px;font-weight:750;cursor:pointer}.nexi-new-chat:hover,.nexi-new-chat:focus-visible{border-color:rgba(106,224,255,.6);outline:none}.nexi-new-chat:disabled{opacity:.45;cursor:not-allowed}
         .nexi-status{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:800;letter-spacing:1px;color:#a6eaf7;border:1px solid rgba(105,221,255,.2);background:rgba(49,166,222,.07);padding:8px 10px;border-radius:999px}
-        .nexi-status i{width:6px;height:6px;border-radius:50%;background:#6deaff;box-shadow:0 0 10px #6deaff}
+        .nexi-status i{width:6px;height:6px;border-radius:50%;background:#6deaff;box-shadow:0 0 10px #6deaff}.nexi-status.unavailable{color:#f2c3a5;border-color:rgba(255,170,120,.3);background:rgba(190,100,60,.08)}.nexi-status.unavailable i{background:#ffb07a;box-shadow:0 0 10px rgba(255,176,122,.6)}
+        .nexi-history{margin:12px 0;padding:12px;border:1px solid rgba(130,190,255,.2);border-radius:15px;background:rgba(13,17,35,.94)}.nexi-history-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;color:#e8eaff;font-size:11px}.nexi-history-heading span{color:#858eaf;font-size:9px}.nexi-history>p{margin:8px 2px;color:#9ca4c2;font-size:11px;line-height:1.6}.nexi-history-item{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#dfe5ff;text-align:left;font:inherit;cursor:pointer}.nexi-history-item:hover,.nexi-history-item.active{border-color:rgba(105,220,255,.3);background:rgba(65,150,205,.09)}.nexi-history-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}.nexi-history-item small{flex-shrink:0;color:#8993b6;font-size:9px}.nexi-history-item:disabled{opacity:.5;cursor:wait}
         .nexi-hero{text-align:center;padding:31px 0 27px}
         .nexi-orb{width:90px;height:90px;border-radius:30px;margin:0 auto 22px;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 30% 25%,rgba(89,241,255,.3),rgba(106,82,232,.16) 48%,rgba(220,90,255,.13));border:1px solid rgba(157,179,255,.4);box-shadow:0 0 55px rgba(85,114,255,.18),inset 0 0 25px rgba(124,209,255,.09);transform:rotate(-8deg)}
         .nexi-orb svg{width:58px;height:58px;transform:rotate(8deg);filter:drop-shadow(0 0 9px rgba(104,225,255,.38))}
@@ -344,7 +398,7 @@ export default function NexiPage() {
         .nexi-disclaimer{text-align:center;max-width:550px;margin:17px auto 0;color:#737b9a;font-size:10px;line-height:1.7}
         .nexi-disclaimer span{color:#8c8eff;margin-right:4px}
         @media(prefers-reduced-motion:reduce){.nexi-thinking span{animation:none}}
-        @media(max-width:540px){.nexi-page{padding:12px 12px 108px}.nexi-header{padding-bottom:14px}.nexi-status{font-size:8px;letter-spacing:.5px;padding:7px 8px}.nexi-new-chat{font-size:9px;padding:7px 9px}.nexi-suggestions{grid-template-columns:1fr;gap:8px}.nexi-suggestion{min-height:0;display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:6px 10px;padding:12px}.nexi-suggestion-icon{grid-row:span 2}.nexi-suggestion strong{grid-column:2}.nexi-suggestion>span:not(.nexi-suggestion-icon){grid-column:2}.nexi-suggestion>b{right:14px;top:18px}.nexi-hero{padding-top:25px}.nexi-orb{width:76px;height:76px;border-radius:25px}.nexi-orb svg{width:49px;height:49px}.nexi-composer{padding:13px}.nexi-composer-footer button{padding:10px 11px;font-size:10px}}
+        @media(max-width:540px){.nexi-page{padding:12px 12px 108px}.nexi-header{padding-bottom:14px;align-items:flex-start}.nexi-header-actions{max-width:58%;gap:5px}.nexi-status{font-size:8px;letter-spacing:.2px;padding:7px 8px;max-width:100%;overflow-wrap:anywhere}.nexi-new-chat{font-size:9px;padding:7px 9px}.nexi-suggestions{grid-template-columns:1fr;gap:8px}.nexi-suggestion{min-height:0;display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:6px 10px;padding:12px}.nexi-suggestion-icon{grid-row:span 2}.nexi-suggestion strong{grid-column:2}.nexi-suggestion>span:not(.nexi-suggestion-icon){grid-column:2}.nexi-suggestion>b{right:14px;top:18px}.nexi-hero{padding-top:25px}.nexi-orb{width:76px;height:76px;border-radius:25px}.nexi-orb svg{width:49px;height:49px}.nexi-composer{padding:13px}.nexi-composer-footer button{padding:10px 11px;font-size:10px}}
       `}</style>
     </main>
   );
