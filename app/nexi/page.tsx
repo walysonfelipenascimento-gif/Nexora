@@ -89,7 +89,13 @@ export default function NexiPage() {
   }, []);
 
   useEffect(() => {
-    if (!signedInUserId) return;
+    if (!signedInUserId) {
+      setConversations([]);
+      setMessages([]);
+      setConversationId(null);
+      setLoadingHistory(false);
+      return;
+    }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     let active = true;
