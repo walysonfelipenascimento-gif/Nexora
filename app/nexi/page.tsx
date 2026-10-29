@@ -240,6 +240,18 @@ export default function NexiPage() {
             .eq("id", activeConversationId)
             .eq("user_id", signedInUserId);
           if (touchError) persistenceWarning = true;
+          const { data: refreshedHistory, error: refreshHistoryError } = await supabase
+            .from("nexi_conversations")
+            .select("id, title, updated_at, created_at")
+            .eq("user_id", signedInUserId)
+            .order("updated_at", { ascending: false })
+            .order("created_at", { ascending: false })
+            .limit(30);
+          if (!refreshHistoryError && Array.isArray(refreshedHistory)) {
+            setConversations(refreshedHistory as NexiConversation[]);
+          } else {
+            persistenceWarning = true;
+          }
         }
       }
 
