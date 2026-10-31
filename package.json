@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:nexi": "tsx --test tests/nexi-route.test.ts tests/nexi-status.test.ts",
+    "test:nexi": "tsx --test tests/nexi-route.test.ts tests/nexi-status.test.ts tests/nexi-evals.test.ts",
     "test:nexi:watch": "tsx --test --watch tests/nexi-route.test.ts tests/nexi-status.test.ts"
   },
   "dependencies": {
