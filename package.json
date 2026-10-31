@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:nexi": "node --experimental-strip-types --test tests/nexi-route.test.ts",
+    "test:nexi:watch": "node --experimental-strip-types --test --watch tests/nexi-route.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
