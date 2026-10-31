@@ -58,3 +58,12 @@ Data da auditoria inicial: 2026-10-29
 - Ainda requer teste real da Responses API com `OPENAI_API_KEY` e `OPENAI_MODEL` configurados no ambiente de teste. Não é possível confirmar a geração apenas com o endpoint de status, pois ele verifica autenticação em `/v1/models`, não cria uma resposta.
 - A rota self-hosted Ollama está implementada, mas exige servidor/modelo acessível via `NEXI_ENGINE_URL`; não está hospedada automaticamente no Render.
 - Próximos itens da Etapa 2: teste de geração e formatos de resposta, erros 401/403/429/5xx, timeout, saída vazia, pesquisa ativada/desativada, e aprimorar diagnóstico sem expor dados sensíveis.
+
+
+## Etapa 2 — endurecimento da rota do motor (2026-10-31)
+- Alterada a rota `app/api/nexi/chat/route.ts` na branch de trabalho, sem deploy: commit `fd707418580c0b5696e9329e0116d8623370e034`.
+- Agora valida o tamanho máximo do corpo da requisição (64 KiB), inclusive quando `Content-Length` não é informado, antes de interpretar JSON.
+- O mapa de rate limit passa a ter limite de entradas rastreadas e remoção de entradas antigas, reduzindo crescimento de memória sob acessos variados.
+- A validação funcional existente de até 12 mensagens, 2.000 caracteres por mensagem e 12.000 caracteres agregados foi preservada.
+- CI de push e PR #19 para esse commit: sucesso (runs `41157128603` e `41157132261`). Isso confirma lint direcionado e build Next.js, não geração real com a chave do Render.
+- Próximo foco: robustez de parsing/respostas do provedor, diferenciação de timeout vs falha de rede, diagnóstico seguro de status e testes reais de geração e pesquisa. Nenhum segredo foi lido/exposto; nenhum deploy ou mudança Supabase foi feito.
