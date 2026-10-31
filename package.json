@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:nexi": "node --experimental-strip-types --test tests/nexi-route.test.ts tests/nexi-status.test.ts",
-    "test:nexi:watch": "node --experimental-strip-types --test --watch tests/nexi-route.test.ts"
+    "test:nexi": "tsx --test tests/nexi-route.test.ts tests/nexi-status.test.ts",
+    "test:nexi:watch": "tsx --test --watch tests/nexi-route.test.ts tests/nexi-status.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
@@ -22,6 +22,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "tsx": "^4.20.6"
   }
 }
