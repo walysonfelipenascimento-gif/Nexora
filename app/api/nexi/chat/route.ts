@@ -130,7 +130,12 @@ export async function POST(request: NextRequest) {
         return jsonError("O servidor do motor próprio da Nexi respondeu com erro. Verifique se o modelo está carregado e o endereço do motor está correto.", 502);
       }
 
-      const result = await upstream.json();
+      let result: { message?: { content?: unknown } };
+      try { result = await upstream.json(); }
+      catch {
+        console.error("[Nexi] Self-hosted engine returned invalid JSON", { status: upstream.status });
+        return jsonError("O motor próprio retornou uma resposta inválida. Tente novamente.", 502);
+      }
       const reply = typeof result?.message?.content === "string" ? result.message.content.trim() : "";
       if (!reply) return jsonError("O motor próprio não retornou uma resposta válida.", 502);
 
@@ -207,7 +212,12 @@ export async function POST(request: NextRequest) {
       return jsonError("O serviço de IA está indisponível no momento. Tente novamente em instantes.", 502);
     }
 
-    const result = await upstream.json();
+    let result: { output_text?: unknown; output?: Array<{ content?: Array<{ type?: string; text?: string; annotations?: Array<{ type?: string; url?: string; title?: string }> }> }> };
+    try { result = await upstream.json(); }
+    catch {
+      console.error("[Nexi] External provider returned invalid JSON", { status: upstream.status, requestId: upstream.headers.get("x-request-id") || undefined });
+      return jsonError("O provedor de IA retornou uma resposta inválida. Tente novamente.", 502);
+    }
     const reply = typeof result?.output_text === "string"
       ? result.output_text
       : Array.isArray(result?.output)
@@ -240,7 +250,9 @@ export async function POST(request: NextRequest) {
       { reply: reply.trim(), citations: [...citationMap.values()], searched: webSearch },
       { headers: { "Cache-Control": "no-store" } }
     );
-  } catch {
-    return jsonError("A conexão com o modelo demorou demais ou falhou. Tente novamente.", 504);
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "TimeoutError";
+    console.error("[Nexi] Provider request failed", { kind: timedOut ? "timeout" : "network_or_runtime", name: error instanceof Error ? error.name : "unknown" });
+    return jsonError(timedOut ? "A conexão com o modelo demorou demais. Tente novamente." : "Não foi possível conectar ao serviço de IA. Tente novamente em instantes.", timedOut ? 504 : 502);
   }
 }
