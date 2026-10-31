@@ -8,6 +8,8 @@ type Citation = { title: string; url: string };
 const requestWindows = new Map<string, { startedAt: number; count: number }>();
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 10;
+const MAX_TRACKED_CLIENTS = 5000;
+const MAX_BODY_BYTES = 64 * 1024;
 
 function jsonError(error: string, status: number) {
   return NextResponse.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
@@ -37,15 +39,29 @@ export async function POST(request: NextRequest) {
   } else {
     windowState.count += 1;
   }
-  if (requestWindows.size > 5000) {
+  if (requestWindows.size > MAX_TRACKED_CLIENTS) {
     for (const [key, value] of requestWindows) {
       if (now - value.startedAt >= WINDOW_MS) requestWindows.delete(key);
     }
+    while (requestWindows.size > MAX_TRACKED_CLIENTS) {
+      const oldestKey = requestWindows.keys().next().value;
+      if (oldestKey === undefined) break;
+      requestWindows.delete(oldestKey);
+    }
+  }
+
+  const declaredLength = Number(request.headers.get("content-length") || "0");
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
+    return jsonError("A solicitação ficou muito grande. Reduza o tamanho da mensagem e tente novamente.", 413);
   }
 
   let body: { messages?: unknown; webSearch?: unknown; memory?: unknown };
   try {
-    body = await request.json();
+    const rawBody = await request.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) {
+      return jsonError("A solicitação ficou muito grande. Reduza o tamanho da mensagem e tente novamente.", 413);
+    }
+    body = JSON.parse(rawBody);
   } catch {
     return jsonError("Não consegui ler sua mensagem. Confira o texto e tente novamente.", 400);
   }
