@@ -1,30 +1,64 @@
 # Nexi Lab — laboratório de inteligência e qualidade
 
 ## Objetivo
-Validar a API da Nexi e futuras ferramentas/motores com testes repetíveis, sem consumir créditos de modelos externos por padrão e sem tocar no banco Supabase.
+Validar API, motores, ferramentas e regressões da Nexi de forma repetível, sem consumir créditos externos por padrão e sem alterar o Supabase.
 
-## Camadas
-1. **Testes de contrato da API** — formatos de entrada/saída, validação e códigos HTTP.
-2. **Testes de integração simulada** — mock do provedor para respostas, pesquisa/citações, configuração ausente e timeout.
-3. **Testes de motores** — suíte separada para OpenAI Responses e endpoints compatíveis com Ollama.
-4. **Testes de ferramentas** — cada capacidade (pesquisa, citações e futuras ferramentas) recebe testes de contrato e falha.
-5. **CI** — GitHub Actions executa a suíte Nexi antes do lint direcionado e build.
-6. **Testes reais opt-in** — só futuramente, mediante acionamento explícito e ambiente de teste; nunca executados automaticamente contra produção nem com segredos expostos.
+## 1. Camadas de validação
+- **Contrato HTTP:** estrutura, validação, limites e códigos de erro.
+- **Integração simulada:** provedores mockados para respostas, citações, falhas e timeout.
+- **Status/health:** distingue configuração, autenticação, disponibilidade do servidor e presença do modelo.
+- **Compatibilidade de motores:** adaptadores OpenAI Responses e Ollama compatível.
+- **CI:** GitHub Actions executa a suíte antes do lint Nexi e build.
 
-## Comandos
-- `npm run test:nexi` — executa testes determinísticos.
-- `npm run test:nexi:watch` — modo observação local.
+## 2. Comandos
+- `npm run test:nexi` — testes determinísticos da rota de chat e status.
+- `npm run test:nexi:watch` — modo watch local (somente testes da rota de chat).
 
-## Segurança
-- Segredos não entram nos testes nem nos logs.
-- Testes usam IPs fictícios e respostas simuladas.
-- Nenhuma chamada real a OpenAI/Ollama é feita pela suíte padrão.
-- Sem migrações, DDL ou alterações em políticas RLS do Supabase.
-- O laboratório é desenvolvido na branch `nexi/auditoria-reestruturacao-profissional`; não publicar em produção sem autorização.
+## 3. Matriz inicial de motores
+| Capacidade | OpenAI Responses | Ollama compatível |
+|---|---|---|
+| Chat | Implementado | Implementado |
+| Pesquisa web nativa | Disponível quando habilitada | Ainda não integrada |
+| Citações da pesquisa | Parser Responses | Não disponível no adaptador atual |
+| Status | Verifica autenticação | Verifica endpoint e modelo |
+| Testes automatizados | Mock | Mock |
 
-## Próximas expansões
-- Testes de status/health e configuração de motores.
-- Matriz de compatibilidade de modelos e capacidades.
-- Testes de qualidade de resposta com critérios e conjuntos versionados.
-- Métricas de latência, erro e consumo em ambiente de staging.
-- Adaptadores de ferramentas com permissões e validação explícita.
+“Disponível” descreve integração no código; não comprova configuração operacional ou teste ao vivo no serviço.
+
+## 4. Ferramentas e critérios
+Cada nova ferramenta deve declarar:
+- esquema de entrada e saída validado;
+- permissões e confirmação necessárias;
+- timeout, limites e tratamento de erros;
+- testes unitários e de integração simulada;
+- origem e atribuição de resultados (citações quando aplicável);
+- telemetria sem conteúdo privado ou segredos.
+
+## 5. Qualidade de respostas
+Próxima camada planejada: conjunto versionado de casos de avaliação, avaliando:
+- aderência ao pedido;
+- clareza e consistência;
+- factualidade e uso correto das fontes;
+- segurança e transparência;
+- regressões entre versões/modelos.
+
+Avaliações de qualidade não devem fingir ser uma pontuação objetiva universal; resultados precisam de critérios explícitos e revisão.
+
+## 6. Testes reais opt-in
+Executar chamadas reais somente por acionamento explícito em ambiente de staging, com limites de custo e segredos armazenados no GitHub/Render. Não usar a produção como alvo padrão. Nunca incluir chaves nos logs ou no código.
+
+## 7. Segurança e limites
+- Sem credenciais em testes ou logs.
+- Testes usam respostas simuladas e endereços/IPs fictícios.
+- Sem chamadas reais a OpenAI/Ollama na suíte padrão.
+- Sem migrações, DDL, alterações de dados ou políticas RLS no Supabase.
+- Desenvolvimento na branch `nexi/auditoria-reestruturacao-profissional`.
+- Não publicar no Render nem mesclar PR sem autorização explícita.
+
+## 8. Roadmap
+1. Validar CI da suíte e corrigir falhas.
+2. Adicionar testes para ferramentas e memória.
+3. Criar harness de avaliação de respostas (dataset versionado).
+4. Instrumentar métricas de latência/erros sem conteúdo.
+5. Construir painel Nexi Lab em ambiente de desenvolvimento.
+6. Preparar staging isolado para teste real opt-in.
