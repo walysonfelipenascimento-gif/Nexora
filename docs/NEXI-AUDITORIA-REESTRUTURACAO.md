@@ -45,3 +45,16 @@ Data da auditoria inicial: 2026-10-29
 - Ainda não se considera a Etapa 1 concluída: falta validar fluxos integrados de sessão/histórico e revisar o ciclo de envio/persistência. A compilação verde comprova apenas a validação automatizada executada, não o funcionamento ponta a ponta.
 - Limitações já identificadas e mantidas explícitas: memória é manual/local ao navegador; rate limit em memória do processo; persistência em múltiplas operações; geração e pesquisa ainda exigem teste real com as credenciais e sessão do ambiente.
 - Nenhuma alteração foi feita no Supabase, nas políticas RLS, em dados CJS ou em produção.
+
+
+## Marco de validação — 2026-10-30
+### Etapa 1: validação automatizada da base — concluída
+- CI do commit `4c3bdbcc7a1c85f81a303fc7e62cc8c455d78b0b` concluiu com sucesso em push e PR #19.
+- Etapas aprovadas: instalação, ESLint direcionado aos arquivos Nexi e build de produção Next.js.
+- Correção de isolamento de sessão e restauração do histórico incluída nesse commit.
+- Escopo do marco: **base de código compila e lint Nexi passa**. Isso não equivale a teste ponta a ponta com sessão Supabase e credencial real do provedor. Esses testes ficam na etapa de integração/aceitação antes de produção.
+### Etapa 2: geração real e confiabilidade do motor — iniciada
+- Revisão estática da rota concluiu: validação de payload, limite de mensagens, timeout, tratamento de erros do provedor e extração de citações estão presentes.
+- Ainda requer teste real da Responses API com `OPENAI_API_KEY` e `OPENAI_MODEL` configurados no ambiente de teste. Não é possível confirmar a geração apenas com o endpoint de status, pois ele verifica autenticação em `/v1/models`, não cria uma resposta.
+- A rota self-hosted Ollama está implementada, mas exige servidor/modelo acessível via `NEXI_ENGINE_URL`; não está hospedada automaticamente no Render.
+- Próximos itens da Etapa 2: teste de geração e formatos de resposta, erros 401/403/429/5xx, timeout, saída vazia, pesquisa ativada/desativada, e aprimorar diagnóstico sem expor dados sensíveis.
