@@ -29,6 +29,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Run Nexi Lab automated tests
+        run: npm run test:nexi
       - name: Lint Nexi source code
         run: npx eslint app/nexi/page.tsx app/api/nexi/chat/route.ts app/api/nexi/status/route.ts
       - name: Report existing repository-wide lint baseline
