@@ -96,3 +96,37 @@ test("retorna 504 quando o provedor excede o tempo", async () => {
   const response = await POST(request(validBody()));
   assert.equal(response.status, 504);
 });
+
+test("Ollama: conversa com endpoint compatível e identifica motor", async () => {
+  process.env.NEXI_ENGINE_PROVIDER = "ollama";
+  process.env.NEXI_ENGINE_URL = "https://engine.example.test/";
+  process.env.NEXI_ENGINE_MODEL = "qwen-test";
+  let captured;
+  globalThis.fetch = async (url, init) => {
+    captured = { url, body: JSON.parse(init.body) };
+    return Response.json({ message: { content: "Resposta local simulada." } });
+  };
+  const response = await POST(request(validBody()));
+  const data = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(data.reply, "Resposta local simulada.");
+  assert.equal(data.engine, "self-hosted");
+  assert.equal(captured.url, "https://engine.example.test/api/chat");
+  assert.equal(captured.body.model, "qwen-test");
+});
+
+test("Ollama: pesquisa web não suportada retorna 501 sem chamar motor", async () => {
+  process.env.NEXI_ENGINE_PROVIDER = "ollama";
+  process.env.NEXI_ENGINE_URL = "https://engine.example.test";
+  globalThis.fetch = async () => { throw new Error("fetch não deveria ser chamado"); };
+  const response = await POST(request(validBody({ webSearch: true })));
+  assert.equal(response.status, 501);
+});
+
+test("Ollama: JSON inválido do motor retorna 502", async () => {
+  process.env.NEXI_ENGINE_PROVIDER = "ollama";
+  process.env.NEXI_ENGINE_URL = "https://engine.example.test";
+  globalThis.fetch = async () => new Response("não é json", { status: 200 });
+  const response = await POST(request(validBody()));
+  assert.equal(response.status, 502);
+});
