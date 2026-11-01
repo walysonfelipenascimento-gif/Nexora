@@ -153,7 +153,7 @@ export default function Home() {
   const reactionHeldRef = useRef(false);
   const storyVideoRef = useRef<HTMLVideoElement>(null);
   const storyTouchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const storyRailRef = useRef<HTMLElement | null>(null);
+  const storyRailRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!activeStory) return;
     const rail = storyRailRef.current;
