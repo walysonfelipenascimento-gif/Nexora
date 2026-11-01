@@ -1825,3 +1825,39 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 @keyframes chat-entry-clean{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:430px){.messages-app .messages-topbar{gap:4px!important;padding:8px!important;min-height:64px!important}.messages-app .messages-person img{flex-basis:36px!important;width:36px!important;height:36px!important}.messages-app .messages-head-action,.messages-app .messages-back{flex-basis:31px!important;width:31px!important;height:31px!important}.messages-app .chat-messages{padding:13px 9px 11px!important;gap:10px!important}.messages-app .chat-message-line{max-width:84%!important}.messages-app .chat-bubble{padding:9px 11px 7px!important;font-size:13px!important;line-height:1.42!important;border-radius:16px!important}.messages-app .chat-composer{gap:6px!important;padding:9px 8px max(10px,env(safe-area-inset-bottom))!important}.messages-app .chat-add,.messages-app .chat-send{flex-basis:35px!important;width:35px!important;height:35px!important}.messages-app .chat-input-wrap{min-height:41px!important;padding-left:8px!important}.messages-app .chat-input-wrap>button{flex-basis:27px!important;width:27px!important;height:27px!important}}
 @media(prefers-reduced-motion:reduce){.messages-app .chat-message-line{animation:none!important}}
+
+
+/* Nexora · Stories rail polish — Etapa 1 */
+.stories-rail{
+  scroll-snap-type:x proximity;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  scroll-padding-inline:4.5vw;
+}
+.story{
+  scroll-snap-align:center;
+  cursor:pointer;
+  transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .24s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.story:active{transform:scale(.96)}
+.story-ring{
+  padding:2px;
+  background:conic-gradient(from 205deg,#25d9ff 0%,#7962ff 30%,#d64cff 58%,#ff49bb 78%,#25d9ff 100%);
+  box-shadow:0 0 0 1px #a000ff18,0 0 13px #35caff12;
+  transition:box-shadow .25s ease,transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.story-ring img{
+  border:2px solid #0c0415;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .25s ease;
+}
+.story:focus-visible{outline:2px solid #45dcff;outline-offset:5px;border-radius:16px}
+.story:focus-visible .story-ring,.story:active .story-ring{
+  box-shadow:0 0 0 2px #40dfff40,0 0 18px #8b4dff35;
+  transform:scale(1.025);
+}
+.story-own{padding:2px;background:linear-gradient(145deg,#47e4ff,#8361ff 58%,#ed4bdc)}
+.story-plus{border:1.5px solid #0c0415;font-size:clamp(32px,6.4vw,60px)}
+@media(prefers-reduced-motion:reduce){
+ .story,.story-ring,.story-ring img{transition:none}
+}
