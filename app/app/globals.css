@@ -1861,3 +1861,16 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 @media(prefers-reduced-motion:reduce){
  .story,.story-ring,.story-ring img{transition:none}
 }
+
+/* Nexora Stories — Etapa 2: trilho livre, perfis flutuantes e anel consistente */
+.stories-rail{display:flex!important;align-items:flex-start!important;gap:clamp(14px,3.8vw,30px)!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:visible!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:12px 18px 18px!important;margin:0!important;scroll-snap-type:x mandatory!important;scroll-behavior:smooth!important;scrollbar-width:none!important;touch-action:pan-x pan-y!important;overscroll-behavior-inline:contain!important}
+.stories-rail::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.stories-rail .story{position:relative!important;flex:0 0 76px!important;width:76px!important;min-width:76px!important;overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;scroll-snap-align:center!important;transform:translateZ(0)}
+.stories-rail .story-ring{position:relative!important;display:block!important;width:68px!important;height:68px!important;flex:none!important;padding:3px!important;border-radius:50%!important;background:conic-gradient(from 0deg,#35e4ff,#8b5cff,#f23bd4,#ff7bce,#35e4ff)!important;box-shadow:0 0 0 1px #42dfff42,0 0 14px #9b48ff30!important;animation:nexoraStoryOrbit 5.5s linear infinite!important;transform-origin:center!important}
+.stories-rail .story-ring img,.stories-rail .story-ring>span.story-plus{display:grid!important;width:100%!important;height:100%!important;box-sizing:border-box!important;border:3px solid #10071b!important;border-radius:50%!important;object-fit:cover!important;background:#10071b!important}
+.stories-rail .story-name{display:block!important;width:76px!important;max-width:76px!important;margin-top:7px!important;overflow:hidden!important;text-align:center!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#f8f2ff!important;font-size:12px!important;line-height:1.25!important;text-shadow:0 1px 8px #0009!important}
+.stories-rail .story:active{transform:scale(.94)!important}
+.stories-rail .story:focus-visible{outline:2px solid #35e4ff!important;outline-offset:5px!important}
+.stories-rail .story-own .story-plus{color:#fff!important;font-size:34px!important;font-weight:300!important}
+@keyframes nexoraStoryOrbit{to{filter:hue-rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.stories-rail .story-ring{animation:none!important}}
