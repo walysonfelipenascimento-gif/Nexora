@@ -1930,3 +1930,54 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 }
 @media(min-width:600px){.story-overlay .story-viewer{width:min(100vw,440px)!important;height:100dvh!important;max-height:100dvh!important}}
 @media(prefers-reduced-motion:reduce){.story-overlay .story-viewer{animation:none!important}}
+
+/* Nexora Stories · painel de comentários glass e controles inferiores */
+.story-overlay .story-action-rail{
+  position:absolute!important;left:16px!important;right:16px!important;bottom:calc(18px + env(safe-area-inset-bottom))!important;
+  top:auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;padding:10px 12px!important;border:1px solid rgba(255,255,255,.17)!important;border-radius:28px!important;
+  background:rgba(9,10,22,.34)!important;backdrop-filter:blur(24px) saturate(1.5)!important;-webkit-backdrop-filter:blur(24px) saturate(1.5)!important;
+  box-shadow:0 8px 32px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.09)!important;z-index:30!important;
+}
+.story-overlay .story-action-rail .story-action-button{
+  flex:1!important;min-width:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;
+  gap:8px!important;padding:8px 10px!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:22px!important;
+  background:rgba(255,255,255,.075)!important;color:#fff!important;transition:background .2s ease,transform .2s ease,border-color .2s ease!important;
+}
+.story-overlay .story-action-rail .story-action-button:active{transform:scale(.97)!important;background:rgba(100,220,255,.16)!important;border-color:rgba(91,226,255,.36)!important}
+.story-overlay .story-action-rail .story-action-icon{display:grid!important;place-items:center!important;width:24px!important;height:24px!important;flex:0 0 24px!important}
+.story-overlay .story-action-rail .story-action-button small{font-size:12px!important;font-weight:650!important;letter-spacing:.05px!important}
+.story-overlay .story-comments-backdrop{
+ position:absolute!important;inset:0!important;z-index:60!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;
+ background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.12) 100%)!important;backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important;
+}
+.story-overlay .story-comments-sheet{
+ width:100%!important;max-width:520px!important;height:min(68dvh,680px)!important;max-height:calc(100dvh - env(safe-area-inset-top) - 12px)!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;margin:0!important;
+ border:1px solid rgba(255,255,255,.18)!important;border-bottom:0!important;border-radius:26px 26px 0 0!important;
+ background:rgba(12,13,25,.72)!important;color:#fff!important;backdrop-filter:blur(32px) saturate(1.45)!important;-webkit-backdrop-filter:blur(32px) saturate(1.45)!important;
+ box-shadow:0 -14px 48px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.13)!important;padding-bottom:env(safe-area-inset-bottom)!important;
+ animation:nexora-story-comments-up .32s cubic-bezier(.2,.8,.2,1) both!important;
+}
+.story-overlay .story-comments-sheet>header{flex:0 0 auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;padding:16px 18px 13px!important;border-bottom:1px solid rgba(255,255,255,.09)!important;background:transparent!important}
+.story-overlay .story-comments-sheet>header>div{display:flex!important;flex-direction:column!important;gap:4px!important}
+.story-overlay .story-comments-sheet>header strong{font-size:15px!important;font-weight:750!important}
+.story-overlay .story-comments-sheet>header small{font-size:11px!important;color:rgba(235,239,255,.62)!important}
+.story-overlay .story-comments-sheet>header button{width:32px!important;height:32px!important;border:1px solid rgba(255,255,255,.13)!important;border-radius:50%!important;background:rgba(255,255,255,.08)!important;color:#fff!important;font-size:22px!important}
+.story-overlay .story-comments-list{flex:1!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:12px 16px!important}
+.story-overlay .story-comments-list>p{display:flex!important;align-items:flex-start!important;gap:10px!important;padding:10px 0!important;margin:0!important;color:#f5f6ff!important;font-size:13px!important;line-height:1.5!important}
+.story-overlay .story-comments-list>p>span:last-child{display:block!important;min-width:0!important}
+.story-overlay .story-comments-list>p strong{display:inline-block!important;margin-right:7px!important;color:#fff!important;font-size:12px!important;font-weight:750!important}
+.story-overlay .story-comment-avatar{display:grid!important;place-items:center!important;flex:0 0 32px!important;width:32px!important;height:32px!important;border-radius:50%!important;background:linear-gradient(135deg,#36dfff,#8b5dff 65%,#e45bd5)!important;color:#080a18!important;font-size:12px!important;font-weight:800!important}
+.story-overlay .story-comments-empty{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-height:150px!important;text-align:center!important;color:#fff!important}
+.story-overlay .story-comments-empty>span{font-size:22px!important;color:#8beeff!important;text-shadow:0 0 18px rgba(58,211,255,.5)!important}
+.story-overlay .story-comments-empty>strong{font-size:14px!important}
+.story-overlay .story-comments-empty>small{font-size:12px!important;color:rgba(235,239,255,.58)!important}
+.story-overlay .story-comments-sheet>form{flex:0 0 auto!important;display:flex!important;align-items:center!important;gap:9px!important;margin:0!important;padding:12px 14px!important;border-top:1px solid rgba(255,255,255,.1)!important;background:rgba(255,255,255,.035)!important}
+.story-overlay .story-comments-sheet>form input{flex:1!important;min-width:0!important;height:42px!important;padding:0 15px!important;border:1px solid rgba(255,255,255,.13)!important;border-radius:24px!important;outline:none!important;background:rgba(0,0,0,.18)!important;color:#fff!important;font-size:13px!important}
+.story-overlay .story-comments-sheet>form input::placeholder{color:rgba(235,239,255,.48)!important}
+.story-overlay .story-comments-sheet>form button{height:38px!important;padding:0 14px!important;border:0!important;border-radius:20px!important;background:linear-gradient(105deg,#48dcff,#9b70ff 70%,#df65db)!important;color:#080a18!important;font-size:12px!important;font-weight:800!important}
+.story-overlay .story-comments-sheet>form button:disabled{opacity:.38!important}
+@keyframes nexora-story-comments-up{from{transform:translateY(28px);opacity:.6}to{transform:translateY(0);opacity:1}}
+@media(max-width:380px){.story-overlay .story-action-rail{left:10px!important;right:10px!important;padding:8px!important;gap:7px!important}.story-overlay .story-action-rail .story-action-button{gap:5px!important;padding:7px 6px!important}.story-overlay .story-action-rail .story-action-button small{font-size:11px!important}}
+@media(prefers-reduced-motion:reduce){.story-overlay .story-comments-sheet{animation:none!important}}
