@@ -239,6 +239,8 @@ export default function Home() {
   const [chatSearch, setChatSearch] = useState("");
   const [chatFilter, setChatFilter] = useState<"all" | "unread" | "groups">("all");
   const [chatDraft, setChatDraft] = useState("");
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [mentionOpen, setMentionOpen] = useState(false);
   const [storySharePickerOpen, setStorySharePickerOpen] = useState(false);
   const [storyShareRecipients, setStoryShareRecipients] = useState<string[]>([]);
   const [sharedStoryViewing, setSharedStoryViewing] = useState<ChatMessage | null>(null);
@@ -1048,11 +1050,11 @@ export default function Home() {
         </div>
         <form className="chat-composer" onSubmit={event => {event.preventDefault();sendChatMessage();}}>
           <button type="button" className="chat-add" onClick={() => setStorySharePickerOpen(value => !value)} aria-label="Compartilhar Story" title="Compartilhar Story">◉</button>
-          <div className="chat-input-wrap"><input value={chatDraft} onChange={event => setChatDraft(event.target.value)} placeholder={t("chatTypeMessage")} aria-label={t("chatTypeMessage")} maxLength={2000}/>
+          <div className="chat-input-wrap"><input value={chatDraft} onChange={event => {setChatDraft(event.target.value);setMentionOpen(event.target.value.includes("@"));}} placeholder={replyingTo ? "Escreva sua resposta..." : t("chatTypeMessage")} aria-label={t("chatTypeMessage")} maxLength={2000}/>
             <button type="button" className={`chat-translate-toggle ${autoTranslateChat ? "is-active" : ""}`} aria-pressed={autoTranslateChat} onClick={() => {const next=!autoTranslateChat;setAutoTranslateChat(next);setNotice(next ? "Preferência de tradução ativada neste dispositivo; a tradução automática real ainda não está conectada." : "Preferência de tradução desativada.");}} title="Preferência de tradução" aria-label="Preferência de tradução automática"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h12M10 3v2c0 5-3 8-6 10M6 9c1 2 3 4 5 5M14 12l4-8 4 8M15.5 9h5"/></svg></button>
             <button type="button" onClick={() => setChatEmojiOpen(!chatEmojiOpen)} aria-label="Emojis"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></button></div>
           <button type="submit" className="chat-send" disabled={!chatDraft.trim()} aria-label={t("chatSend")}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
-          {storySharePickerOpen && <div className="chat-emoji-tray chat-emoji-tray-full" style={{bottom:"calc(100% + 8px)",top:"auto",padding:12}}>
+          {mentionOpen && <div style={{position:"absolute",bottom:"calc(100% + 8px)",left:10,right:10,padding:8,borderRadius:12,background:"#191927",border:"1px solid #8e67ff55",zIndex:20}}><button type="button" onClick={()=>{setChatDraft(value=>value.replace(/@[^\\s]*$/,`@${activeChat.username} `));setMentionOpen(false);}} style={{width:"100%",textAlign:"left",padding:9,border:0,borderRadius:8,background:"#25243a",color:"#e9e7ff"}}>@{activeChat.username} · {activeChat.name}</button></div>}\n        {storySharePickerOpen && <div className="chat-emoji-tray chat-emoji-tray-full" style={{bottom:"calc(100% + 8px)",top:"auto",padding:12}}>
             <strong style={{display:"block",fontSize:13,marginBottom:10}}>Compartilhar um Story</strong>
             <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:5}}>
               {stories.filter(story => story.image).map((story,index) => <button type="button" key={story.id || `${story.name}-${index}`} onClick={() => sendStoryToChat(story)} style={{flex:"0 0 76px",padding:0,border:0,background:"transparent",color:"inherit",cursor:"pointer",textAlign:"center"}}>
