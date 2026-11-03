@@ -1908,36 +1908,25 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 @media(max-width:430px){.story-overlay .story-bottom-bubbles{gap:12px!important;padding-inline:14px!important}.story-overlay .story-bubble{flex-basis:60px!important;width:60px!important;min-width:60px!important;max-width:60px!important}.story-overlay .story-bubble>span{width:54px!important;height:54px!important}.story-overlay .story-bubble small{width:60px!important;max-width:60px!important}}
 @media(prefers-reduced-motion:reduce){.story-overlay .story-bubble>span{animation:none!important}}
 
-/* Nexora Stories — visualização central com destaque animado, preservando o overlay original */
+/* Story viewer: volta ao tamanho amplo e remove os perfis internos */
+.story-overlay{
+ position:fixed!important;inset:0!important;display:grid!important;place-items:center!important;
+ padding:0!important;background:#05020bd9!important;backdrop-filter:blur(12px)!important;
+}
 .story-overlay .story-viewer{
-  position:relative!important;
-  width:min( calc(100vw - 28px), 440px)!important;
-  height:min(78dvh,720px)!important;
-  min-height:0!important;
-  max-height:calc(100dvh - 40px - env(safe-area-inset-top))!important;
-  margin:auto!important;
-  border:1px solid rgba(165,43,255,.72)!important;
-  border-radius:26px!important;
-  background:#090313!important;
-  box-shadow:0 0 0 1px rgba(43,220,255,.18),0 18px 55px rgba(0,0,0,.5),0 0 28px rgba(164,43,255,.22)!important;
-  animation:nexora-story-viewer-highlight 2.8s ease-in-out infinite!important;
+ position:relative!important;width:min(100vw,440px)!important;height:100dvh!important;
+ min-height:100dvh!important;max-height:100dvh!important;margin:0!important;
+ border:0!important;border-radius:0!important;background:#090313!important;
+ box-shadow:none!important;overflow:hidden!important;animation:nexora-story-viewer-highlight 2.8s ease-in-out infinite!important;
 }
+.story-overlay .story-bottom-bubbles{display:none!important}
 .story-overlay .story-full-image{
-  position:absolute!important;inset:0!important;
-  width:100%!important;height:100%!important;
-  object-fit:cover!important;object-position:center center!important;
-  transform:none!important;margin:0!important;
-}
-.story-overlay .story-viewer video.story-full-image{
-  object-fit:cover!important;object-position:center center!important;
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ object-fit:cover!important;object-position:center center!important;transform:none!important;margin:0!important;
 }
 @keyframes nexora-story-viewer-highlight{
-  0%,100%{box-shadow:0 0 0 1px rgba(43,220,255,.18),0 18px 55px rgba(0,0,0,.5),0 0 22px rgba(164,43,255,.18);border-color:rgba(165,43,255,.58)}
-  50%{box-shadow:0 0 0 2px rgba(43,220,255,.34),0 18px 55px rgba(0,0,0,.5),0 0 34px rgba(164,43,255,.42);border-color:rgba(43,220,255,.9)}
+ 0%,100%{box-shadow:inset 0 0 0 1px rgba(43,220,255,.16)!important}
+ 50%{box-shadow:inset 0 0 0 2px rgba(43,220,255,.38)!important}
 }
-@media(min-width:600px){
- .story-overlay .story-viewer{height:min(78dvh,720px)!important;max-height:78dvh!important}
-}
-@media(prefers-reduced-motion:reduce){
- .story-overlay .story-viewer{animation:none!important}
-}
+@media(min-width:600px){.story-overlay .story-viewer{width:min(100vw,440px)!important;height:100dvh!important;max-height:100dvh!important}}
+@media(prefers-reduced-motion:reduce){.story-overlay .story-viewer{animation:none!important}}
