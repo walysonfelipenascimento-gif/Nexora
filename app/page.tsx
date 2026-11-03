@@ -239,6 +239,7 @@ export default function Home() {
   const [chatSearch, setChatSearch] = useState("");
   const [chatFilter, setChatFilter] = useState<"all" | "unread" | "groups">("all");
   const [chatDraft, setChatDraft] = useState("");
+  const [storySharePickerOpen, setStorySharePickerOpen] = useState(false);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>(initialChats);
   const [chatDetail, setChatDetail] = useState<"chat" | "media" | "profile" | "settings" | "wallpaper">("chat");
   const [callMode, setCallMode] = useState<"audio" | "video" | null>(null);
@@ -435,6 +436,27 @@ export default function Home() {
     const dy = touch.clientY - start.y;
     if (Math.abs(dx) >= 34 && Math.abs(dx) > Math.abs(dy) * 1.25) setRevealedTimestampId(current => current === messageId ? null : messageId);
     messageTouchStart.current = null;
+  }
+
+  function sendStoryToChat(story: StoryItem) {
+    if (!activeChat) return;
+    const now = new Date();
+    const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    const storyTitle = `Story de ${story.name}`;
+    const message: ChatMessage = {
+      id: Date.now(),
+      text: story.caption || "Toque para visualizar o Story compartilhado",
+      mine: true,
+      time,
+      kind: "story",
+      storyTitle,
+      storyUrl: story.image,
+    };
+    setChatThreads(current => current.map(chat => chat.id === activeChat.id
+      ? { ...chat, preview: "Você: compartilhou um Story", time, messages: [...chat.messages, message] }
+      : chat));
+    setStorySharePickerOpen(false);
+    setNotice("Story adicionado à conversa nesta sessão.");
   }
 
   function sendChatMessage() {
@@ -1013,7 +1035,7 @@ export default function Home() {
           </div>
         </div>
         <form className="chat-composer" onSubmit={event => {event.preventDefault();sendChatMessage();}}>
-          <button type="button" className="chat-add" onClick={() => setNotice("O envio de arquivos será conectado ao armazenamento da Nexora.")} aria-label="Anexar arquivo">＋</button>
+          <button type="button" className="chat-add" onClick={() => setStorySharePickerOpen(value => !value)} aria-label="Compartilhar Story" title="Compartilhar Story">◉</button>
           <div className="chat-input-wrap"><input value={chatDraft} onChange={event => setChatDraft(event.target.value)} placeholder={t("chatTypeMessage")} aria-label={t("chatTypeMessage")} maxLength={2000}/>
             <button type="button" className={`chat-translate-toggle ${autoTranslateChat ? "is-active" : ""}`} aria-pressed={autoTranslateChat} onClick={() => {const next=!autoTranslateChat;setAutoTranslateChat(next);setNotice(next ? "Preferência de tradução ativada neste dispositivo; a tradução automática real ainda não está conectada." : "Preferência de tradução desativada.");}} title="Preferência de tradução" aria-label="Preferência de tradução automática"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h12M10 3v2c0 5-3 8-6 10M6 9c1 2 3 4 5 5M14 12l4-8 4 8M15.5 9h5"/></svg></button>
             <button type="button" onClick={() => setChatEmojiOpen(!chatEmojiOpen)} aria-label="Emojis"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></button></div>
