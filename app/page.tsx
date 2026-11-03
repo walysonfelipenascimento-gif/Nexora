@@ -1214,7 +1214,13 @@ export default function Home() {
         <button type="button" onClick={() => setSharedStoryViewing(null)} aria-label="Fechar Story" style={{position:"absolute",top:24,right:24,zIndex:2,width:42,height:42,borderRadius:"50%",border:"1px solid #ffffff55",background:"#111827cc",color:"#fff",fontSize:26,cursor:"pointer"}}>×</button>
         <div onClick={event => event.stopPropagation()} style={{width:"min(440px,100%)",height:"min(820px,92dvh)",position:"relative",display:"flex",flexDirection:"column",justifyContent:"center",overflow:"hidden",borderRadius:18,background:"#111"}}>
           <img src={sharedStoryViewing.storyUrl} alt={sharedStoryViewing.storyTitle || "Story compartilhado"} style={{width:"100%",height:"100%",objectFit:"contain"}}/>
-          <div style={{position:"absolute",left:16,right:16,bottom:18,padding:12,borderRadius:12,background:"linear-gradient(transparent,rgba(0,0,0,.75))",color:"white",fontWeight:700}}>{sharedStoryViewing.storyTitle || "Story compartilhado"}</div>
+          <div style={{position:"absolute",left:12,right:12,bottom:12,display:"flex",alignItems:"center",gap:8,padding:10,borderRadius:16,background:"linear-gradient(180deg,transparent,rgba(0,0,0,.88))",color:"white"}}>
+            <button type="button" aria-label="Curtir Story" onClick={()=>setSharedStoryViewing(current=>current?({...current,reactions:[...(current.reactions||[]),"❤️"]}):current)} style={{border:0,background:"#ffffff20",borderRadius:22,padding:"9px 12px",color:"#ff7ca8",fontSize:18,cursor:"pointer"}}>❤️</button>
+            <form onSubmit={event=>{event.preventDefault();const message=storyQuickComment.trim();if(!message)return;setChatThreads(current=>current.map(thread=>thread.messages.some(item=>item.id===sharedStoryViewing.id)?({...thread,messages:[...thread.messages,{id:Date.now(),text:"Comentário no Story: "+message,mine:true,time:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}],preview:"Comentário no Story: "+message,time:"Agora"}):thread));setStoryQuickComment("");setNotice("Comentário adicionado à conversa.");}} style={{display:"flex",flex:1,gap:6}}>
+              <input value={storyQuickComment} onChange={event=>setStoryQuickComment(event.target.value)} placeholder="Responder ao Story..." maxLength={300} style={{flex:1,minWidth:0,padding:"10px 12px",border:"1px solid #ffffff35",borderRadius:22,background:"#101018dd",color:"#fff",outline:"none"}}/>
+              <button type="submit" disabled={!storyQuickComment.trim()} style={{border:0,borderRadius:22,padding:"0 12px",background:"linear-gradient(100deg,#50e5ff,#9a67ff)",color:"#080916",fontWeight:800}}>Enviar</button>
+            </form>
+          </div>
         </div>
       </div>}
       </main>
