@@ -1,5 +1,6 @@
-import ChatMessageContent from "./components/ChatMessageContent";
 "use client";
+
+import ChatMessageContent from "./components/ChatMessageContent";
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
