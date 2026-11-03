@@ -1981,3 +1981,14 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 @keyframes nexora-story-comments-up{from{transform:translateY(28px);opacity:.6}to{transform:translateY(0);opacity:1}}
 @media(max-width:380px){.story-overlay .story-action-rail{left:10px!important;right:10px!important;padding:8px!important;gap:7px!important}.story-overlay .story-action-rail .story-action-button{gap:5px!important;padding:7px 6px!important}.story-overlay .story-action-rail .story-action-button small{font-size:11px!important}}
 @media(prefers-reduced-motion:reduce){.story-overlay .story-comments-sheet{animation:none!important}}
+
+/* Story compartilhado em DM · cartão contextual */
+.chat-story-share-card{display:flex;flex-direction:column;width:min(260px,72vw);overflow:hidden;border:1px solid rgba(130,220,255,.25);border-radius:18px;background:linear-gradient(145deg,rgba(15,22,43,.96),rgba(23,12,39,.96));box-shadow:0 8px 28px rgba(0,0,0,.22),0 0 18px rgba(68,194,255,.08);color:#f7f8ff}
+.chat-story-share-media{position:relative;width:100%;aspect-ratio:4/5;background-size:cover;background-position:center;background-color:#111324}
+.chat-story-share-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.48))}
+.chat-story-share-label{position:absolute;z-index:1;left:10px;top:10px;padding:5px 8px;border:1px solid rgba(255,255,255,.25);border-radius:20px;background:rgba(8,10,24,.5);backdrop-filter:blur(12px);font-size:9px;font-weight:850;letter-spacing:.8px}
+.chat-story-share-caption{display:flex;flex-direction:column;gap:4px;padding:11px 12px 12px}
+.chat-story-share-caption strong{font-size:12px;font-weight:800}
+.chat-story-share-caption span{font-size:11px;color:#d8dcef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-story-share-caption small{font-size:9px;color:#8f9ab9;margin-top:2px}
+@media(prefers-reduced-motion:reduce){.story-overlay .story-action-rail .story-action-button{transition:none!important}}
