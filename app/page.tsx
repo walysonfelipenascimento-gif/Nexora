@@ -28,6 +28,35 @@ type StoryItem = { name: string; own?: boolean; verified?: boolean; image: strin
 type ChatMessage = { id: number; text: string; mine: boolean; time: string; kind?: "text" | "audio" | "image"; reactions?: string[] };
 type ChatThread = { id: string; name: string; username: string; avatar: string; online?: boolean; group?: boolean; members?: number; unread?: number; preview: string; time: string; messages: ChatMessage[] };
 
+function renderChatMessageContent(message: ChatMessage) {
+  if (message.kind === "image" && message.text.startsWith("NEXORA_STORY_SHARE|")) {
+    const [, imageUrl, storyName, storyCaption] = message.text.split("|");
+    return (
+      <div className="chat-story-share-card">
+        <div className="chat-story-share-media" style={{ backgroundImage: "url(" + imageUrl + ")" }}>
+          <span className="chat-story-share-label">✦ STORY</span>
+        </div>
+        <div className="chat-story-share-caption">
+          <strong>{storyName}</strong>
+          <span>{storyCaption}</span>
+          <small>Story compartilhado · toque para contexto</small>
+        </div>
+      </div>
+    );
+  }
+
+  if (message.kind === "image") {
+    return (
+      <div className="chat-image-message">
+        <div className="chat-city-image" role="img" aria-label="Imagem compartilhada na conversa" />
+        <span>{message.text}</span>
+      </div>
+    );
+  }
+
+  return <p className="chat-message-text">{message.text}</p>;
+}
+
 const chatEmojiCatalog = "😀 😃 😄 😁 😆 😅 😂 🤣 🥹 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😋 😛 😜 🤪 🤨 🧐 🤓 😎 🤩 🥳 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🫣 🤭 🫢 🫡 🤫 🫠 😶 😐 😑 😬 🙄 😯 😮 😲 🥱 😴 🤤 😪 😵 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 😈 👿 💀 ☠️ 👻 👽 👾 🤖 💩 🙈 🙉 🙊 💋 💌 💘 💝 💖 💗 💓 💞 💕 💟 ❣️ 💔 ❤️ 🩷 🧡 💛 💚 💙 🩵 💜 🤎 🖤 🩶 🤍 💯 💢 💥 💫 💦 💨 💬 💭 💤 👋 🤚 🖐️ ✋ 🖖 👌 🤌 🤏 ✌️ 🤞 🫰 🤟 🤘 🤙 👈 👉 👆 🖕 👇 ☝️ 👍 👎 ✊ 👊 👏 🙌 🫶 👐 🤲 🙏 💅 🤳 💪 🧠 👀 👁️ 👅 👄 🫦 👶 🧒 👦 👧 🧑 👨 👩 🧓 👴 👵 🙍 🙎 🙅 🙆 💁 🙋 🤦 🤷 👮 🕵️ 💂 🥷 👷 🤴 👸 🧕 🤵 👰 🤰 🤱 🎅 🤶 🦸 🦹 🧙 🧚 🧛 🧜 🧝 💆 💇 🚶 🧍 🧎 🏃 💃 🕺 👯 🧗 🤺 🏇 ⛷️ 🏂 🏌️ 🏄 🚣 🏊 🏋️ 🚴 🚵 🤸 🤼 🤽 🤾 🤹 🧘 🛀 🛌 🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🦆 🦅 🦉 🦇 🐺 🐗 🐴 🦄 🐝 🦋 🐌 🐞 🐜 🕷️ 🦂 🐢 🐍 🦎 🦖 🦕 🐙 🦑 🦐 🦞 🦀 🐡 🐠 🐟 🐬 🐳 🦈 🐊 🐅 🐆 🦓 🦍 🐘 🦛 🦏 🐪 🦒 🦘 🦬 🐃 🐄 🐎 🐖 🐑 🦙 🐐 🦌 🐕 🦮 🐈 🐓 🦃 🦜 🦢 🦩 🕊️ 🐇 🦝 🦨 🦡 🦫 🦦 🦥 🐁 🐀 🐿️ 🦔 🐉 🐲 🌵 🎄 🌲 🌳 🌴 🌱 🌿 ☘️ 🍀 🪴 🍃 🍂 🍁 🍄 🐚 🌾 💐 🌷 🌹 🥀 🌺 🌸 🌼 🌻 🌞 🌝 🌛 🌜 🌚 🌕 🌑 🌙 🌎 🌍 🌏 ⭐ 🌟 ✨ ⚡ ☄️ 🔥 🌪️ 🌈 ☀️ 🌤️ ⛅ ☁️ 🌧️ ⛈️ 🌨️ ❄️ ☃️ 🌬️ 💧 💦 ☔ 🌊 🎃 🎉 🎊 🎈 🎁 🎀 🏆 🥇 🥈 🥉 ⚽ 🏀 🏈 ⚾ 🎾 🏐 🏉 🎱 🏓 🏸 🏒 🥍 🏏 🎣 🥊 🥋 🎽 🛹 🛼 🛷 ⛸️ 🎿 🚗 🚕 🚙 🚌 🏎️ 🚓 🚑 🚒 🚐 🛻 🚚 🚛 🚜 🏍️ 🛵 🚲 🛴 🚦 🚥 ⚓ ⛵ 🚤 🛳️ 🚢 ✈️ 🛫 🛬 🚁 🚀 🛸 ⌛ ⏳ ⌚ ⏰ 🕰️ 🔋 🔌 💻 🖥️ 🖨️ ⌨️ 🖱️ 📷 📸 📹 🎥 📞 ☎️ 📺 📻 🎙️ 🧭 🔭 🔬 🧪 🧬 💉 🩸 💊 🩹 🩺 🚪 🛏️ 🛋️ 🪑 🚽 🚿 🛁 🧴 🧹 🧺 🧻 🧼 🫧 🪥 🧽 🧯 🛒 ⚰️ 🪦 🗿 🪬 🪩 🧿 🕯️ 💎 🔮 📿 🧸 🪄 🎩 🎓 🧢 👑 💍 💄 👠 👢 👞 👟 🥾 🧦 🧤 🧣 🎒 👜 👛 💼 👓 🕶️ 🥽 👔 👕 👖 🧥 👗 👘 🩱 🩲 🩳 👙 👚 🧵 🪡 🧶 🍏 🍎 🍐 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍈 🍒 🍑 🥭 🍍 🥥 🥝 🍅 🫒 🥑 🍆 🥔 🥕 🌽 🌶️ 🫑 🥒 🥬 🥦 🧄 🧅 🥜 🌰 🍞 🥐 🥖 🥨 🥯 🥞 🧇 🧀 🍖 🍗 🥩 🥓 🍔 🍟 🍕 🌭 🥪 🌮 🌯 🥙 🧆 🥚 🍳 🥘 🍲 🥣 🥗 🍿 🍱 🍙 🍚 🍛 🍜 🍝 🍣 🍤 🍦 🍧 🍨 🍩 🍪 🎂 🍰 🧁 🥧 🍫 🍬 🍭 🍯 🍼 🥛 ☕ 🫖 🍵 🧃 🥤 🧋 🍺 🍻 🥂 🍷 🥃 🍸 🍹 🍾 🧊 🥄 🍴 🍽️ 🏺 🚩 🏁 🏳️‍🌈 🏳️‍⚧️ 🏴‍☠️ 🇧🇷 🇺🇸 🇵🇹 🇮🇹 🇫🇷 🇪🇸 🇩🇪 🇬🇧 🇯🇵 🇰🇷 🇨🇦 🇦🇷 🇲🇽 🇦🇴 🇲🇿 🇨🇻 🇬🇼 🇺🇳 ✔️ ☑️ ⚠️ ❌ ❎ ➕ ➖ ➗ ✖️ ♾️ ‼️ ⁉️ ❓ ❔ ❕ ❗ 💲 🅰️ 🅱️ 🅾️ 🆘 🆙 🆚 🔴 🟠 🟡 🟢 🔵 🟣 ⚫ ⚪ 🟤 🔺 🔻 🔸 🔹 🔶 🔷 🟥 🟧 🟨 🟩 🟦 🟪 ⬛ ⬜ 🔈 🔉 🔊 🔔 🔕 📣 📢 🔒 🔓 🔑 🔨 🪓 ⛏️ 🛠️ 🗡️ ⚔️ 💣 🛡️ 🔧 🔩 ⚙️ 🔗 ⛓️ 🧰 🧲 🪜 📚 📖 📝 ✏️ ✂️ 📅 📈 📉 📊 📌 📍 🔍 🔎 ❤️‍🔥 ❤️‍🩹 🫨 🫥 🫤 🫎 🪽 🪿 🪼 🪻 🫚 🫛 🪇 🪈 🫗 🫏 🪾 🫟".split(" ");
 
 const chatWallpapers = [
@@ -1002,7 +1031,7 @@ export default function Home() {
             {activeChat.messages.map(message => <article className={`chat-message-line ${message.mine ? "mine" : "theirs"} ${revealedTimestampId === message.id ? "time-revealed" : ""}`} key={message.id} onTouchStart={event => {const touch=event.touches[0];messageTouchStart.current={x:touch.clientX,y:touch.clientY,id:message.id};}} onTouchEnd={event => handleMessageTouchEnd(event,message.id)}>
               {!message.mine && activeChat.group && <span className="chat-sender">{message.id % 2 ? "Lucas" : "Fernanda"}</span>}
               <div className={`chat-bubble chat-bubble-style-${chatBubbleStyleById[activeChat.id] ?? 0} ${message.kind === "image" ? "chat-image-bubble" : ""}`}>
-                {message.kind === "image" && message.text.startsWith("NEXORA_STORY_SHARE|") ? <div className="chat-story-share-card"><div className="chat-story-share-media" style={{backgroundImage: `url(${message.text.split("|")[1]})`}}><span className="chat-story-share-label">✦ STORY</span></div><div className="chat-story-share-caption"><strong>{message.text.split("|")[2]}</strong><span>{message.text.split("|")[3]}</span><small>Story compartilhado · toque para contexto</small></div> : message.kind === "image" ? <div className="chat-image-message"><div className="chat-city-image" role="img" aria-label="Imagem compartilhada na conversa"></div><span>{message.text}</span></div> : <p className="chat-message-text">{message.text}</p>}
+                {renderChatMessageContent(message)}
                 <div className="chat-message-meta"><time className="chat-message-time">{message.time}</time><span className="chat-message-status">{message.mine ? "✓ Enviado" : ""}</span></div>
               </div>
               {chatReactionBurst?.messageId === message.id && <span key={chatReactionBurst.nonce} className="chat-reaction-burst" aria-hidden="true">{chatReactionBurst.emoji}</span>}
