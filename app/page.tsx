@@ -240,6 +240,7 @@ export default function Home() {
   const [chatFilter, setChatFilter] = useState<"all" | "unread" | "groups">("all");
   const [chatDraft, setChatDraft] = useState("");
   const [storySharePickerOpen, setStorySharePickerOpen] = useState(false);
+  const [sharedStoryViewing, setSharedStoryViewing] = useState<ChatMessage | null>(null);
   const [chatThreads, setChatThreads] = useState<ChatThread[]>(initialChats);
   const [chatDetail, setChatDetail] = useState<"chat" | "media" | "profile" | "settings" | "wallpaper">("chat");
   const [callMode, setCallMode] = useState<"audio" | "video" | null>(null);
@@ -1021,7 +1022,7 @@ export default function Home() {
             {activeChat.messages.map(message => <article className={`chat-message-line ${message.mine ? "mine" : "theirs"} ${revealedTimestampId === message.id ? "time-revealed" : ""}`} key={message.id} onTouchStart={event => {const touch=event.touches[0];messageTouchStart.current={x:touch.clientX,y:touch.clientY,id:message.id};}} onTouchEnd={event => handleMessageTouchEnd(event,message.id)}>
               {!message.mine && activeChat.group && <span className="chat-sender">{message.id % 2 ? "Lucas" : "Fernanda"}</span>}
               <div className={`chat-bubble chat-bubble-style-${chatBubbleStyleById[activeChat.id] ?? 0} ${message.kind === "image" ? "chat-image-bubble" : ""}`}>
-                {message.kind === "image" ? <><div className="chat-city-image" role="img" aria-label="Imagem compartilhada na conversa"></div><span>{message.text}</span></> : message.kind === "story" ? <button type="button" onClick={() => { if (message.storyUrl) window.open(message.storyUrl, "_blank", "noopener,noreferrer"); }} style={{display:"block",width:"min(240px,68vw)",textAlign:"left",border:"1px solid rgba(130,110,255,.45)",borderRadius:16,padding:12,background:"linear-gradient(135deg,rgba(28,35,70,.96),rgba(70,25,88,.92))",color:"white",cursor:message.storyUrl?"pointer":"default"}}><span style={{display:"block",fontSize:11,fontWeight:800,letterSpacing:".08em",color:"#c5b8ff",marginBottom:7}}>◉ STORY NEXORA</span>{message.storyUrl && <img src={message.storyUrl} alt="Prévia do Story compartilhado" style={{display:"block",width:"100%",height:190,objectFit:"cover",borderRadius:10,marginBottom:9}}/>}<span style={{display:"block",fontWeight:700,fontSize:14}}>{message.storyTitle || "Story compartilhado"}</span><span style={{display:"block",fontSize:12,opacity:.8,marginTop:6}}>{message.text || "Toque para visualizar"}</span></button> : <p className="chat-message-text">{message.text}</p>}
+                {message.kind === "image" ? <><div className="chat-city-image" role="img" aria-label="Imagem compartilhada na conversa"></div><span>{message.text}</span></> : message.kind === "story" ? <button type="button" onClick={() => { if (message.storyUrl) setSharedStoryViewing(message); }} style={{display:"block",width:"min(240px,68vw)",textAlign:"left",border:"1px solid rgba(130,110,255,.45)",borderRadius:16,padding:12,background:"linear-gradient(135deg,rgba(28,35,70,.96),rgba(70,25,88,.92))",color:"white",cursor:message.storyUrl?"pointer":"default"}}><span style={{display:"block",fontSize:11,fontWeight:800,letterSpacing:".08em",color:"#c5b8ff",marginBottom:7}}>◉ STORY NEXORA</span>{message.storyUrl && <img src={message.storyUrl} alt="Prévia do Story compartilhado" style={{display:"block",width:"100%",height:190,objectFit:"cover",borderRadius:10,marginBottom:9}}/>}<span style={{display:"block",fontWeight:700,fontSize:14}}>{message.storyTitle || "Story compartilhado"}</span><span style={{display:"block",fontSize:12,opacity:.8,marginTop:6}}>{message.text || "Toque para visualizar"}</span></button> : <p className="chat-message-text">{message.text}</p>}
                 <div className="chat-message-meta"><time className="chat-message-time">{message.time}</time><span className="chat-message-status">{message.mine ? "✓ Enviado" : ""}</span></div>
               </div>
               {chatReactionBurst?.messageId === message.id && <span key={chatReactionBurst.nonce} className="chat-reaction-burst" aria-hidden="true">{chatReactionBurst.emoji}</span>}
@@ -1209,6 +1210,13 @@ export default function Home() {
         @media(max-width:430px){.chat-composer{gap:6px;padding-inline:9px}.chat-add,.chat-send{width:35px;height:35px}.chat-input-wrap{gap:3px;padding-left:9px;padding-right:6px}.chat-input-wrap .chat-translate-toggle{gap:2px;min-width:34px;padding-inline:4px}.chat-input-wrap .chat-translate-toggle .chat-translate-label{font-size:8px}.chat-input-wrap .chat-translate-toggle i{font-size:7px}}
         @media(prefers-reduced-motion:reduce){.chat-reaction-burst,.nexora-aura-flame,.nexora-aura-profile-emblem,.nexora-aura-glyph,.nexora-aura-spark,.nexora-aura-flame:before,.nexora-aura-profile-emblem:before,.nexora-aura-flame:after,.nexora-aura-profile-emblem:after,.nexora-aura-hint-spark,.nexora-aura-hint{animation-duration:.01ms;animation-iteration-count:1}}
       `}</style>
-    </main>
+    {sharedStoryViewing?.storyUrl && <div role="dialog" aria-modal="true" aria-label="Visualização do Story compartilhado" onClick={() => setSharedStoryViewing(null)} style={{position:"fixed",inset:0,zIndex:9999,background:"#050509",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+        <button type="button" onClick={() => setSharedStoryViewing(null)} aria-label="Fechar Story" style={{position:"absolute",top:24,right:24,zIndex:2,width:42,height:42,borderRadius:"50%",border:"1px solid #ffffff55",background:"#111827cc",color:"#fff",fontSize:26,cursor:"pointer"}}>×</button>
+        <div onClick={event => event.stopPropagation()} style={{width:"min(440px,100%)",height:"min(820px,92dvh)",position:"relative",display:"flex",flexDirection:"column",justifyContent:"center",overflow:"hidden",borderRadius:18,background:"#111"}}>
+          <img src={sharedStoryViewing.storyUrl} alt={sharedStoryViewing.storyTitle || "Story compartilhado"} style={{width:"100%",height:"100%",objectFit:"contain"}}/>
+          <div style={{position:"absolute",left:16,right:16,bottom:18,padding:12,borderRadius:12,background:"linear-gradient(transparent,rgba(0,0,0,.75))",color:"white",fontWeight:700}}>{sharedStoryViewing.storyTitle || "Story compartilhado"}</div>
+        </div>
+      </div>}
+      </main>
   );
 }
