@@ -252,6 +252,8 @@ export default function Home() {
       setStoryComposerOpen(true);
       setNotice("Arte de compartilhamento preparada. Revise e publique seu Story quando quiser.");
     } else if (shareMode === "reel" || shareMode === "post") {
+      setCreateFile(null);
+      setCreatePreview("");
       setCreateMode(shareMode === "reel" ? "reel" : "post");
       setComposerText(caption.slice(0,1000));
       setComposerOpen(true);
