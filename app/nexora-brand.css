@@ -1,0 +1,116 @@
+/* Nexora visual identity — shared electric aurora palette, scoped to the store */
+.nx-store{
+  --nexora-blue:#087bff;
+  --nexora-cyan:#00d9f5;
+  --nexora-violet:#7045ff;
+  --nexora-magenta:#e52bce;
+  --nexora-gradient:linear-gradient(105deg,var(--nexora-blue) 0%,var(--nexora-cyan) 31%,var(--nexora-violet) 68%,var(--nexora-magenta) 100%);
+}
+.nx-store .nx-symbol{
+  background:var(--nexora-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+.nx-store .nx-hero{
+  border-color:#568dff66;
+  background:
+    radial-gradient(ellipse at 78% 16%,#e52bce52,transparent 31%),
+    radial-gradient(ellipse at 66% 100%,#00d9f55a,transparent 42%),
+    radial-gradient(ellipse at 14% 0%,#087bff48,transparent 45%),
+    linear-gradient(112deg,#0c1833 0%,#15162f 54%,#21153e 100%);
+}
+.nx-store .nx-hero:after{
+  color:#ffffff0b;
+  text-shadow:0 0 55px #7045ff55;
+}
+.nx-store .nx-gradient{
+  background:var(--nexora-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+.nx-store .nx-hero-link,
+.nx-store .nx-primary{
+  background:var(--nexora-gradient);
+  box-shadow:0 8px 26px #7045ff35,0 0 18px #00d9f51c;
+}
+.nx-store .nx-shortcut span{
+  border-color:#087bff55;
+  background:linear-gradient(145deg,#15345a,#11182d 62%,#21183d);
+  box-shadow:inset 0 1px 0 #ffffff16,0 8px 22px #0005,0 0 18px #087bff20;
+}
+.nx-store .nx-shortcut:nth-child(2) span{
+  border-color:#e52bce66;
+  background:linear-gradient(145deg,#482052,#21152f);
+  box-shadow:inset 0 1px 0 #ffffff18,0 8px 22px #0005,0 0 18px #e52bce20;
+}
+.nx-store .nx-shortcut:nth-child(3) span{
+  border-color:#00d9f577;
+  background:linear-gradient(145deg,#123c50,#111a30);
+}
+.nx-store .nx-shortcut:nth-child(4) span{
+  border-color:#7045ff77;
+  background:linear-gradient(145deg,#38265a,#17182e);
+}
+.nx-store .nx-category:hover,
+.nx-store .nx-category:active{
+  border-color:#00d9f5a6;
+  background:linear-gradient(135deg,#123c58,#20204a 58%,#351a49);
+  box-shadow:0 0 22px #087bff20;
+}
+.nx-store .discount{
+  background:linear-gradient(105deg,#7045ff,#e52bce);
+}
+.nx-store .product-info strong{
+  background:var(--nexora-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.nx-store .product-info em,
+.nx-store .nx-section-head button,
+.nx-store .nx-back{
+  color:#67e6ff;
+}
+.nx-store .nx-search:focus-within{
+  border-color:#00d9f5a8;
+  box-shadow:0 0 0 3px #00d9f51c,0 0 22px #087bff18;
+}
+.nx-store .nx-chip.active{
+  border-color:#00d9f5a8;
+  background:linear-gradient(105deg,#087bff35,#00d9f526 38%,#7045ff38 72%,#e52bce24);
+  box-shadow:inset 0 0 18px #00d9f510;
+}
+.nx-store .nx-bottom button.active{
+  background:linear-gradient(125deg,#087bff25,#00d9f51c 34%,#7045ff28 68%,#e52bce20);
+  box-shadow:inset 0 0 0 1px #00d9f541,0 0 20px #7045ff16;
+}
+.nx-store .nx-bottom button.active span{
+  color:#a5f3ff;
+  border-color:#00d9f57a;
+  background:linear-gradient(135deg,#087bff55,#00d9f52d 36%,#7045ff55 72%,#e52bce35);
+  box-shadow:0 0 18px #00d9f52b;
+}
+.nx-store .nx-store-cover{
+  background:
+    radial-gradient(ellipse at 83% 14%,#e52bce9c,transparent 36%),
+    radial-gradient(ellipse at 42% 100%,#00d9f58c,transparent 42%),
+    radial-gradient(ellipse at 10% 0%,#087bff88,transparent 42%),
+    linear-gradient(120deg,#0b1937,#1a1741 65%,#321440);
+}
+.nx-store .nx-store-avatar{
+  background:var(--nexora-gradient);
+}
+.nx-store .nx-store-tabs button.active{
+  color:#70eaff;
+  border-image:var(--nexora-gradient) 1;
+}
+.nx-store .nx-icon-btn:focus-visible,
+.nx-store .nx-primary:focus-visible,
+.nx-store .nx-hero-link:focus-visible{
+  outline:2px solid #00d9f5;
+  outline-offset:3px;
+}
+@media(prefers-reduced-motion:no-preference){
+  .nx-store .nx-hero{background-size:140% 140%;animation:nexoraStoreAurora 16s ease-in-out infinite alternate}
+  @keyframes nexoraStoreAurora{from{background-position:0% 45%}to{background-position:100% 55%}}
+}
