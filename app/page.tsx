@@ -321,11 +321,19 @@ export default function Home() {
     const action = params.get("action");
     const tab = params.get("tab");
     const orderDraft = params.get("pedido") || sessionStorage.getItem("nexora-store-order-draft-v1");
+    const orderStore = params.get("loja");
     if (action === "create") { setCreateMode("hub"); setComposerOpen(true); }
     if (tab === "mensagens") {
       setMessagesOpen(true);
-      setActiveChatId(null);
-      if (orderDraft) setChatDraft(orderDraft);
+      if (orderDraft && orderStore) {
+        const orderChatId = "store-order-" + orderStore.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        setChatThreads(current => current.some(thread => thread.id === orderChatId) ? current : [{ id: orderChatId, name: orderStore, username: "loja", avatar: "/nexora-logo.svg", online: false, unread: 0, preview: "Pedido iniciado pela Nexora Loja", time: "Agora", messages: [] }, ...current]);
+        setActiveChatId(orderChatId);
+        setChatDraft(orderDraft);
+      } else {
+        setActiveChatId(null);
+        if (orderDraft) setChatDraft(orderDraft);
+      }
       sessionStorage.removeItem("nexora-store-order-draft-v1");
     }
     if (tab === "perfil") setNotice("A área de perfil está sendo preparada para conectar seus dados de conta.");
