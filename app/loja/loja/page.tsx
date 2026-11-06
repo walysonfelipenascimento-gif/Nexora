@@ -42,7 +42,7 @@ export default function PublicStorePreviewPage() {
 
   const storeName = data?.storeProfileName?.trim() || "Minha loja Nexora";
   const products = useMemo(
-    () => (data?.listings || []).filter((item) => item.sellerName === storeName),
+    () => data?.listings || [],
     [data, storeName]
   );
 
@@ -70,7 +70,13 @@ export default function PublicStorePreviewPage() {
                 </div>
               </div>
               <p style={{ color: "#bdc9dc", fontSize: 13, lineHeight: 1.7, maxWidth: 650, margin: "18px 0" }}>Conheça os produtos e opções desta loja na comunidade Nexora.</p>
-              <span style={{ display: "inline-block", padding: "7px 10px", borderRadius: 999, background: "#ffffff0d", border: "1px solid #ffffff20", color: "#b9d8ed", fontSize: 10 }}>Prévia local · não visível para outros usuários</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 9, alignItems: "center" }}>
+                <span style={{ display: "inline-block", padding: "7px 10px", borderRadius: 999, background: "#ffffff0d", border: "1px solid #ffffff20", color: "#b9d8ed", fontSize: 10 }}>Prévia local · não visível para outros usuários</span>
+                <button type="button" onClick={async () => { const url = window.location.href; try { if (navigator.share) await navigator.share({ title: storeName + " · Nexora", text: "Conheça a vitrine " + storeName + " na Nexora.", url }); else { await navigator.clipboard.writeText(url); alert("Link da vitrine copiado."); } } catch (error) { if (error instanceof Error && error.name !== "AbortError") { try { await navigator.clipboard.writeText(url); alert("Link da vitrine copiado."); } catch { alert("Não foi possível compartilhar neste navegador."); } } } }} className="public-store-button">↗ Compartilhar vitrine</button>
+                <button type="button" onClick={() => { const text = "Conheça a vitrine " + storeName + " na Nexora: " + window.location.href; window.location.href = "/?tab=mensagens&loja=" + encodeURIComponent(storeName) + "&pedido=" + encodeURIComponent(text); }} className="public-store-button">Enviar na conversa</button>
+                <button type="button" onClick={() => { window.location.href = "/?nexoraShare=story&title=" + encodeURIComponent(storeName) + "&description=" + encodeURIComponent("Conheça esta vitrine na Nexora") + "&link=" + encodeURIComponent(window.location.href); }} className="public-store-button">Criar Story</button>
+                <button type="button" onClick={() => { window.location.href = "/?nexoraShare=reel&title=" + encodeURIComponent(storeName) + "&description=" + encodeURIComponent("Conheça esta vitrine na Nexora") + "&link=" + encodeURIComponent(window.location.href); }} className="public-store-button">Preparar Reel</button>
+              </div>
             </section>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: "25px 0 13px" }}>
               <h2 style={{ margin: 0, fontSize: 19 }}>Produtos da loja</h2>
@@ -85,7 +91,12 @@ export default function PublicStorePreviewPage() {
                   <p style={{ minHeight: 42, color: "#aebbd0", fontSize: 11, lineHeight: 1.55 }}>{item.description}</p>
                   {item.variants && <p style={{ color: "#9cecff", fontSize: 10, lineHeight: 1.5 }}>Opções: {item.variants}</p>}
                   <strong style={{ display: "block", fontSize: 18, margin: "10px 0" }}>{money(item.price)}</strong>
-                  <a className="public-store-button" href={item.link || "#"} onClick={(event) => { if (!item.link) { event.preventDefault(); window.location.href = "/?tab=mensagens&loja=" + encodeURIComponent(storeName) + "&pedido=" + encodeURIComponent("Olá! Tenho interesse em " + item.name + ".\nOpções: " + (item.variants || "A combinar") + "\nQuantidade: 1. Pode confirmar disponibilidade e entrega?"); } }} target={item.link ? "_blank" : undefined} rel={item.link ? "noreferrer" : undefined}>{item.link ? "Ver produto ↗" : "Consultar pelo chat"}</a>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    <a className="public-store-button" href={item.link || "#"} onClick={(event) => { if (!item.link) { event.preventDefault(); window.location.href = "/?tab=mensagens&loja=" + encodeURIComponent(storeName) + "&pedido=" + encodeURIComponent("Olá! Tenho interesse em " + item.name + ".\nOpções: " + (item.variants || "A combinar") + "\nQuantidade: 1. Pode confirmar disponibilidade e entrega?"); } }} target={item.link ? "_blank" : undefined} rel={item.link ? "noreferrer" : undefined}>{item.link ? "Ver produto ↗" : "Consultar pelo chat"}</a>
+                    <button type="button" className="public-store-button" onClick={() => { window.location.href = "/?tab=mensagens&loja=" + encodeURIComponent(storeName) + "&pedido=" + encodeURIComponent("Olha este produto da " + storeName + ": " + item.name + "\\n" + (item.description || "") + "\\n" + money(item.price) + "\\n" + (item.link || window.location.href)); }}>Conversa</button>
+                    <button type="button" className="public-store-button" onClick={() => { window.location.href = "/?nexoraShare=story&title=" + encodeURIComponent(item.name) + "&description=" + encodeURIComponent((item.description || "") + " · " + money(item.price)) + "&link=" + encodeURIComponent(item.link || window.location.href); }}>Story</button>
+                    <button type="button" className="public-store-button" onClick={() => { window.location.href = "/?nexoraShare=reel&title=" + encodeURIComponent(item.name) + "&description=" + encodeURIComponent((item.description || "") + " · " + money(item.price)) + "&link=" + encodeURIComponent(item.link || window.location.href); }}>Reel</button>
+                  </div>
                 </div>
               </article>)}
             </section> : <section className="public-store-card" style={{ padding: 25, textAlign: "center", color: "#aebbd0", fontSize: 12 }}>
