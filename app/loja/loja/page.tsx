@@ -76,6 +76,7 @@ export default function PublicStorePreviewPage() {
                 <button type="button" onClick={() => { const text = "Conheça a vitrine " + storeName + " na Nexora: " + window.location.href; window.location.href = "/?tab=mensagens&loja=" + encodeURIComponent(storeName) + "&pedido=" + encodeURIComponent(text); }} className="public-store-button">Enviar na conversa</button>
                 <button type="button" onClick={() => { window.location.href = "/?nexoraShare=story&title=" + encodeURIComponent(storeName) + "&description=" + encodeURIComponent("Conheça esta vitrine na Nexora") + "&link=" + encodeURIComponent(window.location.href); }} className="public-store-button">Criar Story</button>
                 <button type="button" onClick={() => { window.location.href = "/?nexoraShare=reel&title=" + encodeURIComponent(storeName) + "&description=" + encodeURIComponent("Conheça esta vitrine na Nexora") + "&link=" + encodeURIComponent(window.location.href); }} className="public-store-button">Preparar Reel</button>
+                <button type="button" onClick={() => { window.location.href = "/?nexoraShare=post&title=" + encodeURIComponent(storeName) + "&description=" + encodeURIComponent("Conheça esta vitrine na Nexora") + "&link=" + encodeURIComponent(window.location.href); }} className="public-store-button">Publicação</button>
               </div>
             </section>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: "25px 0 13px" }}>
@@ -96,6 +97,7 @@ export default function PublicStorePreviewPage() {
                     <button type="button" className="public-store-button" onClick={() => { window.location.href = "/?tab=mensagens&loja=" + encodeURIComponent(storeName) + "&pedido=" + encodeURIComponent("Olha este produto da " + storeName + ": " + item.name + "\\n" + (item.description || "") + "\\n" + money(item.price) + "\\n" + (item.link || window.location.href)); }}>Conversa</button>
                     <button type="button" className="public-store-button" onClick={() => { window.location.href = "/?nexoraShare=story&title=" + encodeURIComponent(item.name) + "&description=" + encodeURIComponent((item.description || "") + " · " + money(item.price)) + "&link=" + encodeURIComponent(item.link || window.location.href); }}>Story</button>
                     <button type="button" className="public-store-button" onClick={() => { window.location.href = "/?nexoraShare=reel&title=" + encodeURIComponent(item.name) + "&description=" + encodeURIComponent((item.description || "") + " · " + money(item.price)) + "&link=" + encodeURIComponent(item.link || window.location.href); }}>Reel</button>
+                    <button type="button" className="public-store-button" onClick={() => { window.location.href = "/?nexoraShare=post&title=" + encodeURIComponent(item.name) + "&description=" + encodeURIComponent((item.description || "") + " · " + money(item.price)) + "&link=" + encodeURIComponent(item.link || window.location.href); }}>Publicação</button>
                   </div>
                 </div>
               </article>)}
