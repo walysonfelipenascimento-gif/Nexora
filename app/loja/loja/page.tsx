@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import PrimaryNav from "../../components/PrimaryNav";
 
 type Listing = {
@@ -59,7 +59,7 @@ export default function PublicStorePreviewPage() {
     } catch { /* armazenamento local pode estar indisponível */ }
   };
   const averageRating = engagement.reviews.length ? engagement.reviews.reduce((sum, review) => sum + review.rating, 0) / engagement.reviews.length : 0;
-  const submitReview = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitReview = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const text = reviewText.trim();
     if (!text) return;
