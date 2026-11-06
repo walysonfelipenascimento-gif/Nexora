@@ -320,10 +320,13 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const action = params.get("action");
     const tab = params.get("tab");
+    const orderDraft = params.get("pedido") || sessionStorage.getItem("nexora-store-order-draft-v1");
     if (action === "create") { setCreateMode("hub"); setComposerOpen(true); }
     if (tab === "mensagens") {
       setMessagesOpen(true);
       setActiveChatId(null);
+      if (orderDraft) setChatDraft(orderDraft);
+      sessionStorage.removeItem("nexora-store-order-draft-v1");
     }
     if (tab === "perfil") setNotice("A área de perfil está sendo preparada para conectar seus dados de conta.");
     if (tab === "explorar") setNotice("A área Explorar está sendo preparada para descoberta de criadores e publicações.");
