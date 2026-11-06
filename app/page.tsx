@@ -251,11 +251,11 @@ export default function Home() {
       setStoryCaption(caption.slice(0,180));
       setStoryComposerOpen(true);
       setNotice("Arte de compartilhamento preparada. Revise e publique seu Story quando quiser.");
-    } else if (shareMode === "reel") {
-      setCreateMode("reel");
+    } else if (shareMode === "reel" || shareMode === "post") {
+      setCreateMode(shareMode === "reel" ? "reel" : "post");
       setComposerText(caption.slice(0,1000));
       setComposerOpen(true);
-      setNotice("Legenda do Reel preparada. Escolha seu vídeo antes de publicar.");
+      setNotice(shareMode === "reel" ? "Legenda do Reel preparada. Escolha seu vídeo antes de publicar." : "Texto da publicação preparado. Revise e adicione uma mídia se desejar.");
     }
     window.history.replaceState({}, "", window.location.pathname + window.location.hash);
   }, []);
