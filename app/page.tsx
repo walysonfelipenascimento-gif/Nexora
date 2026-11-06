@@ -285,7 +285,8 @@ export default function Home() {
   const [chatWallpaperById, setChatWallpaperById] = useState<Record<string, number>>({});
   const [chatBubbleStyleById, setChatBubbleStyleById] = useState<Record<string, number>>({});
   const [autoTranslateChat, setAutoTranslateChat] = useState(false);
-  const [chatTranslationLanguage, setChatTranslationLanguage] = useState("pt-BR");\n  const [translationPanelOpen, setTranslationPanelOpen] = useState(false);
+  const [chatTranslationLanguage, setChatTranslationLanguage] = useState("pt-BR");
+  const [translationPanelOpen, setTranslationPanelOpen] = useState(false);
   const [reactionPickerFor, setReactionPickerFor] = useState<number | null>(null);
   const [chatReactionBurst, setChatReactionBurst] = useState<{ messageId: number; emoji: string; nonce: number } | null>(null);
   const [revealedTimestampId, setRevealedTimestampId] = useState<number | null>(null);
@@ -377,7 +378,8 @@ export default function Home() {
   useEffect(() => {
     try {
       setAutoTranslateChat(window.localStorage.getItem("nexora-chat-auto-translate-v1") === "true");
-      const savedTranslationLanguage = window.localStorage.getItem("nexora-chat-translation-language-v1");\n      if (savedTranslationLanguage && chatTranslationLanguages.some(language => language.code === savedTranslationLanguage)) setChatTranslationLanguage(savedTranslationLanguage);
+      const savedTranslationLanguage = window.localStorage.getItem("nexora-chat-translation-language-v1");
+      if (savedTranslationLanguage && chatTranslationLanguages.some(language => language.code === savedTranslationLanguage)) setChatTranslationLanguage(savedTranslationLanguage);
       const savedWallpapers = window.localStorage.getItem("nexora-chat-wallpapers-v1");
       const savedThreads = window.localStorage.getItem("nexora-chat-threads-v1");
       const savedBubbleStyles = window.localStorage.getItem("nexora-chat-bubble-styles-v1");
@@ -1316,7 +1318,8 @@ export default function Home() {
       <style jsx global>{`
         .chat-input-wrap .chat-translate-toggle{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex:0 0 auto;min-width:42px;max-width:84px;height:32px;padding:0 6px;border:1px solid rgba(92,207,255,.24);border-radius:12px;background:linear-gradient(135deg,rgba(40,117,255,.13),rgba(151,69,255,.15));color:#9feeff;font-size:14px;line-height:1;white-space:nowrap;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
         .chat-input-wrap .chat-translate-toggle .chat-translate-label{font-size:9px;font-weight:750;letter-spacing:-.15px}
-        .chat-input-wrap .chat-translate-toggle.is-open{border-color:rgba(81,231,255,.7);box-shadow:0 0 0 2px rgba(81,231,255,.1),0 0 15px rgba(48,197,255,.18)}\n        .chat-translation-panel{position:absolute;left:10px;right:10px;bottom:calc(100% + 9px);z-index:24;padding:13px;border:1px solid rgba(107,151,255,.3);border-radius:17px;background:linear-gradient(145deg,rgba(19,24,46,.98),rgba(18,12,34,.98));box-shadow:0 16px 42px rgba(0,0,0,.42),0 0 24px rgba(76,115,255,.12);backdrop-filter:blur(18px);color:#f5f6ff}
+        .chat-input-wrap .chat-translate-toggle.is-open{border-color:rgba(81,231,255,.7);box-shadow:0 0 0 2px rgba(81,231,255,.1),0 0 15px rgba(48,197,255,.18)}
+        .chat-translation-panel{position:absolute;left:10px;right:10px;bottom:calc(100% + 9px);z-index:24;padding:13px;border:1px solid rgba(107,151,255,.3);border-radius:17px;background:linear-gradient(145deg,rgba(19,24,46,.98),rgba(18,12,34,.98));box-shadow:0 16px 42px rgba(0,0,0,.42),0 0 24px rgba(76,115,255,.12);backdrop-filter:blur(18px);color:#f5f6ff}
         .chat-translation-panel-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.chat-translation-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,rgba(48,211,255,.2),rgba(160,83,255,.24));color:#a8f1ff;font-size:17px}.chat-translation-panel-head>div{display:grid;gap:3px;flex:1}.chat-translation-panel-head strong{font-size:12px}.chat-translation-panel-head small,.chat-translation-panel>p{font-size:10px;color:#aab3d1}.chat-translation-panel-head>button{width:28px;height:28px;border:1px solid #ffffff20;border-radius:50%;background:#ffffff0b;color:#fff;font-size:18px}.chat-translation-language{display:grid;gap:6px;font-size:10px;font-weight:750;color:#cbd4ef}.chat-translation-language select{width:100%;height:39px;padding:0 11px;border:1px solid #ffffff20;border-radius:11px;background:#0b1020;color:#f7f8ff;font-size:12px;outline:none}.chat-translation-auto{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:9px;padding:10px 0;border:0;border-top:1px solid #ffffff12;background:transparent;color:#fff;text-align:left}.chat-translation-auto span{display:grid;gap:3px}.chat-translation-auto strong{font-size:11px}.chat-translation-auto small{font-size:10px;color:#9da8c8}.chat-translation-panel>p{margin:8px 0 0;line-height:1.5}
         .chat-input-wrap .chat-translate-toggle i{font-style:normal;font-size:8px;font-weight:900;color:#8b91a8}
         .chat-input-wrap .chat-translate-toggle.is-active{border-color:rgba(81,231,255,.75);background:linear-gradient(110deg,rgba(31,205,255,.22),rgba(154,75,255,.25));box-shadow:0 0 12px rgba(48,197,255,.15);color:#e5fcff}
