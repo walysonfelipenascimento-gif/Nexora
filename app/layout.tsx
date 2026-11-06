@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./app/globals.css";
+import "./nexora-brand.css";
 import BrandIntro from "./components/BrandIntro";
 
 export const metadata: Metadata = {
