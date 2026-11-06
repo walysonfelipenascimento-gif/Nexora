@@ -234,6 +234,31 @@ export default function Home() {
     void loadRemoteStories();
     return () => { cancelled = true; };
   }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shareMode = params.get("nexoraShare");
+    if (!shareMode) return;
+    const title = params.get("title") || "Uma novidade na Nexora";
+    const description = params.get("description") || "Confira esta novidade";
+    const link = params.get("link") || window.location.origin;
+    const caption = [title, description, link].filter(Boolean).join("\\n");
+    if (shareMode === "story") {
+      const escapeSvg = (value: string) => value.replace(/[&<>"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char] || char));
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071321"/><stop offset=".55" stop-color="#17204a"/><stop offset="1" stop-color="#35143f"/></linearGradient><radialGradient id="glow"><stop stop-color="#35dfff" stop-opacity=".45"/><stop offset="1" stop-color="#35dfff" stop-opacity="0"/></radialGradient></defs><rect width="1080" height="1920" fill="url(#bg)"/><circle cx="850" cy="350" r="520" fill="url(#glow)"/><circle cx="170" cy="1500" r="500" fill="#9a4cff" opacity=".13"/><rect x="76" y="270" width="928" height="1380" rx="58" fill="#0b1223" stroke="#66ddff" stroke-opacity=".5" stroke-width="3"/><text x="130" y="410" fill="#75eaff" font-family="Arial,sans-serif" font-size="42" font-weight="700" letter-spacing="12">NEXORA · VITRINE</text><text x="130" y="700" fill="#ffffff" font-family="Arial,sans-serif" font-size="72" font-weight="800">${escapeSvg(title.slice(0,28))}</text><foreignObject x="130" y="790" width="820" height="420"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Arial,sans-serif;color:#d8e5f6;font-size:42px;line-height:1.45;overflow-wrap:anywhere">${escapeSvg(description.slice(0,120))}</div></foreignObject><text x="130" y="1450" fill="#75eaff" font-family="Arial,sans-serif" font-size="32">DESCUBRA · CONECTE · COMPARTILHE</text><text x="130" y="1530" fill="#b7c7dc" font-family="Arial,sans-serif" font-size="26">${escapeSvg(link.slice(0,65))}</text><text x="130" y="1600" fill="#ffffff" font-family="Arial,sans-serif" font-size="34" font-weight="700">NEXORA</text></svg>`;
+      const file = new File([new Blob([svg], { type: "image/svg+xml" })], "nexora-compartilhamento.svg", { type: "image/svg+xml" });
+      setStoryFile(file);
+      setStoryPreview(URL.createObjectURL(file));
+      setStoryCaption(caption.slice(0,180));
+      setStoryComposerOpen(true);
+      setNotice("Arte de compartilhamento preparada. Revise e publique seu Story quando quiser.");
+    } else if (shareMode === "reel") {
+      setCreateMode("reel");
+      setComposerText(caption.slice(0,1000));
+      setComposerOpen(true);
+      setNotice("Legenda do Reel preparada. Escolha seu vídeo antes de publicar.");
+    }
+    window.history.replaceState({}, "", window.location.pathname + window.location.hash);
+  }, []);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [chatSearch, setChatSearch] = useState("");
