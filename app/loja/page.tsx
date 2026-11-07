@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Product = { id:number; name:string; category:string; price:number; old:number; rating:string; sold:string; image:string; description:string; seller:string };
 type Screen = "home" | "categories" | "search" | "product" | "cart" | "seller" | "stores" | "checkout" | "orders";
@@ -36,7 +36,7 @@ const imageByCategory=[
 "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=88",
 "https://images.unsplash.com/photo-1592840496694-26d035b52b48?auto=format&fit=crop&w=900&q=88",
 "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=88",
-"https://images.unsplash.com/photo-1492144534655-ae79c964c7d?auto=format&fit=crop&w=900&q=88",
+"https://images.unsplash.com/photo-1492144534655-ae79c964b9d?auto=format&fit=crop&w=900&q=88",
 "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=900&q=88"
 ];
 const products:Product[]=Array.from({length:500},(_,index)=>{
@@ -75,6 +75,9 @@ export default function LojaPage(){
  const [buyerEmail,setBuyerEmail]=useState("");
  const [checkoutDone,setCheckoutDone]=useState(false);
  const [cart,setCart]=useState<number[]>([]);
+ const [hydrated,setHydrated]=useState(false);
+ useEffect(()=>{try{const savedCart=localStorage.getItem("nexora-demo-cart");const savedOrders=localStorage.getItem("nexora-demo-orders");if(savedCart)setCart(JSON.parse(savedCart));if(savedOrders)setOrders(JSON.parse(savedOrders));}catch{}setHydrated(true)},[]);
+ useEffect(()=>{if(hydrated){localStorage.setItem("nexora-demo-cart",JSON.stringify(cart));localStorage.setItem("nexora-demo-orders",JSON.stringify(orders))}},[cart,orders,hydrated]);
  const [sort,setSort]=useState("Recomendados");
  const [onlyDeals,setOnlyDeals]=useState(false);
  const [sellerTab,setSellerTab]=useState("Início");
