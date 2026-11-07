@@ -50,7 +50,12 @@ export default function LojaPage(){
  const [sellerTab,setSellerTab]=useState("Início");
  const [following,setFollowing]=useState(false);
  const [reviewFilter,setReviewFilter]=useState(0);
- const [helpfulReviews,setHelpfulReviews]=useState<number[]>([]);\n const [storeReviews,setStoreReviews]=useState(demoReviews);\n const [reviewAuthor,setReviewAuthor]=useState("");\n const [reviewText,setReviewText]=useState("");\n const [reviewStars,setReviewStars]=useState(5);\n const reviewAverage=storeReviews.reduce((sum,r)=>sum+r.stars,0)/Math.max(storeReviews.length,1);
+ const [helpfulReviews,setHelpfulReviews]=useState<number[]>([]);
+ const [storeReviews,setStoreReviews]=useState(demoReviews);
+ const [reviewAuthor,setReviewAuthor]=useState("");
+ const [reviewText,setReviewText]=useState("");
+ const [reviewStars,setReviewStars]=useState(5);
+ const reviewAverage=storeReviews.reduce((sum,r)=>sum+r.stars,0)/Math.max(storeReviews.length,1);
  const [notice,setNotice]=useState("");
  const [coupon,setCoupon]=useState("");
  const [couponApplied,setCouponApplied]=useState(false);
