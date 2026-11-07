@@ -93,6 +93,7 @@ export default function LojaPage(){
  const [activeCategory,setActiveCategory]=useState("Todos");
  const [selected,setSelected]=useState<Product>(products[0]);
  const [selectedStore,setSelectedStore]=useState<Store>(stores[0]);
+ const [myCommercialProfile,setMyCommercialProfile]=useState({name:"",handle:"",category:"",bio:"",contact:"",links:"",logoData:"",coverData:""});
  const [orders,setOrders]=useState<{id:string;items:number[];total:number;date:string;status:string}[]>([]);
  const [buyerName,setBuyerName]=useState("");
  const [buyerEmail,setBuyerEmail]=useState("");
