@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 type Product = { id:number; name:string; category:string; price:number; old:number; rating:string; sold:string; image:string; description:string; seller:string };
 type Screen = "home" | "categories" | "search" | "product" | "cart" | "seller" | "stores" | "checkout" | "orders";
 type Store = {id:number;name:string;category:string;tagline:string;rating:string;followers:string};
+const categories=[{name:"Eletrônicos",icon:"headphones"},{name:"Moda",icon:"shirt"},{name:"Beleza & Cuidados",icon:"beauty"},{name:"Casa & Decoração",icon:"home"},{name:"Esportes & Lazer",icon:"sport"},{name:"Brinquedos e Jogos",icon:"games"},{name:"Acessórios",icon:"bag"},{name:"Auto & Moto",icon:"car"},{name:"Livros",icon:"book"},{name:"Mais Categorias",icon:"grid"}];
 const storeNames=[
 "Nexora Store","Nexora Tech","Nexora Wear","Nexora Beauty","Nexora Casa","Nexora Fit","Nexora Play","Nexora Urban","Nexora Auto","Nexora Books",
 "Órbita Digital","Lume Eletrônicos","Vértice Fashion","Aurora Cosméticos","Casa Prisma","Movva Esportes","Pixel Games","Ateliê Nômade","Rota Motors","Página Aberta",
@@ -43,7 +44,6 @@ const products:Product[]=Array.from({length:500},(_,index)=>{
  const categoryStores=stores.filter(s=>s.category===categories[categoryIndex].name), seller=categoryStores[local%categoryStores.length]?.name||stores[0].name, price=Number((29.9+((index*37)%470)+((index%9)*.9)).toFixed(2)), old=Number((price*(1.18+(index%4)*.09)).toFixed(2));
  return {id:index+1,name:word+" "+variant+" "+String(Math.floor(local/10)+1).padStart(2,"0"),category:categories[categoryIndex].name,price,old,rating:(4.5+(index%5)*.1).toFixed(1).replace(".",","),sold:(120+(index*73)%12400).toLocaleString("pt-BR"),image:imageByCategory[categoryIndex],description:"Produto demonstrativo do catálogo Nexora, com detalhes e condições ilustrativas para explorar a experiência completa da loja.",seller};
 });
-const categories=[{name:"Eletrônicos",icon:"headphones"},{name:"Moda",icon:"shirt"},{name:"Beleza & Cuidados",icon:"beauty"},{name:"Casa & Decoração",icon:"home"},{name:"Esportes & Lazer",icon:"sport"},{name:"Brinquedos e Jogos",icon:"games"},{name:"Acessórios",icon:"bag"},{name:"Auto & Moto",icon:"car"},{name:"Livros",icon:"book"},{name:"Mais Categorias",icon:"grid"}];
 const money=(v:number)=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const categoryPaths:Record<string,string>={
  headphones:"M4 10v5a2 2 0 0 0 2 2h2V9H6a2 2 0 0 0-2 2Zm16 0v5a2 2 0 0 1-2 2h-2V9h2a2 2 0 0 1 2 2ZM4 10a8 8 0 0 1 16 0",
