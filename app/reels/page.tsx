@@ -86,7 +86,7 @@ const navItems = [
   { id: "reels", label: "Reels", icon: "reels", href: "/reels" },
   { id: "criar", label: "Criar", icon: "plus", href: "/?action=create" },
   { id: "mensagens", label: "Mensagens", icon: "messages", href: "/?tab=mensagens" },
-  { id: "perfil", label: "Perfil", icon: "profile", href: "/?tab=perfil" },
+  { id: "perfil", label: "Perfil", icon: "profile", href: "/perfil" },
 ];
 
 
