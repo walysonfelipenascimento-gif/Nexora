@@ -42,7 +42,7 @@ const imageByCategory=[
 const products:Product[]=Array.from({length:500},(_,index)=>{
  const categoryIndex=Math.floor(index/50)%9, local=index%50, word=productWords[categoryIndex][local%10], variant=variants[Math.floor(local/10)];
  const categoryStores=stores.filter(s=>s.category===categories[categoryIndex].name), seller=categoryStores[local%categoryStores.length]?.name||stores[0].name, price=Number((29.9+((index*37)%470)+((index%9)*.9)).toFixed(2)), old=Number((price*(1.18+(index%4)*.09)).toFixed(2));
- return {id:index+1,name:word+" "+variant+" "+String(Math.floor(local/10)+1).padStart(2,"0"),category:categories[categoryIndex].name,price,old,rating:(4.5+(index%5)*.1).toFixed(1).replace(".",","),sold:(120+(index*73)%12400).toLocaleString("pt-BR"),image:imageByCategory[categoryIndex],description:"Produto demonstrativo do catálogo Nexora, com detalhes e condições ilustrativas para explorar a experiência completa da loja.",seller};
+ return {id:index+1,name:index===0?"iPhone 18":word+" "+variant+" "+String(Math.floor(local/10)+1).padStart(2,"0"),category:categories[categoryIndex].name,price,old,rating:(4.5+(index%5)*.1).toFixed(1).replace(".",","),sold:(120+(index*73)%12400).toLocaleString("pt-BR"),image:index===0?"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=900&q=88":imageByCategory[categoryIndex],description:"Produto demonstrativo do catálogo Nexora, com detalhes e condições ilustrativas para explorar a experiência completa da loja.",seller};
 });
 const money=(v:number)=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const categoryPaths:Record<string,string>={
