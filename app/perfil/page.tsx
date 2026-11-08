@@ -213,7 +213,7 @@ export default function ProfilePage() {
   const [noteDraft, setNoteDraft] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const [commercialProfileOpen, setCommercialProfileOpen] = useState(false);
-  const [commercialProfile, setCommercialProfile] = useState({ name: "", handle: "", category: "Loja / comércio", bio: "", contact: "", links: "", logoData: "", coverData: "" });
+  const [commercialProfile, setCommercialProfile] = useState({ name: "", handle: "", category: "Comércio e varejo", bio: "", contact: "", links: "", logoData: "", coverData: "" });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [professionalPanelOpen, setProfessionalPanelOpen] = useState(false);
   const [socialListOpen, setSocialListOpen] = useState<"followers" | "following" | null>(null);
