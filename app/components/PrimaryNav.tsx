@@ -10,6 +10,7 @@ const items: NavItem[] = [
   { id: "inicio", label: "Início", href: "/", icon: <><path d="m3 10 9-7 9 7"/><path d="M5 9v12h5v-7h4v7h5V9"/></> },
   { id: "reels", label: "Reels", href: "/reels", icon: <><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 8 6 4-6 4z"/><path d="m7 4 3 4M15 4l3 4"/></> },
   { id: "criar", label: "Criar", href: "/?action=create", icon: <path d="M12 5v14M5 12h14"/> },
+  { id: "loja", label: "Loja", href: "/loja", icon: <><path d="M3 10h18l-1.4-5H4.4L3 10Z"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></> },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: <><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></> },
 ];
 const moreItems = [
@@ -41,16 +42,9 @@ export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "m
         <span className="nexora-nav-label">{label}</span>
       </Link>;
     })}
-    <div className="nexora-nav-more">
-      <button type="button" className={`nexora-nav-item ${moreOpen || active === "nexi" || active === "loja" ? "active" : ""}`} aria-expanded={moreOpen} aria-label="Mais opções" onClick={() => setMoreOpen(value => !value)}>
-        <span className="nexora-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span>
-        <span className="nexora-nav-label">Mais</span>
-      </button>
-      {moreOpen && <div className="nexora-nav-more-menu" role="menu">
-        {moreItems.map(item => <Link key={item.id} href={item.href} role="menuitem" onClick={() => setMoreOpen(false)} className="nexora-nav-more-option">
-          <span className="nexora-nav-more-icon">{item.icon}</span><span><strong>{item.label}</strong><small>{item.description}</small></span><span className="nexora-nav-more-arrow">↗</span>
-        </Link>)}
-      </div>}
-    </div>
+    <Link href="/nexi" className={`nexora-nav-item nexi-quick-link ${active === "nexi" ? "active" : ""}`} aria-label="Nexi IA">
+      <span className="nexora-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2Z"/><path d="m19 16 .9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16Z"/></svg></span>
+      <span className="nexora-nav-label">Nexi</span>
+    </Link>
   </nav>;
 }
