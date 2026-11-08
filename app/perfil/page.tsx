@@ -364,6 +364,7 @@ export default function ProfilePage() {
       if (typeof data.coverIndex === "number") setCoverIndex(Math.max(0, Math.min(covers.length - 1, data.coverIndex)));
       if (data.prefs && typeof data.prefs === "object") setPrefs((p) => ({ ...p, ...data.prefs }));
       if (Array.isArray(data.videoTopics)) setVideoTopics(data.videoTopics.filter((topic: unknown): topic is string => typeof topic === "string" && ["Humor", "Música", "Games", "Lifestyle", "Tutoriais", "Esportes", "Beleza", "Comédia", "Tecnologia", "Educação"].includes(topic)));
+      if (data.commercialProfile && typeof data.commercialProfile === "object") setCommercialProfile((current) => ({ ...current, ...data.commercialProfile }));
       if (data.selectedSettings && typeof data.selectedSettings === "object") { setSelectedSettings(data.selectedSettings); setProfessionalPanelOpen(Boolean(data.selectedSettings["painel-criador"])); }
       const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
       const previousLanguageOption = NEXORA_LANGUAGES.find((language) => language.label === data.selectedSettings?.idioma);
