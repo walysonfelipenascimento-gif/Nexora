@@ -1992,3 +1992,16 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 .chat-story-share-caption span{font-size:11px;color:#d8dcef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chat-story-share-caption small{font-size:9px;color:#8f9ab9;margin-top:2px}
 @media(prefers-reduced-motion:reduce){.story-overlay .story-action-rail .story-action-button{transition:none!important}}
+
+
+/* Menu secundário da navegação: mantém os cinco destinos principais em destaque. */
+.nexora-nav-more{position:relative;display:flex;flex:1;min-width:0;align-items:stretch}
+.nexora-nav-more>.nexora-nav-item{width:100%;padding:0;background:transparent;font:inherit;cursor:pointer}
+.nexora-nav-more-menu{position:absolute;right:0;bottom:calc(100% + 12px);z-index:90;width:min(260px,calc(100vw - 28px));padding:7px;border:1px solid rgba(105,190,255,.28);border-radius:17px;background:rgba(8,12,27,.97);box-shadow:0 16px 42px rgba(0,0,0,.48),0 0 24px rgba(76,115,255,.16);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.nexora-nav-more-option{display:flex;align-items:center;gap:10px;padding:11px 9px;border-radius:12px;color:#f4f7ff;text-decoration:none;transition:background .16s ease}
+.nexora-nav-more-option:hover,.nexora-nav-more-option:focus-visible{background:rgba(88,128,255,.15);outline:none}
+.nexora-nav-more-icon{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border:1px solid rgba(83,220,255,.24);border-radius:11px;background:linear-gradient(135deg,rgba(0,208,255,.18),rgba(151,76,255,.2));color:#8ceaff;font-size:19px}
+.nexora-nav-more-option>span:nth-child(2){display:grid;gap:3px;min-width:0}
+.nexora-nav-more-option strong{font-size:12px;font-weight:850}
+.nexora-nav-more-option small{color:#9eabc8;font-size:10px;line-height:1.35}
+.nexora-nav-more-arrow{margin-left:auto;color:#8ddfff;font-size:15px}
