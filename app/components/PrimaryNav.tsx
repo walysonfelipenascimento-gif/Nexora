@@ -42,9 +42,6 @@ export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "m
         <span className="nexora-nav-label">{label}</span>
       </Link>;
     })}
-    <Link href="/nexi" className={`nexora-nav-item nexi-quick-link ${active === "nexi" ? "active" : ""}`} aria-label="Nexi IA">
-      <span className="nexora-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2Z"/><path d="m19 16 .9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16Z"/></svg></span>
-      <span className="nexora-nav-label">Nexi</span>
-    </Link>
+
   </nav>;
 }
