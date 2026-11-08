@@ -10,7 +10,6 @@ const items: NavItem[] = [
   { id: "inicio", label: "Início", href: "/", icon: <><path d="m3 10 9-7 9 7"/><path d="M5 9v12h5v-7h4v7h5V9"/></> },
   { id: "reels", label: "Reels", href: "/reels", icon: <><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 8 6 4-6 4z"/><path d="m7 4 3 4M15 4l3 4"/></> },
   { id: "criar", label: "Criar", href: "/?action=create", icon: <path d="M12 5v14M5 12h14"/> },
-  { id: "mensagens", label: "Mensagens", href: "/?tab=mensagens", icon: <><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6.5A7.5 7.5 0 0 1 10.5 7H12a8 8 0 0 1 8 4.5Z"/><path d="M8 12h8M8 15h5"/></> },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: <><circle cx="12" cy="8" r="3.5"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></> },
 ];
 const moreItems = [
@@ -33,7 +32,7 @@ export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "m
       window.removeEventListener("storage", updateLanguage);
     };
   }, []);
-  const labels: Record<string, string> = { inicio: "home", reels: "reels", criar: "create", mensagens: "messages", loja: "store", perfil: "profile", pulse: "pulse", nexi: "nexi" };
+  const labels: Record<string, string> = { inicio: "home", reels: "reels", criar: "create", loja: "store", perfil: "profile", pulse: "pulse", nexi: "nexi" };
   return <nav className="nexora-primary-nav" aria-label={translate(language, "mainNavigation")}>
     {items.map((item) => {
       const label = translate(language, labels[item.id] || item.id);
