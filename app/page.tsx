@@ -7,6 +7,7 @@ import PulseGlobalFloat from "./components/PulseGlobalFloat";
 import LanguageWelcome from "./components/LanguageWelcome";
 import { getSavedLanguage, translate, type NexoraLanguage } from "../lib/i18n";
 import { ensureOwnProfile, getSupabaseBrowserClient, uploadNexoraMedia } from "../lib/supabase";
+import { isIndexedProfileMedia, resolveProfileMedia, saveProfileMedia } from "../lib/profileMedia";
 
 type FeedPost = {
   id: number;
@@ -23,7 +24,7 @@ type FeedPost = {
   verified?: boolean;
 };
 
-type StoryItem = { name: string; own?: boolean; verified?: boolean; image: string; mediaType?: "image" | "video"; caption?: string; id?: string };
+type StoryItem = { name: string; own?: boolean; verified?: boolean; image: string; mediaType?: "image" | "video"; caption?: string; id?: string; createdAt?: number };
 
 type ChatMessage = { id: number; text: string; mine: boolean; time: string; kind?: "text" | "audio" | "image" | "story"; storyTitle?: string; storyUrl?: string; imageUrl?: string; reactions?: string[]; replyTo?: { id: number; text: string; kind?: "text" | "audio" | "image" | "story"; mine: boolean } };
 type ChatThread = { id: string; name: string; username: string; avatar: string; online?: boolean; group?: boolean; members?: number; unread?: number; channel?: "personal" | "commercial" | "order" | "request"; requestDirection?: "incoming" | "outgoing"; requestStatus?: "pending" | "accepted" | "declined"; preview: string; time: string; messages: ChatMessage[] };
@@ -134,6 +135,31 @@ export default function Home() {
   const [createTitle, setCreateTitle] = useState("");
   const createInputRef = useRef<HTMLInputElement>(null);
   const [stories, setStories] = useState<StoryItem[]>(initialStories);
+  useEffect(() => {
+    let cancelled = false;
+    const restoreLocalStories = async () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("nexora-local-stories-v1") || "[]");
+        if (!Array.isArray(stored)) return;
+        const active = stored.filter((item: StoryItem) =>
+          item && typeof item.image === "string" && isIndexedProfileMedia(item.image) &&
+          typeof item.createdAt === "number" && Date.now() - item.createdAt < 24 * 60 * 60 * 1000
+        );
+        const restored = await Promise.all(active.map(async (item: StoryItem) => ({
+          ...item,
+          image: await resolveProfileMedia(item.image),
+        })));
+        if (cancelled || restored.length === 0) return;
+        setStories(current => [
+          current[0],
+          ...restored.filter(item => item.image),
+          ...current.slice(1).filter(item => !item.own || !item.id?.startsWith("local-")),
+        ]);
+      } catch { /* Dados locais inválidos não impedem o carregamento do feed. */ }
+    };
+    void restoreLocalStories();
+    return () => { cancelled = true; };
+  }, []);
   const [activeStory, setActiveStory] = useState<StoryItem | null>(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(1);
   const [isStoryPaused, setIsStoryPaused] = useState(false);
@@ -1029,28 +1055,43 @@ export default function Home() {
         return;
       }
     }
-    const localStory: StoryItem = {
-      name: "Licinhosz.bb",
-      own: true,
-      image: fileToPublish===storyFile ? storyPreview : URL.createObjectURL(fileToPublish),
-      mediaType: fileToPublish.type.startsWith("video/") ? "video" : "image",
-      caption,
-      id: "local-" + Date.now(),
-    };
-    setStories(current => [current[0], localStory, ...current.slice(1).filter(item => !item.own || !item.image)]);
-    setActiveStoryIndex(1);
-    setActiveStory(localStory);
-    stopStoryCamera();
-    setStoryComposerOpen(false);
-    setStoryFile(null);
-    setStoryPreview("");
-    setStoryCaption("");
-    setStoryOverlayText("");
-    setStorySticker("");
-    setStoryLocation("");
-    setStoryLens("none");
-    setStoryEffect("none");
-    setNotice("Story salvo apenas nesta sessão. Para publicar entre contas, é necessário entrar em uma conta Nexora.");
+    try {
+      const mediaRef = await saveProfileMedia(fileToPublish);
+      const mediaUrl = await resolveProfileMedia(mediaRef);
+      if (!mediaUrl) throw new Error("Não foi possível recuperar a mídia salva.");
+      const createdAt = Date.now();
+      const localStory: StoryItem = {
+        name: "Licinhosz.bb",
+        own: true,
+        image: mediaUrl,
+        mediaType: fileToPublish.type.startsWith("video/") ? "video" : "image",
+        caption,
+        id: "local-" + createdAt,
+        createdAt,
+      };
+      const existing = JSON.parse(localStorage.getItem("nexora-local-stories-v1") || "[]");
+      const activeExisting = Array.isArray(existing) ? existing.filter((item: StoryItem) =>
+        item && typeof item.image === "string" && isIndexedProfileMedia(item.image) &&
+        typeof item.createdAt === "number" && Date.now() - item.createdAt < 24 * 60 * 60 * 1000
+      ) : [];
+      localStorage.setItem("nexora-local-stories-v1", JSON.stringify([{ ...localStory, image: mediaRef }, ...activeExisting].slice(0, 20)));
+      setStories(current => [current[0], localStory, ...current.slice(1).filter(item => !item.own || !item.image)]);
+      setActiveStoryIndex(1);
+      setActiveStory(localStory);
+      stopStoryCamera();
+      setStoryComposerOpen(false);
+      setStoryFile(null);
+      setStoryPreview("");
+      setStoryCaption("");
+      setStoryOverlayText("");
+      setStorySticker("");
+      setStoryLocation("");
+      setStoryLens("none");
+      setStoryEffect("none");
+      setNotice("Story salvo neste dispositivo por 24 horas. Ele ainda não é compartilhado entre contas.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Não foi possível salvar o Story neste dispositivo.");
+    }
   };
 
   return (
