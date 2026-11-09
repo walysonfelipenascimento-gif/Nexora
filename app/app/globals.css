@@ -2188,3 +2188,79 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
   border-color:rgba(112,218,255,.24)!important;
   background:rgba(94,195,255,.035)!important;
 }
+
+
+/* Notes interaction — note preview and profile action are independent controls */
+.messages-app .note-orbit-person{
+  overflow:visible!important;
+}
+.messages-app .note-orbit-person .note-bubble{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  appearance:none!important;-webkit-appearance:none!important;
+  width:72px!important;min-height:39px!important;max-height:44px!important;
+  margin:0!important;cursor:pointer!important;font:inherit!important;
+  font-size:9px!important;line-height:1.2!important;text-align:center!important;
+  overflow:hidden!important;
+}
+.messages-app .note-orbit-person .note-orbit-profile{
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  justify-content:flex-start!important;gap:5px!important;
+  width:100%!important;margin:0!important;padding:0!important;
+  border:0!important;background:transparent!important;color:inherit!important;
+  cursor:pointer!important;appearance:none!important;-webkit-appearance:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.messages-app .note-orbit-person .note-orbit-profile:focus-visible,
+.messages-app .note-orbit-person .note-bubble:focus-visible{
+  outline:2px solid rgba(103,220,255,.72)!important;outline-offset:3px!important;
+}
+.notes-viewer-backdrop{
+  position:fixed!important;inset:0!important;z-index:1500!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  padding:24px!important;
+  background:rgba(4,7,16,.28)!important;
+  backdrop-filter:blur(18px) saturate(1.18)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.18)!important;
+  animation:notes-viewer-fade .18s ease both!important;
+}
+.notes-viewer-card{
+  position:relative!important;width:min(390px,100%)!important;min-height:190px!important;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:18px!important;padding:24px 22px 20px!important;
+  border:1px solid rgba(205,224,255,.2)!important;border-radius:25px!important;
+  background:rgba(17,23,40,.72)!important;color:#f5f7ff!important;
+  box-shadow:0 24px 80px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.12)!important;
+  backdrop-filter:blur(26px) saturate(1.35)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(1.35)!important;
+  animation:notes-viewer-pop .24s cubic-bezier(.2,.8,.2,1) both!important;
+}
+.notes-viewer-close{
+  position:absolute!important;top:12px!important;right:13px!important;
+  display:grid!important;place-items:center!important;width:32px!important;height:32px!important;
+  border:1px solid rgba(255,255,255,.12)!important;border-radius:50%!important;
+  background:rgba(255,255,255,.055)!important;color:rgba(245,248,255,.8)!important;
+  font-size:22px!important;line-height:1!important;cursor:pointer!important;
+}
+.notes-viewer-author{display:flex!important;align-items:center!important;gap:11px!important;padding-right:34px!important}
+.notes-viewer-author img{width:42px!important;height:42px!important;border-radius:50%!important;object-fit:cover!important;border:1px solid rgba(155,218,255,.42)!important}
+.notes-viewer-author span{display:flex!important;flex-direction:column!important;gap:3px!important}
+.notes-viewer-author strong{font-size:13px!important;font-weight:750!important;color:#f5f8ff!important}
+.notes-viewer-author small{font-size:10px!important;color:rgba(197,211,236,.58)!important}
+.notes-viewer-card>p{
+  margin:2px 0 0!important;padding:18px 17px!important;min-height:86px!important;
+  display:flex!important;align-items:center!important;
+  border:1px solid rgba(190,215,245,.15)!important;border-radius:17px!important;
+  background:rgba(255,255,255,.035)!important;color:#f4f7ff!important;
+  font-size:16px!important;font-weight:550!important;line-height:1.5!important;
+  overflow-wrap:anywhere!important;
+}
+.notes-viewer-edit{
+  align-self:flex-end!important;padding:9px 14px!important;
+  border:1px solid rgba(104,218,255,.3)!important;border-radius:18px!important;
+  background:rgba(75,190,255,.1)!important;color:#a9eaff!important;
+  font-size:11px!important;font-weight:750!important;cursor:pointer!important;
+}
+@keyframes notes-viewer-fade{from{opacity:0}to{opacity:1}}
+@keyframes notes-viewer-pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:390px){.notes-viewer-card{padding:22px 17px 17px!important}.notes-viewer-card>p{font-size:15px!important}}
+@media(prefers-reduced-motion:reduce){.notes-viewer-backdrop,.notes-viewer-card{animation:none!important}}
