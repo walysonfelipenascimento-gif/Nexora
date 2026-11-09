@@ -1,7 +1,7 @@
 # Nexora — planejamento oficial de reconstrução de Mensagens
 
 **Status:** especificação aprovada pelo usuário em 2026-11-09.  
-**Fonte principal:** imagem enviada nesta conversa. A imagem é o planejamento-alvo, não uma referência opcional.  
+**Fonte principal:** conceito mobile aprovado em 2026-11-09. A interface deve ser mobile-first, em tela cheia, com o mesmo sistema visual em todas as telas internas.  
 **Regra de execução:** reconstruir a página dedicada para corresponder a esta composição e preservar os recursos já existentes; não publicar no Render nem integrar Supabase nesta etapa.
 
 ## 1. Direção visual e composição obrigatória
