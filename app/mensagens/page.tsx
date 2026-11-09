@@ -134,7 +134,7 @@ export default function MessagesPage() {
     <main className="msg-app">
       <div className="msg-device">
         {view === "inbox" && <header className="msg-topbar">
-          <button className="msg-icon-btn" onClick={() => view === "chat" ? setView("inbox") : view === "call" ? setView("chat") : window.history.back()} aria-label="Voltar"><Icon name="back" /></button>
+          <button className="msg-icon-btn" onClick={() => window.history.back()} aria-label="Voltar"><Icon name="back" /></button>
           <div className="msg-top-title">{view === "inbox" ? "Message" : view === "chat" ? active.name : callMode === "video" ? "Video call" : "Voice call"}</div>
           <button className="msg-icon-btn" onClick={() => setMenuOpen((value) => !value)} aria-label="Mais opções"><Icon name="more" /></button>
           {menuOpen && <div className="msg-menu"><button onClick={() => { setSearchOpen((value) => !value); setMenuOpen(false); }}>Search messages</button><button onClick={() => { setSearch(""); setSearchOpen(false); setMenuOpen(false); }}>Clear search</button><button onClick={() => { setTab("inbox"); setMenuOpen(false); }}>All messages</button><button onClick={() => { setNoteOpen(true); setMenuOpen(false); }}>Edit my note</button></div>}
