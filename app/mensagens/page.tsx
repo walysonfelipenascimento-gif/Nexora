@@ -497,7 +497,7 @@ const styles = `
 .msg-note-glass-preview-text.font-bold{font-weight:850;letter-spacing:-.6px}
 .msg-note-glass-preview small{color:#e7f6ff;font-size:11px}
 .msg-note-glass-composer{display:flex;flex-direction:column;gap:10px;padding:15px 14px 12px;border:1px solid rgba(224,243,255,.19);border-radius:28px;background:rgba(210,232,255,.105);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);box-shadow:inset 0 1px rgba(255,255,255,.13),0 12px 40px rgba(0,0,0,.20)}
-.msg-note-glass-composer textarea{width:100%;min-height:84px;max-height:150px;padding:7px 9px;border:0;outline:0;resize:none;background:transparent;color:#fff;font:400 17px/1.45 inherit}
+.msg-note-glass-composer textarea{width:100%;min-height:84px;max-height:150px;padding:7px 9px;border:0;outline:0;resize:none;background:transparent;color:#fff;font-family:inherit;font-size:17px;font-weight:400;line-height:1.45}
 .msg-note-glass-composer textarea::placeholder{color:rgba(237,247,255,.75)}
 .msg-note-glass-tools{display:flex;align-items:center;gap:7px;min-width:0}
 .msg-note-glass-tools>button:not(.msg-note-glass-publish){display:grid;place-items:center;width:36px;height:36px;flex:none;border:1px solid rgba(227,244,255,.12);border-radius:50%;background:rgba(220,240,255,.10);color:#f5fbff;font-size:14px}
