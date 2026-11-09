@@ -29,7 +29,7 @@ export default function PrimaryNav({ active }: { active: "inicio" | "reels" | "m
       window.removeEventListener("storage", updateLanguage);
     };
   }, []);
-  const labels: Record<string, string> = { inicio: "home", reels: "reels", criar: "create", mensagens: "messages", loja: "store", perfil: "profile", pulse: "pulse", nexi: "nexi" };
+  const labels: Record<string, string> = { inicio: "home", reels: "reels", criar: "create", loja: "store", perfil: "profile", pulse: "pulse", nexi: "nexi" };
   return <nav className="nexora-primary-nav" aria-label={translate(language, "mainNavigation")}>
     {items.map((item) => {
       const label = translate(language, labels[item.id] || item.id);
