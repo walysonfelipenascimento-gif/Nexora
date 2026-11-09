@@ -254,18 +254,30 @@ export default function MessagesPage() {
 
       {noteOpen && <div className="msg-note-editor-backdrop" onClick={() => setNoteOpen(false)}>
         <section className="msg-note-editor" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Criar ou editar nota">
-          <header className="msg-note-editor-head"><button onClick={() => setNoteOpen(false)} aria-label="Fechar"><Icon name="close"/></button><span>{note ? "Editar nota" : "Nova nota"}</span><button className="msg-note-publish" disabled={!noteDraft.trim()} onClick={() => { setNote(noteDraft.trim()); setNoteOpen(false); }}>Publicar</button></header>
-          <div className="msg-note-editor-main">
-            <div className="msg-note-live-preview" style={{ background: "linear-gradient(145deg," + noteColor + ",#091526)" }}>
-              <span className={"msg-note-live-text font-" + noteFont}>{noteDraft || "Compartilhe uma ideia..."}</span>
+          <header className="msg-note-glass-top">
+            <button onClick={() => setNoteOpen(false)} aria-label="Fechar editor"><Icon name="close" size={22}/></button>
+            <button onClick={() => setMenuOpen((value) => !value)} aria-label="Mais opções"><Icon name="more" size={22}/></button>
+            {menuOpen && <div className="msg-note-options"><button onClick={() => { setNote(""); setNoteDraft(""); setNoteMusic(""); setMenuOpen(false); setNoteOpen(false); }}>Remover nota</button><button onClick={() => setMenuOpen(false)}>Continuar editando</button></div>}
+          </header>
+          <div className="msg-note-glass-workspace">
+            <div className="msg-note-glass-preview" style={{ background: "linear-gradient(135deg," + noteColor + "55,rgba(15,25,43,.24) 55%,rgba(93,185,226,.20))" }}>
+              <span className={"msg-note-glass-preview-text font-" + noteFont}>{noteDraft || "Sua ideia começa aqui..."}</span>
               {noteMusic && <small>♫ {noteMusic}</small>}
             </div>
-            <textarea autoFocus maxLength={70} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="O que você está pensando?" />
-            <div className="msg-note-counter">{noteDraft.length}/70 caracteres</div>
-            <div className="msg-note-tool-section"><strong>Cor da nota</strong><div className="msg-note-color-row">{noteColors.map((color) => <button key={color} className={noteColor === color ? "active" : ""} style={{ background: color }} onClick={() => setNoteColor(color)} aria-label={"Selecionar cor " + color}/>)}</div></div>
-            <div className="msg-note-tool-section"><strong>Estilo do texto</strong><div className="msg-note-font-row"><button className={noteFont === "classic" ? "active" : ""} onClick={() => setNoteFont("classic")}>Clássico</button><button className={noteFont === "serif" ? "active" : ""} onClick={() => setNoteFont("serif")}>Elegante</button><button className={noteFont === "bold" ? "active" : ""} onClick={() => setNoteFont("bold")}>Forte</button></div></div>
-            <div className="msg-note-tool-section"><strong>Música</strong><div className="msg-note-music-row"><button className={noteMusic === "Aurora — Nexora Mix" ? "active" : ""} onClick={() => setNoteMusic(noteMusic === "Aurora — Nexora Mix" ? "" : "Aurora — Nexora Mix")}>♫ Aurora — Nexora Mix</button><button className={noteMusic === "Ocean Lights" ? "active" : ""} onClick={() => setNoteMusic(noteMusic === "Ocean Lights" ? "" : "Ocean Lights")}>♫ Ocean Lights</button><button className={noteMusic === "Sem música" ? "active" : ""} onClick={() => setNoteMusic("")}>Sem música</button></div><small className="msg-note-music-hint">Seleção demonstrativa nesta etapa; catálogo e reprodução serão conectados posteriormente.</small></div>
-            {note && <button className="msg-note-delete" onClick={() => { setNote(""); setNoteDraft(""); setNoteMusic(""); }}>Remover minha nota</button>}
+            <div className="msg-note-glass-composer">
+              <textarea autoFocus maxLength={70} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Escreva uma nota..." />
+              <div className="msg-note-glass-tools">
+                <button aria-label="Cores" onClick={() => setMenuOpen((value) => !value)}><span className="msg-note-tool-dot" style={{ background: noteColor }}/></button>
+                <button aria-label="Estilo clássico" className={noteFont === "classic" ? "active" : ""} onClick={() => setNoteFont("classic")}>Aa</button>
+                <button aria-label="Estilo elegante" className={noteFont === "serif" ? "active serif" : "serif"} onClick={() => setNoteFont("serif")}>Aa</button>
+                <button aria-label="Estilo forte" className={noteFont === "bold" ? "active bold" : "bold"} onClick={() => setNoteFont("bold")}>Aa</button>
+                <button aria-label="Selecionar música" onClick={() => setNoteMusic(noteMusic ? "" : "Aurora — Nexora Mix")}>♫</button>
+                <span className="msg-note-glass-counter">{noteDraft.length}/70</span>
+                <button className="msg-note-glass-publish" disabled={!noteDraft.trim()} onClick={() => { setNote(noteDraft.trim()); setNoteOpen(false); setMenuOpen(false); }}>Publicar</button>
+              </div>
+              <div className="msg-note-glass-palette">{noteColors.map((color) => <button key={color} className={noteColor === color ? "active" : ""} style={{ background: color }} onClick={() => setNoteColor(color)} aria-label={"Selecionar cor " + color}/>)}</div>
+              {noteMusic && <div className="msg-note-glass-music">♫ {noteMusic} <button onClick={() => setNoteMusic("")}>×</button><small>Catálogo musical será conectado posteriormente</small></div>}
+            </div>
           </div>
         </section>
       </div>}
@@ -469,6 +481,40 @@ const styles = `
 @media(prefers-reduced-motion:reduce){
  .msg-device *,.msg-device *:before,.msg-device *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* Notes editor — translucent floating glass, following the supplied visual reference */
+.msg-note-editor-backdrop{position:fixed;inset:0;z-index:12000;display:flex;justify-content:center;padding:0;background:rgba(0,3,10,.48);backdrop-filter:blur(19px) saturate(1.18);-webkit-backdrop-filter:blur(19px) saturate(1.18)}
+.msg-note-editor{position:relative;display:flex;flex-direction:column;width:min(100%,560px);height:100dvh;overflow:hidden;background:linear-gradient(145deg,rgba(5,13,25,.20),rgba(3,8,17,.12));color:#f5fbff;border-inline:1px solid rgba(205,237,255,.08)}
+.msg-note-glass-top{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;flex:none;padding:calc(18px + env(safe-area-inset-top)) 20px 12px}
+.msg-note-glass-top>button{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(231,246,255,.13);border-radius:50%;background:rgba(225,241,255,.13);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);color:#fff;box-shadow:inset 0 1px rgba(255,255,255,.10),0 5px 22px rgba(0,0,0,.16)}
+.msg-note-options{position:absolute;top:calc(76px + env(safe-area-inset-top));right:20px;display:flex;flex-direction:column;min-width:180px;padding:7px;border:1px solid rgba(210,237,255,.18);border-radius:16px;background:rgba(24,34,49,.62);backdrop-filter:blur(24px);box-shadow:0 12px 35px #0006}
+.msg-note-options button{padding:12px;border:0;background:transparent;color:#f3f8ff;text-align:left;font-size:12px}
+.msg-note-glass-workspace{position:relative;display:flex;flex:1;min-height:0;flex-direction:column;justify-content:space-between;padding:clamp(35px,10vh,100px) 18px max(22px,env(safe-area-inset-bottom))}
+.msg-note-glass-preview{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;width:100%;min-height:150px;padding:24px 20px;border:1px solid rgba(225,244,255,.18);border-radius:27px;background-color:rgba(230,246,255,.055)!important;backdrop-filter:blur(28px) saturate(1.35);-webkit-backdrop-filter:blur(28px) saturate(1.35);box-shadow:inset 0 1px rgba(255,255,255,.14),0 15px 45px rgba(0,0,0,.14)}
+.msg-note-glass-preview-text{max-width:100%;overflow-wrap:anywhere;color:#fff;font-size:clamp(22px,6vw,30px);font-weight:600;line-height:1.25;text-align:center;text-shadow:0 2px 16px #0005}
+.msg-note-glass-preview-text.font-serif{font-family:Georgia,serif;font-weight:500}
+.msg-note-glass-preview-text.font-bold{font-weight:850;letter-spacing:-.6px}
+.msg-note-glass-preview small{color:#e7f6ff;font-size:11px}
+.msg-note-glass-composer{display:flex;flex-direction:column;gap:10px;padding:15px 14px 12px;border:1px solid rgba(224,243,255,.19);border-radius:28px;background:rgba(210,232,255,.105);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);box-shadow:inset 0 1px rgba(255,255,255,.13),0 12px 40px rgba(0,0,0,.20)}
+.msg-note-glass-composer textarea{width:100%;min-height:84px;max-height:150px;padding:7px 9px;border:0;outline:0;resize:none;background:transparent;color:#fff;font:400 17px/1.45 inherit}
+.msg-note-glass-composer textarea::placeholder{color:rgba(237,247,255,.75)}
+.msg-note-glass-tools{display:flex;align-items:center;gap:7px;min-width:0}
+.msg-note-glass-tools>button:not(.msg-note-glass-publish){display:grid;place-items:center;width:36px;height:36px;flex:none;border:1px solid rgba(227,244,255,.12);border-radius:50%;background:rgba(220,240,255,.10);color:#f5fbff;font-size:14px}
+.msg-note-glass-tools>button.active{border-color:rgba(124,226,255,.72);background:rgba(40,176,221,.25);box-shadow:0 0 14px rgba(57,193,239,.15)}
+.msg-note-glass-tools .serif{font-family:Georgia,serif}
+.msg-note-glass-tools .bold{font-weight:850}
+.msg-note-tool-dot{width:16px;height:16px;border:1px solid #fff8;border-radius:50%}
+.msg-note-glass-counter{margin-left:auto;color:rgba(238,248,255,.68);font-size:10px;white-space:nowrap}
+.msg-note-glass-publish{height:36px;padding:0 15px;border:0;border-radius:22px;background:linear-gradient(110deg,#6554e9,#168fe7,#25c9df);color:#fff;font-size:11px;font-weight:700;box-shadow:0 4px 16px rgba(27,145,222,.22)}
+.msg-note-glass-publish:disabled{opacity:.42}
+.msg-note-glass-palette{display:flex;gap:11px;padding:3px 8px 2px}
+.msg-note-glass-palette button{width:22px;height:22px;border:1px solid rgba(255,255,255,.55);border-radius:50%;box-shadow:0 2px 8px #0005}
+.msg-note-glass-palette button.active{outline:2px solid #b9edff;outline-offset:3px}
+.msg-note-glass-music{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#f1f9ff;font-size:11px}
+.msg-note-glass-music button{border:0;background:transparent;color:white;font-size:17px}
+.msg-note-glass-music small{flex-basis:100%;color:rgba(232,245,255,.62);font-size:9px}
+@media(max-width:430px){.msg-note-glass-workspace{padding-inline:14px}.msg-note-glass-tools{gap:5px}.msg-note-glass-tools>button:not(.msg-note-glass-publish){width:33px;height:33px}.msg-note-glass-publish{padding-inline:12px}}
 
 `;
 
