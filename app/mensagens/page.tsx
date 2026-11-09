@@ -89,7 +89,7 @@ export default function MessagesPage() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) setChats(parsed);
       }
-      setNote(localStorage.getItem("nexora-reference-note-v1") || "");
+      setNote(localStorage.getItem("nexora-chat-note-v1") || "");
       setNoteColor(localStorage.getItem("nexora-note-color-v1") || "#173452");
       setNoteMusic(localStorage.getItem("nexora-note-music-v1") || "");
       setNoteFont(localStorage.getItem("nexora-note-font-v1") || "classic");
@@ -99,7 +99,7 @@ export default function MessagesPage() {
   useEffect(() => {
     try {
       localStorage.setItem("nexora-reference-messages-v1", JSON.stringify(chats));
-      localStorage.setItem("nexora-reference-note-v1", note);
+      localStorage.setItem("nexora-chat-note-v1", note);
       localStorage.setItem("nexora-note-color-v1", noteColor);
       localStorage.setItem("nexora-note-music-v1", noteMusic);
       localStorage.setItem("nexora-note-font-v1", noteFont);
@@ -398,7 +398,7 @@ const styles = `
 .msg-note-live-text.font-serif{font-family:Georgia,serif;font-weight:500}
 .msg-note-live-text.font-bold{font-weight:850;letter-spacing:-.5px}
 .msg-note-live-preview small{color:#d5eaff;font-size:10px}
-.msg-note-editor-main textarea{width:100%;min-height:105px;padding:16px;border:1px solid #8fcfff35;border-radius:17px;outline:none;background:#0d1b2e;color:#fff;font:16px/1.5 inherit;resize:none}
+.msg-note-editor-main textarea{width:100%;min-height:105px;padding:16px;border:1px solid #8fcfff35;border-radius:17px;outline:none;background:#0d1b2e;color:#fff;font-family:inherit;font-size:16px;line-height:1.5;resize:none}
 .msg-note-editor-main textarea:focus{border-color:#69d8ff;box-shadow:0 0 0 3px #4cbfff1a}
 .msg-note-counter{margin-top:-10px;color:#91a8c6;font-size:10px;text-align:right}
 .msg-note-tool-section{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #a5dfff16;border-radius:17px;background:#ffffff06}
