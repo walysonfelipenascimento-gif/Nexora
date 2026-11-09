@@ -17,7 +17,6 @@ const seed:Thread[]=[
 ];
 const tabs:{id:Section;label:string}[]=[{id:"all",label:"Todas"},{id:"personal",label:"Pessoais"},{id:"commercial",label:"Comerciais"},{id:"orders",label:"Pedidos"},{id:"requests",label:"Solicitações"}];
 const nowTime=()=>new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-function Mark({store=false}:{store?:boolean}){return <span className={store?"nx-avatar nx-store":"nx-avatar"}>{store?<b>N</b>:<span>✦</span>}</span>}
 export default function MessagesPage(){
  const [threads,setThreads]=useState<Thread[]>(seed);
  const [section,setSection]=useState<Section>("all");
@@ -27,7 +26,7 @@ export default function MessagesPage(){
  const [nexiOpen,setNexiOpen]=useState(false);
  const [nexiDraft,setNexiDraft]=useState("");
  const [toast,setToast]=useState("");
- const [imagePreview,setImagePreview]=useState<string|null>(null);
+ 
  const active=threads.find(t=>t.id===activeId)||null;
  useEffect(()=>{try{const saved=localStorage.getItem("nexora-chat-threads-v1");if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))setThreads(parsed.filter((x:any)=>x&&typeof x.id==="string"&&Array.isArray(x.messages)));}}catch{}},[]);
  useEffect(()=>{try{localStorage.setItem("nexora-chat-threads-v1",JSON.stringify(threads));}catch{}},[threads]);
@@ -35,7 +34,7 @@ export default function MessagesPage(){
  function openThread(t:Thread){setActiveId(t.id);setThreads(current=>current.map(x=>x.id===t.id?{...x,unread:0}:x));}
  function send(){const value=draft.trim();if(!value||!active)return;const time=nowTime();setThreads(current=>current.map(t=>t.id===active.id?{...t,preview:"Você: "+value,time,messages:[...t.messages,{id:Date.now(),text:value,mine:true,time}]}:t));setDraft("");}
  function resolveRequest(accept:boolean){if(!active)return;setThreads(current=>current.map(t=>t.id===active.id?{...t,channel:accept?"personal":"request",requestStatus:accept?"accepted":"declined",preview:accept?"Solicitação aceita · comece a conversar":"Solicitação recusada"}:t));setToast(accept?"Solicitação aceita nesta demonstração.":"Solicitação recusada nesta demonstração.");if(!accept)setActiveId(null);}
- function attachImage(file?:File){if(!file||!active)return;if(!file.type.startsWith("image/")){setToast("Escolha uma imagem.");return;}if(file.size>15*1024*1024){setToast("A imagem deve ter até 15 MB.");return;}const url=URL.createObjectURL(file);setImagePreview(url);const time=nowTime();setThreads(current=>current.map(t=>t.id===active.id?{...t,preview:"Você: 📷 Imagem",time,messages:[...t.messages,{id:Date.now(),text:"Imagem enviada nesta sessão",mine:true,time,kind:"image",imageUrl:url}]}:t));setToast("Imagem exibida sem compressão nesta sessão. O armazenamento permanente será conectado na etapa Supabase.");}
+ function attachImage(file?:File){if(!file||!active)return;if(!file.type.startsWith("image/")){setToast("Escolha uma imagem.");return;}if(file.size>15*1024*1024){setToast("A imagem deve ter até 15 MB.");return;}const url=URL.createObjectURL(file);const time=nowTime();setThreads(current=>current.map(t=>t.id===active.id?{...t,preview:"Você: 📷 Imagem",time,messages:[...t.messages,{id:Date.now(),text:"Imagem enviada nesta sessão",mine:true,time,kind:"image",imageUrl:url}]}:t));setToast("Imagem exibida sem compressão nesta sessão. O armazenamento permanente será conectado na etapa Supabase.");}
  return <main className="nx-messages-page">
   <header className="nx-top"><Link href="/" className="nx-brand"><img src="/nexora-logo.svg" alt=""/> <span>Nexora</span></Link><div className="nx-top-right"><span className="nx-live-dot"/> Central de mensagens <Link href="/" aria-label="Voltar ao início">×</Link></div></header>
   <div className="nx-shell">
