@@ -67,6 +67,13 @@ export default function MessagesPage() {
   const [note, setNote] = useState("");
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
+  const [noteColor, setNoteColor] = useState("#173452");
+  const [noteMusic, setNoteMusic] = useState("");
+  const [noteFont, setNoteFont] = useState("classic");
+  const [rotationIndex, setRotationIndex] = useState(0);
+  const orbitPeople = [people[5], people[6], people[2], people[7]];
+  const orbitNotes = ["No melhor ritmo ✨", "Café e ideias ☕", "Dia de criar algo novo", "Uma música boa muda tudo"];
+  const noteColors = ["#173452", "#512b75", "#7b304f", "#1c625c", "#7a5524", "#242b43"];
   const [newOpen, setNewOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [callMode, setCallMode] = useState<"voice" | "video">("video");
@@ -82,16 +89,27 @@ export default function MessagesPage() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) setChats(parsed);
       }
-      setNote(localStorage.getItem("nexora-reference-note-v1") || "");
+      setNote(localStorage.getItem("nexora-chat-note-v1") || "");
+      setNoteColor(localStorage.getItem("nexora-note-color-v1") || "#173452");
+      setNoteMusic(localStorage.getItem("nexora-note-music-v1") || "");
+      setNoteFont(localStorage.getItem("nexora-note-font-v1") || "classic");
     } catch {}
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem("nexora-reference-messages-v1", JSON.stringify(chats));
-      localStorage.setItem("nexora-reference-note-v1", note);
+      localStorage.setItem("nexora-chat-note-v1", note);
+      localStorage.setItem("nexora-note-color-v1", noteColor);
+      localStorage.setItem("nexora-note-music-v1", noteMusic);
+      localStorage.setItem("nexora-note-font-v1", noteFont);
     } catch {}
   }, [chats, note]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setRotationIndex((value) => (value + 1) % orbitPeople.length), 3600);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const filtered = useMemo(() => chats.filter((chat) => {
     const matches = (chat.name + " " + chat.preview + " " + chat.handle).toLowerCase().includes(search.toLowerCase());
@@ -144,14 +162,22 @@ export default function MessagesPage() {
           <section className="msg-inbox">
             <div className="msg-note-stage">
               <button className="msg-add-note" onClick={() => { setNoteDraft(note); setNoteOpen(true); }}>Add note</button>
-              <div className="msg-note-orbit">
-                <button className="msg-orbit-avatar orbit-one" onClick={() => openChat("jenny")}><img src={people[5].avatar} alt="Sophia"/><span>Sophia</span></button>
-                <button className="msg-orbit-avatar orbit-two" onClick={() => openChat("guy")}><img src={people[6].avatar} alt="Noah"/><span>Noah</span></button>
-                <button className="msg-orbit-avatar orbit-three" onClick={() => openChat("kristin")}><img src={people[2].avatar} alt="Kristin"/><span>Kristin</span></button>
-                <button className="msg-orbit-avatar orbit-four" onClick={() => openChat("arlene")}><img src={people[7].avatar} alt="Olivia"/><span>Olivia</span></button>
-                <button className="msg-own-note" onClick={() => { setNoteDraft(note); setNoteOpen(true); }}><img src={people[4].avatar} alt="Seu perfil"/><span className="msg-own-plus"><Icon name="plus" size={13}/></span></button>
+              <div className="msg-note-orbit" aria-label="Notas dos contatos">
+                {orbitPeople.map((person, index) => {
+                  const slot = (index - rotationIndex + orbitPeople.length) % orbitPeople.length;
+                  const positions = ["orbit-one", "orbit-two", "orbit-three", "orbit-four"];
+                  const chatIds = ["jenny", "guy", "kristin", "arlene"];
+                  return <button className={"msg-orbit-avatar " + positions[slot]} key={person.name} onClick={() => openChat(chatIds[index])} aria-label={"Abrir conversa com " + person.name}>
+                    <span className="msg-orbit-note" style={{ background: noteColors[index % noteColors.length] }}>{orbitNotes[index]}</span>
+                    <img src={person.avatar} alt={person.name}/><span>{person.name.split(" ")[0]}</span>
+                  </button>;
+                })}
+                <button className={"msg-own-note " + (note ? "has-note" : "")} onClick={() => { setNoteDraft(note); setNoteOpen(true); }} aria-label={note ? "Editar sua nota" : "Adicionar sua nota"}>
+                  {note && <span className="msg-own-note-text" style={{ background: noteColor }}>{note}</span>}
+                  <img src={people[4].avatar} alt="Seu perfil"/>
+                  {!note && <span className="msg-own-plus"><Icon name="plus" size={13}/></span>}
+                </button>
               </div>
-              {note && <div className="msg-note-preview">{note}</div>}
             </div>
             <div className="msg-tabs">
               <button className={tab === "inbox" ? "selected" : ""} onClick={() => setTab("inbox")}>Inbox <b>{chats.length + 21}</b></button>
@@ -226,7 +252,23 @@ export default function MessagesPage() {
         )}
       </div>
 
-      {noteOpen && <div className="msg-modal-backdrop"><section className="msg-modal"><button className="msg-modal-close" onClick={() => setNoteOpen(false)}><Icon name="close"/></button><h2>Your note</h2><textarea maxLength={70} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Share a thought..."/><small>{noteDraft.length}/70</small><button className="msg-modal-save" onClick={() => { setNote(noteDraft); setNoteOpen(false); }}>Save note</button></section></div>}
+      {noteOpen && <div className="msg-note-editor-backdrop" onClick={() => setNoteOpen(false)}>
+        <section className="msg-note-editor" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Criar ou editar nota">
+          <header className="msg-note-editor-head"><button onClick={() => setNoteOpen(false)} aria-label="Fechar"><Icon name="close"/></button><span>{note ? "Editar nota" : "Nova nota"}</span><button className="msg-note-publish" disabled={!noteDraft.trim()} onClick={() => { setNote(noteDraft.trim()); setNoteOpen(false); }}>Publicar</button></header>
+          <div className="msg-note-editor-main">
+            <div className="msg-note-live-preview" style={{ background: "linear-gradient(145deg," + noteColor + ",#091526)" }}>
+              <span className={"msg-note-live-text font-" + noteFont}>{noteDraft || "Compartilhe uma ideia..."}</span>
+              {noteMusic && <small>♫ {noteMusic}</small>}
+            </div>
+            <textarea autoFocus maxLength={70} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="O que você está pensando?" />
+            <div className="msg-note-counter">{noteDraft.length}/70 caracteres</div>
+            <div className="msg-note-tool-section"><strong>Cor da nota</strong><div className="msg-note-color-row">{noteColors.map((color) => <button key={color} className={noteColor === color ? "active" : ""} style={{ background: color }} onClick={() => setNoteColor(color)} aria-label={"Selecionar cor " + color}/>)}</div></div>
+            <div className="msg-note-tool-section"><strong>Estilo do texto</strong><div className="msg-note-font-row"><button className={noteFont === "classic" ? "active" : ""} onClick={() => setNoteFont("classic")}>Clássico</button><button className={noteFont === "serif" ? "active" : ""} onClick={() => setNoteFont("serif")}>Elegante</button><button className={noteFont === "bold" ? "active" : ""} onClick={() => setNoteFont("bold")}>Forte</button></div></div>
+            <div className="msg-note-tool-section"><strong>Música</strong><div className="msg-note-music-row"><button className={noteMusic === "Aurora — Nexora Mix" ? "active" : ""} onClick={() => setNoteMusic(noteMusic === "Aurora — Nexora Mix" ? "" : "Aurora — Nexora Mix")}>♫ Aurora — Nexora Mix</button><button className={noteMusic === "Ocean Lights" ? "active" : ""} onClick={() => setNoteMusic(noteMusic === "Ocean Lights" ? "" : "Ocean Lights")}>♫ Ocean Lights</button><button className={noteMusic === "Sem música" ? "active" : ""} onClick={() => setNoteMusic("")}>Sem música</button></div><small className="msg-note-music-hint">Seleção demonstrativa nesta etapa; catálogo e reprodução serão conectados posteriormente.</small></div>
+            {note && <button className="msg-note-delete" onClick={() => { setNote(""); setNoteDraft(""); setNoteMusic(""); }}>Remover minha nota</button>}
+          </div>
+        </section>
+      </div>}
       {newOpen && <div className="msg-modal-backdrop"><section className="msg-modal msg-new-modal"><button className="msg-modal-close" onClick={() => setNewOpen(false)}><Icon name="close"/></button><h2>New message</h2>{people.slice(0, 5).map((person, index) => <button className="msg-new-person" key={person.name} onClick={() => { const target = ["jenny","guy","kristin","arlene","daniel"][index]; setNewOpen(false); openChat(target); }}><img src={person.avatar} alt=""/><span>{person.name}</span><Icon name="back"/></button>)}</section></div>}
     </main>
     <MessagesStyles />
@@ -338,6 +380,37 @@ const styles = `
 .msg-new-person img{width:37px;height:37px;object-fit:cover;border-radius:50%}
 .msg-new-person span{flex:1;font-size:11px}
 .msg-new-person svg{transform:rotate(180deg);color:#7e9dbf}
+/* Notes orbit and full-screen editor */
+.msg-orbit-avatar{transition:left .65s cubic-bezier(.2,.8,.2,1),right .65s cubic-bezier(.2,.8,.2,1),top .65s cubic-bezier(.2,.8,.2,1),transform .65s cubic-bezier(.2,.8,.2,1)}
+.msg-orbit-note{position:absolute;z-index:2;top:-28px;left:50%;max-width:112px;overflow:hidden;padding:5px 8px;border:1px solid rgba(190,230,255,.32);border-radius:12px;color:#fff;font-size:8px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap;transform:translateX(-50%);box-shadow:0 5px 16px #0007}
+.msg-own-note.has-note{border-color:#b6efff}
+.msg-own-note-text{position:absolute;z-index:2;left:50%;top:-34px;max-width:160px;overflow:hidden;padding:6px 10px;border:1px solid #a9e8ff66;border-radius:13px;color:white;font-size:9px;text-overflow:ellipsis;white-space:nowrap;transform:translateX(-50%);box-shadow:0 5px 18px #0008}
+.msg-note-editor-backdrop{position:fixed;inset:0;z-index:12000;display:flex;align-items:stretch;justify-content:center;padding:0;background:rgba(2,8,18,.42);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px)}
+.msg-note-editor{display:flex;flex-direction:column;width:min(100%,560px);height:100dvh;overflow:auto;background:linear-gradient(180deg,#0b1728f2,#050d1bf7);color:#f4f8ff;border-inline:1px solid #a5dfff18}
+.msg-note-editor-head{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:42px 1fr 82px;align-items:center;min-height:62px;padding:8px 15px;border-bottom:1px solid #b4dcff18;background:#0a1526ed;backdrop-filter:blur(18px)}
+.msg-note-editor-head>button{display:grid;place-items:center;width:38px;height:38px;border:1px solid #b7dfff22;border-radius:50%;background:#ffffff08;color:#eaf6ff}
+.msg-note-editor-head>span{text-align:center;font-size:14px;font-weight:700}
+.msg-note-editor-head .msg-note-publish{width:78px;height:36px;border:0;border-radius:22px;background:linear-gradient(110deg,#6745ef,#168ee9,#1cc9df);font-size:11px;font-weight:700}
+.msg-note-editor-head .msg-note-publish:disabled{opacity:.4}
+.msg-note-editor-main{display:flex;flex:1;flex-direction:column;gap:15px;padding:20px 20px max(24px,env(safe-area-inset-bottom))}
+.msg-note-live-preview{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;min-height:150px;padding:20px;border:1px solid #c4e9ff38;border-radius:24px;box-shadow:0 12px 34px #0004,inset 0 0 35px #ffffff0b}
+.msg-note-live-text{max-width:100%;overflow-wrap:anywhere;color:white;font-size:23px;font-weight:600;text-align:center;line-height:1.25}
+.msg-note-live-text.font-serif{font-family:Georgia,serif;font-weight:500}
+.msg-note-live-text.font-bold{font-weight:850;letter-spacing:-.5px}
+.msg-note-live-preview small{color:#d5eaff;font-size:10px}
+.msg-note-editor-main textarea{width:100%;min-height:105px;padding:16px;border:1px solid #8fcfff35;border-radius:17px;outline:none;background:#0d1b2e;color:#fff;font-family:inherit;font-size:16px;line-height:1.5;resize:none}
+.msg-note-editor-main textarea:focus{border-color:#69d8ff;box-shadow:0 0 0 3px #4cbfff1a}
+.msg-note-counter{margin-top:-10px;color:#91a8c6;font-size:10px;text-align:right}
+.msg-note-tool-section{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid #a5dfff16;border-radius:17px;background:#ffffff06}
+.msg-note-tool-section>strong{font-size:12px;color:#eaf5ff}
+.msg-note-color-row,.msg-note-font-row,.msg-note-music-row{display:flex;flex-wrap:wrap;gap:9px}
+.msg-note-color-row button{width:32px;height:32px;border:2px solid #ffffff55;border-radius:50%;box-shadow:0 3px 9px #0005}
+.msg-note-color-row button.active{outline:2px solid #a9edff;outline-offset:3px}
+.msg-note-font-row button,.msg-note-music-row button{padding:9px 12px;border:1px solid #b4dfff24;border-radius:20px;background:#13243a;color:#cbdcf1;font-size:10px}
+.msg-note-font-row button.active,.msg-note-music-row button.active{border-color:#6fdcff;background:#173d5c;color:#fff}
+.msg-note-music-hint{color:#8299b8;font-size:9px;line-height:1.4}
+.msg-note-delete{align-self:center;padding:9px 15px;border:1px solid #ff7c8a55;border-radius:20px;background:#a5283a18;color:#ffb5bf;font-size:10px}
+@media(max-width:430px){.msg-note-editor-main{padding:16px 16px max(20px,env(safe-area-inset-bottom))}.msg-note-live-preview{min-height:135px}.msg-note-live-text{font-size:21px}}
 @keyframes msgAura{0%,100%{box-shadow:0 0 0 4px rgba(151,218,255,.12),0 0 0 7px rgba(95,161,255,.08),0 0 25px rgba(126,211,255,.34)}50%{box-shadow:0 0 0 5px rgba(151,218,255,.18),0 0 0 9px rgba(95,161,255,.11),0 0 34px rgba(126,211,255,.52)}}
 .msg-row-copy strong{letter-spacing:.08px}.msg-row-copy small{line-height:1.4}
 @media(min-width:700px){.msg-app{padding:16px 0;background:radial-gradient(ellipse at 50% 0,#152b50,#030711 65%)}.msg-device{height:calc(100dvh - 32px);max-width:430px;border:1px solid rgba(126,181,255,.18);border-radius:27px;box-shadow:0 25px 90px #000b}}
