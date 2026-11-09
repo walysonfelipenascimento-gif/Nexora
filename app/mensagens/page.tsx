@@ -62,6 +62,7 @@ export default function MessagesPage() {
   const [activeId, setActiveId] = useState("daniel");
   const [tab, setTab] = useState<"inbox" | "unread" | "requests">("inbox");
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [note, setNote] = useState("");
   const [noteOpen, setNoteOpen] = useState(false);
@@ -94,7 +95,9 @@ export default function MessagesPage() {
 
   const filtered = useMemo(() => chats.filter((chat) => {
     const matches = (chat.name + " " + chat.preview + " " + chat.handle).toLowerCase().includes(search.toLowerCase());
-    return matches && (tab !== "unread" || chat.unread > 0);
+    if (!matches) return false;
+    if (tab === "requests") return false;
+    return tab !== "unread" || chat.unread > 0;
   }), [chats, search, tab]);
 
   function openChat(id: string) {
@@ -130,12 +133,12 @@ export default function MessagesPage() {
     <>
     <main className="msg-app">
       <div className="msg-device">
-        <header className="msg-topbar">
+        {view === "inbox" && <header className="msg-topbar">
           <button className="msg-icon-btn" onClick={() => view === "chat" ? setView("inbox") : view === "call" ? setView("chat") : window.history.back()} aria-label="Voltar"><Icon name="back" /></button>
           <div className="msg-top-title">{view === "inbox" ? "Message" : view === "chat" ? active.name : callMode === "video" ? "Video call" : "Voice call"}</div>
           <button className="msg-icon-btn" onClick={() => setMenuOpen((value) => !value)} aria-label="Mais opções"><Icon name="more" /></button>
-          {menuOpen && <div className="msg-menu"><button onClick={() => { setSearch(""); setMenuOpen(false); }}>Clear search</button><button onClick={() => { setTab("inbox"); setMenuOpen(false); }}>All messages</button><button onClick={() => { setNoteOpen(true); setMenuOpen(false); }}>Edit my note</button></div>}
-        </header>
+          {menuOpen && <div className="msg-menu"><button onClick={() => { setSearchOpen((value) => !value); setMenuOpen(false); }}>Search messages</button><button onClick={() => { setSearch(""); setSearchOpen(false); setMenuOpen(false); }}>Clear search</button><button onClick={() => { setTab("inbox"); setMenuOpen(false); }}>All messages</button><button onClick={() => { setNoteOpen(true); setMenuOpen(false); }}>Edit my note</button></div>}
+        </header>}
 
         {view === "inbox" && (
           <section className="msg-inbox">
@@ -155,7 +158,7 @@ export default function MessagesPage() {
               <button className={tab === "unread" ? "selected" : ""} onClick={() => setTab("unread")}>Unread</button>
               <button className={tab === "requests" ? "selected" : ""} onClick={() => setTab("requests")}>Requests</button>
             </div>
-            <div className="msg-search"><Icon name="search" size={17}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search messages"/></div>
+            {searchOpen && <div className="msg-search"><Icon name="search" size={17}/><input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search messages"/></div>}
             <div className="msg-list">
               {filtered.map((chat) => (
                 <button className="msg-row" key={chat.id} onClick={() => openChat(chat.id)}>
@@ -183,7 +186,6 @@ export default function MessagesPage() {
               <button className="msg-call-btn" onClick={() => startCall("voice")} aria-label="Chamada de voz"><Icon name="phone"/></button>
             </div>
             <div className="msg-chat-history">
-              <div className="msg-date-pill">Today</div>
               {active.messages.map((message) => (
                 <div className={"msg-bubble-row " + (message.from === "me" ? "mine" : "theirs")} key={message.id}>
                   {message.from === "them" && <img className="msg-bubble-avatar" src={active.avatar} alt=""/>}
@@ -198,7 +200,7 @@ export default function MessagesPage() {
               ))}
             </div>
             <div className="msg-chat-composer">
-              <button className="msg-compose-plus" onClick={() => fileRef.current?.click()} aria-label="Anexar"><Icon name="plus"/></button>
+              <button className="msg-compose-plus" onClick={() => fileRef.current?.click()} aria-label="New attachment"><Icon name="plus" size={15}/><span>New</span></button>
               <div className="msg-input-wrap"><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") sendMessage(); }} placeholder="Type Message..."/><button onClick={() => setRecording((value) => !value)} aria-label="Microfone"><Icon name="mic" size={18}/></button></div>
               <button className="msg-send" onClick={() => recording ? sendMessage("Voice message", "audio") : sendMessage()} aria-label="Enviar"><Icon name="send" size={18}/></button>
               <input ref={fileRef} type="file" accept="image/*" hidden onChange={(event) => { attachImage(event.target.files?.[0]); event.currentTarget.value = ""; }}/>
@@ -209,7 +211,7 @@ export default function MessagesPage() {
 
         {view === "call" && (
           <section className="msg-call-screen">
-            <div className="msg-call-time"><span/> 12:47</div>
+            <button className="msg-call-back" onClick={() => setView("chat")} aria-label="Voltar à conversa"><Icon name="back"/></button><div className="msg-call-time"><span/> 12:47</div>
             <div className="msg-call-grid">
               {people.concat(people.slice(0, 4)).map((person, index) => <button className="msg-call-person" key={index}><img src={person.avatar} alt=""/><span>{["Oliver","Evelyn","Amelia","Sophie","Emma","NoahB","Isabella","Elijah","Lucas","Ava","Harry","Olivia"][index]}</span><i className={index % 3 === 0 ? "speaking" : ""}/></button>)}
             </div>
@@ -217,7 +219,7 @@ export default function MessagesPage() {
             <div className="msg-call-controls">
               <button onClick={() => setCallNotice(true)}><Icon name="speaker" size={21}/></button>
               <button onClick={() => setCallNotice(true)}><Icon name="mic" size={21}/></button>
-              <button className="msg-hangup" onClick={() => { setView("chat"); setCallNotice(false); }}><span>⌕</span></button>
+              <button className="msg-hangup" onClick={() => { setView("chat"); setCallNotice(false); }}><Icon name="phone" size={21}/></button>
             </div>
             {callNotice && <div className="msg-call-notice">Call interface preview · live audio/video will be connected later</div>}
           </section>
@@ -301,7 +303,7 @@ const styles = `
 .msg-audio small{color:#c3d6f0;font-size:8px}
 .msg-audio button{display:grid;place-items:center;width:23px;height:23px;border:0;border-radius:50%;background:linear-gradient(130deg,#4c4cf2,#18c8e8);color:white;font-size:9px}
 .msg-chat-composer{display:flex;align-items:center;gap:7px;flex:none;padding:9px 10px max(10px,env(safe-area-inset-bottom));border-top:1px solid rgba(135,180,232,.1);background:rgba(6,15,29,.95)}
-.msg-compose-plus,.msg-send{display:grid;place-items:center;width:36px;height:36px;flex:none;border:1px solid rgba(133,168,221,.14);border-radius:50%;background:#18263a;color:#8dcfff}
+.msg-compose-plus,.msg-send{display:flex;align-items:center;justify-content:center;gap:4px;width:55px;height:36px;flex:none;border:1px solid rgba(133,168,221,.14);border-radius:22px;background:#18263a;color:#8dcfff}.msg-compose-plus span{font-size:9px}
 .msg-input-wrap{display:flex;align-items:center;flex:1;min-width:0;height:39px;padding:0 8px 0 13px;border:1px solid rgba(142,177,225,.12);border-radius:24px;background:#131f32}
 .msg-input-wrap input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:white;font-size:10px}
 .msg-input-wrap input::placeholder{color:#8192ad}
@@ -309,7 +311,7 @@ const styles = `
 .msg-send{border:0;background:linear-gradient(130deg,#5148e8,#178ee7,#1cc9df);color:white}
 .msg-recording{padding:0 16px 8px;background:#060f1d;color:#64dfff;font-size:8px}
 .msg-call-screen{position:relative;display:flex;flex:1;min-height:0;flex-direction:column;padding:18px 16px 16px;background:radial-gradient(ellipse at 50% -12%,rgba(0,204,238,.3),transparent 35%),#020812}
-.msg-call-time{align-self:center;display:flex;align-items:center;gap:6px;margin:5px 0 23px;padding:7px 14px;border:1px solid rgba(109,164,255,.22);border-radius:22px;background:linear-gradient(100deg,#533ee8,#1c9ee7);font-size:9px;color:white}
+.msg-call-back{position:absolute;top:21px;left:17px;display:grid;place-items:center;width:36px;height:36px;border:1px solid rgba(190,220,255,.12);border-radius:50%;background:rgba(255,255,255,.055);color:#e6f5ff}.msg-call-time{align-self:center;display:flex;align-items:center;gap:6px;margin:5px 0 23px;padding:7px 14px;border:1px solid rgba(109,164,255,.22);border-radius:22px;background:linear-gradient(100deg,#533ee8,#1c9ee7);font-size:9px;color:white}
 .msg-call-time span{width:6px;height:6px;border-radius:50%;background:#ff4b65;box-shadow:0 0 8px #ff4b65}
 .msg-call-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px 9px;align-content:start;flex:1}
 .msg-call-person{position:relative;display:flex;align-items:center;flex-direction:column;gap:7px;border:0;background:none;color:#dce9fa}
@@ -323,7 +325,7 @@ const styles = `
 .msg-call-controls{display:flex;align-items:center;justify-content:center;gap:14px;padding:12px 0 0;border-top:1px solid rgba(148,183,224,.08)}
 .msg-call-controls button{display:grid;place-items:center;width:46px;height:46px;border:1px solid rgba(160,180,218,.09);border-radius:50%;background:#1a2639;color:#dceaff}
 .msg-call-controls .msg-hangup{background:#f32c3b;color:white;border:0}
-.msg-hangup span{font-size:21px;transform:rotate(135deg)}
+.msg-hangup svg{transform:rotate(135deg)}
 .msg-call-notice{position:absolute;left:50%;bottom:82px;transform:translateX(-50%);width:max-content;max-width:90%;padding:9px 12px;border:1px solid #41678b;border-radius:12px;background:#111d2d;color:#c9e9ff;font-size:8px;text-align:center}
 .msg-modal-backdrop{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:18px;background:rgba(0,4,12,.78);backdrop-filter:blur(10px)}
 .msg-modal{position:relative;width:min(370px,100%);padding:23px;border:1px solid rgba(103,174,255,.35);border-radius:21px;background:#0c1729;color:white;box-shadow:0 20px 80px #000b}
