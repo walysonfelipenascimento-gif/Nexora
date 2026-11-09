@@ -342,6 +342,61 @@ const styles = `
 .msg-row-copy strong{letter-spacing:.08px}.msg-row-copy small{line-height:1.4}
 @media(min-width:700px){.msg-app{padding:16px 0;background:radial-gradient(ellipse at 50% 0,#152b50,#030711 65%)}.msg-device{height:calc(100dvh - 32px);max-width:430px;border:1px solid rgba(126,181,255,.18);border-radius:27px;box-shadow:0 25px 90px #000b}}
 @media(max-width:390px){.msg-inbox{padding-inline:13px}.msg-note-stage{height:190px}.msg-orbit-avatar img{width:37px;height:37px}.msg-own-note{width:65px;height:65px}.msg-tabs button{padding-inline:11px}.msg-chat-history{padding-inline:10px}.msg-call-grid{gap:18px 5px}}
+
+/* Nexora Messages — refinement pass: readability, interaction states and motion safety */
+.msg-app{min-height:100svh;min-height:100dvh;overscroll-behavior:none}
+.msg-device{min-height:0}
+.msg-row{min-height:68px}
+.msg-row-copy strong{font-size:12px;line-height:1.25;color:#f2f7ff}
+.msg-row-copy small{font-size:10.5px;line-height:1.4;color:#a8bad3}
+.msg-row-meta small{font-size:9px;color:#9aacc7}
+.msg-tabs button{min-height:38px;font-size:10px}
+.msg-search{min-height:42px}
+.msg-search input,.msg-input-wrap input{font-size:12px}
+.msg-input-wrap{min-height:42px}
+.msg-chat-history{scroll-behavior:smooth;overscroll-behavior:contain}
+.msg-bubble{font-size:12px;line-height:1.55}
+.msg-time{font-size:9px}
+.msg-contact-name strong{font-size:13px}
+.msg-contact-name small{font-size:10px}
+.msg-call-btn{width:42px;height:42px}
+.msg-compose-plus,.msg-send{height:42px}
+.msg-inbox-compose button{min-height:40px}
+.msg-icon-btn,.msg-call-back{width:42px;height:42px}
+.msg-menu{backdrop-filter:blur(18px);border-color:rgba(166,220,255,.2)}
+.msg-input-wrap:focus-within,.msg-search:focus-within{border-color:rgba(151,220,255,.58);box-shadow:0 0 0 3px rgba(119,195,255,.10),0 0 20px rgba(119,195,255,.09)}
+.msg-row:focus-visible,.msg-orbit-avatar:focus-visible,.msg-tabs button:focus-visible,.msg-call-btn:focus-visible,.msg-icon-btn:focus-visible,.msg-compose-plus:focus-visible,.msg-send:focus-visible,.msg-menu button:focus-visible{outline:2px solid #a8e8ff;outline-offset:3px}
+.msg-avatar img,.msg-orbit-avatar img,.msg-bubble-avatar{display:block}
+.msg-avatar{filter:saturate(1.04)}
+.msg-chat-profile:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(110deg,transparent 15%,rgba(190,235,255,.055) 48%,transparent 78%)}
+.msg-chat-profile>*{position:relative;z-index:1}
+.msg-chat-profile:after{z-index:0}
+.msg-chat-composer{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.msg-list,.msg-chat-history{scrollbar-width:thin;scrollbar-color:rgba(133,190,235,.22) transparent}
+.msg-list::-webkit-scrollbar,.msg-chat-history::-webkit-scrollbar{width:4px}
+.msg-list::-webkit-scrollbar-thumb,.msg-chat-history::-webkit-scrollbar-thumb{border-radius:8px;background:rgba(133,190,235,.2)}
+@media(hover:hover){
+ .msg-row:hover{background:linear-gradient(100deg,rgba(128,203,255,.075),rgba(105,143,255,.035))}
+ .msg-call-btn:hover,.msg-icon-btn:hover{border-color:rgba(177,225,255,.48);box-shadow:0 0 18px rgba(137,211,255,.16)}
+ .msg-tabs button:not(.selected):hover{color:#e4f4ff;background:rgba(150,205,255,.07)}
+}
+@media(max-width:430px){
+ .msg-inbox{padding-inline:16px}
+ .msg-note-stage{height:194px}
+ .msg-row{gap:13px;padding-inline:5px}
+ .msg-avatar{width:46px;height:46px}
+ .msg-row-copy strong{font-size:12.5px}
+ .msg-row-copy small{font-size:10.5px}
+ .msg-chat-history{gap:16px;padding:18px 12px 14px}
+ .msg-bubble{font-size:12px;padding:11px 13px 8px}
+ .msg-chat-composer{gap:6px;padding-inline:9px}
+ .msg-compose-plus{width:43px}
+ .msg-send{width:43px}
+}
+@media(prefers-reduced-motion:reduce){
+ .msg-device *,.msg-device *:before,.msg-device *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 `;
 
 function MessagesStyles() {
