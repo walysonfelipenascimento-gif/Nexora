@@ -342,6 +342,6 @@ const styles = `
 @media(max-width:390px){.msg-inbox{padding-inline:13px}.msg-note-stage{height:190px}.msg-orbit-avatar img{width:37px;height:37px}.msg-own-note{width:65px;height:65px}.msg-tabs button{padding-inline:11px}.msg-chat-history{padding-inline:10px}.msg-call-grid{gap:18px 5px}}
 `;
 
-export function MessagesStyles() {
+function MessagesStyles() {
   return <style jsx global>{styles}</style>;
 }
