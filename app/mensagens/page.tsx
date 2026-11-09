@@ -127,6 +127,7 @@ export default function MessagesPage() {
   }
 
   return (
+    <>
     <main className="msg-app">
       <div className="msg-device">
         <header className="msg-topbar">
@@ -226,6 +227,8 @@ export default function MessagesPage() {
       {noteOpen && <div className="msg-modal-backdrop"><section className="msg-modal"><button className="msg-modal-close" onClick={() => setNoteOpen(false)}><Icon name="close"/></button><h2>Your note</h2><textarea maxLength={70} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Share a thought..."/><small>{noteDraft.length}/70</small><button className="msg-modal-save" onClick={() => { setNote(noteDraft); setNoteOpen(false); }}>Save note</button></section></div>}
       {newOpen && <div className="msg-modal-backdrop"><section className="msg-modal msg-new-modal"><button className="msg-modal-close" onClick={() => setNewOpen(false)}><Icon name="close"/></button><h2>New message</h2>{people.slice(0, 5).map((person, index) => <button className="msg-new-person" key={person.name} onClick={() => { const target = ["jenny","guy","kristin","arlene","daniel"][index]; setNewOpen(false); openChat(target); }}><img src={person.avatar} alt=""/><span>{person.name}</span><Icon name="back"/></button>)}</section></div>}
     </main>
+    <MessagesStyles />
+    </>
   );
 }
 
