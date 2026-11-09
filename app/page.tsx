@@ -340,7 +340,6 @@ export default function Home() {
   const handleNotesOrbitPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     notesOrbitDragRef.current = { pointerId: event.pointerId, startX: event.clientX, lastX: event.clientX, moved: false, lastAt: performance.now(), velocity: 0 };
-    event.currentTarget.setPointerCapture(event.pointerId);
   };
   const handleNotesOrbitPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = notesOrbitDragRef.current;
