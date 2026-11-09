@@ -331,7 +331,7 @@ export default function Home() {
   const [myFollowerCount] = useState(1200);
   const [chatEmojiOpen, setChatEmojiOpen] = useState(false);
   const [notesComposerOpen, setNotesComposerOpen] = useState(false);
-  const [noteViewer, setNoteViewer] = useState<{ id: string; name: string; avatar: string; note: string; own: boolean } | null>(null);
+  const [noteViewer, setNoteViewer] = useState<{ id: string; name: string; avatar: string; note: string; own: boolean; style: number } | null>(null);
   const [notesDraft, setNotesDraft] = useState("");
   const [myNote, setMyNote] = useState("");
   const [noteStyle, setNoteStyle] = useState(0);
@@ -1223,7 +1223,7 @@ export default function Home() {
             const y = 50 + Math.sin(angle) * radiusY;
             const focused = Math.sin(angle) < -0.72;
             return <div key={person.id} className={`note-orbit-person ${person.own ? "own-note" : ""} ${focused ? "is-orbit-focus" : ""}`} style={{left:`${x}%`,top:`${y}%`}}>
-              <button type="button" className={`note-bubble note-style-${person.own ? noteStyle : (index+1)%4}`} onClick={() => { if (notesOrbitSuppressClickRef.current) return; setNoteViewer({ id: person.id, name: person.name, avatar: person.avatar, note: person.note, own: Boolean(person.own) }); }} aria-label={`Visualizar nota de ${person.name}`}>{person.note || (person.own ? t("chatNotesPrompt") : "Compartilhe uma ideia ✨")}</button>
+              <button type="button" className={`note-bubble note-style-${person.own ? noteStyle : (index+1)%4}`} onClick={() => { if (notesOrbitSuppressClickRef.current) return; setNoteViewer({ id: person.id, name: person.name, avatar: person.avatar, note: person.note, own: Boolean(person.own), style: person.own ? noteStyle : (index+1)%4 }); }} aria-label={`Visualizar nota de ${person.name}`}>{person.note || (person.own ? t("chatNotesPrompt") : "Compartilhe uma ideia ✨")}</button>
               <button type="button" className="note-orbit-profile" onClick={() => { if (notesOrbitSuppressClickRef.current) return; if (person.own) setNotesComposerOpen(true); else openChat(person.id); }} aria-label={person.own ? "Criar ou editar sua nota" : `Abrir conversa com ${person.name}`}>
                 <span className="note-person-avatar"><img src={person.avatar} alt="" />{person.own ? <i>＋</i> : person.online ? <i /> : null}</span>
                 <small>{person.own ? t("chatMyNote") : person.name}</small>
@@ -1233,8 +1233,8 @@ export default function Home() {
         </div>{noteViewer && <div className="notes-viewer-backdrop" role="dialog" aria-modal="true" aria-label={`Nota de ${noteViewer.name}`} onClick={() => setNoteViewer(null)}>
           <section className="notes-viewer-card" onClick={event => event.stopPropagation()}>
             <button type="button" className="notes-viewer-close" onClick={() => setNoteViewer(null)} aria-label="Fechar nota">×</button>
+            <div className={`notes-viewer-note note-style-${noteViewer.style}`}>{noteViewer.note || (noteViewer.own ? "Sua nota ainda está vazia. Compartilhe uma ideia com seus contatos." : "Esta nota ainda não tem texto.")}</div>
             <div className="notes-viewer-author"><img src={noteViewer.avatar} alt="" /><span><strong>{noteViewer.name}</strong><small>Nota Nexora</small></span></div>
-            <p>{noteViewer.note || (noteViewer.own ? "Sua nota ainda está vazia. Compartilhe uma ideia com seus contatos." : "Esta nota ainda não tem texto.")}</p>
             {noteViewer.own && <button type="button" className="notes-viewer-edit" onClick={() => { setNoteViewer(null); setNotesComposerOpen(true); }}>Criar ou editar nota</button>}
           </section>
         </div>}{inboxSection==="personal" && !chatSearch && <button type="button" onClick={()=>router.push("/nexi")} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"13px 14px",margin:"2px 0 12px",borderRadius:17,border:"1px solid #58dfff66",background:"linear-gradient(115deg,rgba(24,86,116,.34),rgba(83,42,130,.3) 72%,rgba(19,23,43,.94))",color:"#f5f7ff",textAlign:"left",cursor:"pointer",boxShadow:"0 8px 26px rgba(36,171,226,.09),inset 0 1px rgba(255,255,255,.08)"}}><span style={{width:46,height:46,flexShrink:0,display:"grid",placeItems:"center",borderRadius:15,border:"1px solid #63dfff77",background:"linear-gradient(145deg,#164b69,#32215b)",color:"#a8f4ff",fontSize:25}}>✦</span><span style={{flex:1,minWidth:0}}><strong style={{display:"block",fontSize:14}}>Nexi IA <span style={{fontSize:9,color:"#8deaff",fontWeight:800,letterSpacing:".08em"}}>ASSISTENTE</span></strong><small style={{display:"block",fontSize:11,color:"#b7c5dc",marginTop:4}}>Sua conversa com a inteligência da Nexora</small></span><span style={{color:"#91eaff",fontSize:20}}>↗</span></button>}
