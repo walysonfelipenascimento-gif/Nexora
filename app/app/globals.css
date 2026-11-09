@@ -2117,3 +2117,74 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 @media(prefers-reduced-motion:reduce){
   .messages-app .note-orbit-person{transition:none!important}
 }
+
+
+/* Notes — transparent, restrained glass treatment aligned with the approved reference */
+.messages-app .messages-notes-head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+}
+.messages-app .messages-notes-head strong{
+  color:#f1f6ff;font-size:14px;font-weight:750;letter-spacing:-.015em;
+}
+.messages-app .messages-notes-head span{
+  color:rgba(190,205,230,.62);font-size:10px;font-weight:500;
+}
+.messages-app .messages-notes-orbit{
+  background:transparent!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.messages-app .notes-orbit-track{
+  border-color:rgba(165,190,225,.105)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.messages-app .notes-orbit-track:before,
+.messages-app .notes-orbit-track:after{
+  width:3px!important;height:3px!important;opacity:.42!important;
+  box-shadow:0 0 7px currentColor!important;
+}
+.messages-app .notes-orbit-center{
+  width:52px!important;height:52px!important;
+  border:1px solid rgba(160,195,235,.16)!important;
+  background:rgba(12,18,34,.12)!important;
+  box-shadow:0 0 18px rgba(85,155,220,.045)!important;
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+.messages-app .notes-orbit-center small{color:rgba(170,190,220,.58)!important}
+.messages-app .note-orbit-person{
+  background:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+  padding:3px 2px!important;
+}
+.messages-app .note-orbit-person .note-bubble{
+  background:rgba(255,255,255,.025)!important;
+  border:1px solid rgba(190,210,240,.13)!important;
+  color:rgba(239,245,255,.94)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  font-weight:550!important;
+}
+.messages-app .note-orbit-person .note-person-avatar{
+  box-shadow:0 0 0 2px rgba(10,15,28,.76),0 0 12px rgba(81,166,255,.12)!important;
+}
+.messages-app .note-orbit-person .note-person-avatar img{
+  border-color:rgba(12,18,32,.82)!important;
+}
+.messages-app .note-orbit-person .note-person-avatar i{
+  border-color:rgba(12,18,32,.9)!important;
+}
+.messages-app .note-orbit-person>small{
+  color:rgba(205,218,239,.76)!important;
+  font-size:9px!important;font-weight:600!important;
+}
+.messages-app .note-orbit-person.is-orbit-focus{
+  background:transparent!important;box-shadow:none!important;
+}
+.messages-app .note-orbit-person.is-orbit-focus .note-person-avatar{
+  box-shadow:0 0 0 2px rgba(10,15,28,.78),0 0 0 3px rgba(92,218,255,.2),0 0 16px rgba(81,166,255,.16)!important;
+}
+.messages-app .note-orbit-person.own-note .note-bubble{
+  border-color:rgba(112,218,255,.24)!important;
+  background:rgba(94,195,255,.035)!important;
+}
