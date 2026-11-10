@@ -71,6 +71,7 @@ export default function MessagesPage() {
   const [noteColor, setNoteColor] = useState("#173452");
   const [noteMusic, setNoteMusic] = useState("");
   const [noteFont, setNoteFont] = useState("classic");
+  const [expandedNote, setExpandedNote] = useState<{ name: string; text: string; color: string } | null>(null);
   const [rotationDegrees, setRotationDegrees] = useState(0);
   const orbitDragRef = useRef<{ pointerId: number; startX: number; lastX: number; lastAt: number; moved: boolean; velocity: number } | null>(null);
   const orbitFrameRef = useRef<number | null>(null);
@@ -261,7 +262,20 @@ export default function MessagesPage() {
                   const y = 50 + Math.sin(angle) * 34;
                   return (
                     <div className={"msg-orbit-item " + (entry.own ? "is-own" : "")} key={entry.id} style={{ left: x + "%", top: y + "%", zIndex: Math.round(10 + Math.sin(angle) * 5) }}>
-                      {entry.noteText && <span className="msg-orbit-note" style={{ background: entry.color }}>{entry.noteText}</span>}
+                      {entry.noteText && <button
+                        type="button"
+                        className="msg-orbit-note"
+                        style={{ background: entry.color }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (!orbitSuppressClickRef.current) setExpandedNote({
+                            name: entry.own ? "Sua nota" : entry.person.name,
+                            text: entry.noteText,
+                            color: entry.color
+                          });
+                        }}
+                        aria-label={"Ampliar nota de " + (entry.own ? "seu perfil" : entry.person.name)}
+                      >{entry.noteText}</button>}
                       {entry.own ? (
                         <button className={"msg-own-note " + (note ? "has-note" : "")} onClick={() => {
                           if (orbitSuppressClickRef.current) return;
@@ -357,6 +371,15 @@ export default function MessagesPage() {
         )}
       </div>
 
+      {expandedNote && <div className="msg-note-view-backdrop" onClick={() => setExpandedNote(null)}>
+        <section className="msg-note-view" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label={"Nota de " + expandedNote.name}>
+          <button className="msg-note-view-close" onClick={() => setExpandedNote(null)} aria-label="Fechar nota"><Icon name="close" size={18}/></button>
+          <small>{expandedNote.name}</small>
+          <div className="msg-note-view-card" style={{ background: "linear-gradient(145deg," + expandedNote.color + ",rgba(8,18,34,.92))" }}>
+            <span>{expandedNote.text}</span>
+          </div>
+        </section>
+      </div>}
       {noteOpen && <div className="msg-note-editor-backdrop" onClick={() => setNoteOpen(false)}>
         <section className="msg-note-editor" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Criar ou editar nota">
           <header className="msg-note-glass-top">
@@ -415,6 +438,13 @@ const styles = `
 .msg-own-note{position:relative;display:grid;place-items:center;width:72px;height:72px;flex:none;padding:3px;border:2px solid #b6efff;border-radius:50%;background:linear-gradient(145deg,#9a8aff,#70eaff,#438cff);box-shadow:0 0 0 4px rgba(151,218,255,.12),0 0 0 7px rgba(95,161,255,.08),0 0 30px rgba(126,211,255,.42);animation:msgAura 4s ease-in-out infinite}
 .msg-own-note img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .msg-own-plus{position:absolute;right:-3px;bottom:-5px;display:grid;place-items:center;width:22px;height:22px;border:2px solid #06101f;border-radius:50%;background:#f3fbff;color:#17233b}
+.msg-orbit-note{display:block;min-width:0;border:1px solid rgba(190,230,255,.32);font:inherit;cursor:pointer}
+.msg-note-view-backdrop{position:fixed;inset:0;z-index:11990;display:grid;place-items:center;padding:24px;background:rgba(1,6,16,.52);backdrop-filter:blur(17px) saturate(1.15);-webkit-backdrop-filter:blur(17px) saturate(1.15)}
+.msg-note-view{position:relative;display:flex;align-items:center;flex-direction:column;gap:13px;width:min(100%,340px);padding:24px 18px 20px;border:1px solid rgba(195,231,255,.17);border-radius:27px;background:rgba(10,20,36,.42);box-shadow:0 22px 70px rgba(0,0,0,.38);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.msg-note-view>small{color:#d7eaff;font-size:11px}
+.msg-note-view-close{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(225,244,255,.17);border-radius:50%;background:rgba(230,244,255,.1);color:#fff}
+.msg-note-view-card{display:grid;place-items:center;width:100%;min-height:150px;padding:24px 20px;border:1px solid rgba(231,247,255,.24);border-radius:24px;box-shadow:inset 0 0 30px rgba(255,255,255,.08),0 12px 35px rgba(0,0,0,.24)}
+.msg-note-view-card span{color:#fff;font-size:clamp(20px,5.5vw,27px);font-weight:650;line-height:1.25;text-align:center;overflow-wrap:anywhere;text-shadow:0 2px 14px rgba(0,0,0,.25)}
 .msg-note-preview{position:absolute;bottom:0;max-width:190px;overflow:hidden;padding:5px 11px;border:1px solid #3a5076;border-radius:15px;background:#111b2c;color:#d9e9ff;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
 .msg-tabs{display:flex;align-self:center;gap:5px;padding:5px;border:1px solid rgba(154,182,230,.08);border-radius:30px;background:#111a2a}
 .msg-tabs button{padding:9px 15px;border:0;border-radius:22px;background:transparent;color:#8c9cb6;font-size:9px}
