@@ -262,11 +262,11 @@ export default function MessagesPage() {
                   // Five fixed visual slots preserve the reference composition:
                   // one enlarged central profile and four surrounding profiles.
                   const orbitSlots = [
-                    { x: 50, y: 51 },
-                    { x: 18, y: 27 },
-                    { x: 31, y: 77 },
-                    { x: 69, y: 77 },
-                    { x: 82, y: 27 }
+                    { x: 50, y: 67 },
+                    { x: 17, y: 28 },
+                    { x: 31, y: 56 },
+                    { x: 69, y: 56 },
+                    { x: 83, y: 28 }
                   ];
                   const slot = orbitSlots[slotIndex];
                   const isFocus = slotIndex === 0;
