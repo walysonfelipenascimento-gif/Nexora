@@ -114,11 +114,6 @@ export default function Home() {
     window.addEventListener("storage", syncLanguage);
     return () => { window.removeEventListener("nexora-language-change", syncLanguage); window.removeEventListener("storage", syncLanguage); };
   }, []);
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("tab") === "mensagens") setMessagesOpen(true);
-    if (params.get("action") === "create") setComposerOpen(true);
-  }, []);
   const [posts, setPosts] = useState(initialPosts);
   const [liked, setLiked] = useState<number[]>([]);
   const [saved, setSaved] = useState<number[]>([]);
