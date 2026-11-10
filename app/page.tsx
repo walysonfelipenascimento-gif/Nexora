@@ -1111,7 +1111,7 @@ export default function Home() {
           <a className="round-action" href="/pesquisar" aria-label={t("search")} title={t("search")} style={{display:"grid",placeItems:"center",textDecoration:"none"}}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
           </a>
-          <button className="round-action" aria-label={t("messages")} onClick={() => router.push("/mensagens")}>
+          <button className="round-action" aria-label={t("messages")} onClick={() => { setMessagesOpen(true); setActiveChatId(null); setChatDetail("chat"); setInboxSection("personal"); }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 3 3 10.2l7.1 2.1L12.2 20 21 3Z"/><path d="m10.1 12.3 5-5"/></svg>
           </button>
           <a className="round-action" href="/notificacoes" onClick={(event) => { event.preventDefault(); router.push("/notificacoes"); }} aria-label={t("notifications")} title={t("notifications")} style={{display:"grid",placeItems:"center",textDecoration:"none",position:"relative",zIndex:32,pointerEvents:"auto",cursor:"pointer",touchAction:"manipulation"}}>
