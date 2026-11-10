@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent } from "react";
 
 type Message = { id: number; from: "me" | "them"; type: "text" | "image" | "audio"; text?: string; time: string; duration?: string; image?: string };
 type Chat = { id: string; name: string; handle: string; avatar: string; online?: boolean; unread: number; preview: string; time: string; messages: Message[] };
@@ -70,7 +71,11 @@ export default function MessagesPage() {
   const [noteColor, setNoteColor] = useState("#173452");
   const [noteMusic, setNoteMusic] = useState("");
   const [noteFont, setNoteFont] = useState("classic");
-  const [rotationIndex, setRotationIndex] = useState(0);
+  const [rotationDegrees, setRotationDegrees] = useState(0);
+  const orbitDragRef = useRef<{ pointerId: number; startX: number; lastX: number; lastAt: number; moved: boolean; velocity: number } | null>(null);
+  const orbitFrameRef = useRef<number | null>(null);
+  const orbitSuppressClickRef = useRef(false);
+  const orbitSuppressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const orbitPeople = [people[5], people[6], people[2], people[7]];
   const orbitNotes = ["No melhor ritmo ✨", "Café e ideias ☕", "Dia de criar algo novo", "Uma música boa muda tudo"];
   const noteColors = ["#173452", "#512b75", "#7b304f", "#1c625c", "#7a5524", "#242b43"];
@@ -106,10 +111,77 @@ export default function MessagesPage() {
     } catch {}
   }, [chats, note]);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setRotationIndex((value) => (value + 1) % orbitPeople.length), 3600);
-    return () => window.clearInterval(timer);
+  const stopOrbitInertia = () => {
+    if (orbitFrameRef.current !== null) {
+      window.cancelAnimationFrame(orbitFrameRef.current);
+      orbitFrameRef.current = null;
+    }
+  };
+
+  useEffect(() => () => {
+    stopOrbitInertia();
+    if (orbitSuppressTimerRef.current) clearTimeout(orbitSuppressTimerRef.current);
   }, []);
+
+  const handleOrbitPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    stopOrbitInertia();
+    if (orbitSuppressTimerRef.current) clearTimeout(orbitSuppressTimerRef.current);
+    orbitSuppressClickRef.current = false;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    orbitDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      lastX: event.clientX,
+      lastAt: performance.now(),
+      moved: false,
+      velocity: 0
+    };
+  };
+
+  const handleOrbitPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = orbitDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const now = performance.now();
+    const delta = event.clientX - drag.lastX;
+    if (Math.abs(event.clientX - drag.startX) > 5) drag.moved = true;
+    if (drag.moved) {
+      drag.velocity = delta / Math.max(1, now - drag.lastAt);
+      setRotationDegrees(value => value + delta * 0.72);
+    }
+    drag.lastX = event.clientX;
+    drag.lastAt = now;
+  };
+
+  const finishOrbitPointer = (event: PointerEvent<HTMLDivElement>, cancelled = false) => {
+    const drag = orbitDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    orbitDragRef.current = null;
+    if (!cancelled && drag.moved) {
+      orbitSuppressClickRef.current = true;
+      let velocity = Math.max(-22, Math.min(22, drag.velocity * 95));
+      let previousTime = 0;
+      const coast = (time: number) => {
+        if (!previousTime) previousTime = time;
+        const frameScale = Math.min(2, (time - previousTime) / 16.67);
+        previousTime = time;
+        setRotationDegrees(value => value + velocity * frameScale);
+        velocity *= Math.pow(0.88, frameScale);
+        if (Math.abs(velocity) > 0.12) orbitFrameRef.current = window.requestAnimationFrame(coast);
+        else orbitFrameRef.current = null;
+      };
+      if (Math.abs(velocity) > 0.12) orbitFrameRef.current = window.requestAnimationFrame(coast);
+      orbitSuppressTimerRef.current = setTimeout(() => {
+        orbitSuppressClickRef.current = false;
+        orbitSuppressTimerRef.current = null;
+      }, 280);
+    } else if (cancelled) {
+      stopOrbitInertia();
+    }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
 
   const filtered = useMemo(() => chats.filter((chat) => {
     const matches = (chat.name + " " + chat.preview + " " + chat.handle).toLowerCase().includes(search.toLowerCase());
@@ -162,21 +234,54 @@ export default function MessagesPage() {
           <section className="msg-inbox">
             <div className="msg-note-stage">
               <button className="msg-add-note" onClick={() => { setNoteDraft(note); setNoteOpen(true); }}>Add note</button>
-              <div className="msg-note-orbit" aria-label="Notas dos contatos">
-                {orbitPeople.map((person, index) => {
-                  const slot = (index - rotationIndex + orbitPeople.length) % orbitPeople.length;
-                  const positions = ["orbit-one", "orbit-two", "orbit-three", "orbit-four"];
-                  const chatIds = ["jenny", "guy", "kristin", "arlene"];
-                  return <button className={"msg-orbit-avatar " + positions[slot]} key={person.name} onClick={() => openChat(chatIds[index])} aria-label={"Abrir conversa com " + person.name}>
-                    <span className="msg-orbit-note" style={{ background: noteColors[index % noteColors.length] }}>{orbitNotes[index]}</span>
-                    <img src={person.avatar} alt={person.name}/><span>{person.name.split(" ")[0]}</span>
-                  </button>;
+              <div
+                className="msg-note-orbit"
+                aria-label="Notas dos contatos. Arraste horizontalmente para girar todos os perfis."
+                onPointerDown={handleOrbitPointerDown}
+                onPointerMove={handleOrbitPointerMove}
+                onPointerUp={event => finishOrbitPointer(event)}
+                onPointerCancel={event => finishOrbitPointer(event, true)}
+                onLostPointerCapture={event => {
+                  if (orbitDragRef.current?.pointerId === event.pointerId) orbitDragRef.current = null;
+                }}
+              >
+                {[
+                  ...orbitPeople.map((person, index) => ({
+                    id: ["jenny", "guy", "kristin", "arlene"][index],
+                    person,
+                    own: false,
+                    chatId: ["jenny", "guy", "kristin", "arlene"][index],
+                    noteText: orbitNotes[index],
+                    color: noteColors[index % noteColors.length]
+                  })),
+                  { id: "own", person: people[4], own: true, chatId: "", noteText: note, color: noteColor }
+                ].map((entry, index, entries) => {
+                  const angle = (index * (360 / entries.length) - 90 + rotationDegrees) * Math.PI / 180;
+                  const x = 50 + Math.cos(angle) * 40;
+                  const y = 50 + Math.sin(angle) * 34;
+                  return (
+                    <div className={"msg-orbit-item " + (entry.own ? "is-own" : "")} key={entry.id} style={{ left: x + "%", top: y + "%", zIndex: Math.round(10 + Math.sin(angle) * 5) }}>
+                      {entry.noteText && <span className="msg-orbit-note" style={{ background: entry.color }}>{entry.noteText}</span>}
+                      {entry.own ? (
+                        <button className={"msg-own-note " + (note ? "has-note" : "")} onClick={() => {
+                          if (orbitSuppressClickRef.current) return;
+                          setNoteDraft(note);
+                          setNoteOpen(true);
+                        }} aria-label={note ? "Editar sua nota" : "Adicionar sua nota"}>
+                          <img src={entry.person.avatar} alt="Seu perfil"/>
+                          {!note && <span className="msg-own-plus"><Icon name="plus" size={13}/></span>}
+                        </button>
+                      ) : (
+                        <button className="msg-orbit-avatar" onClick={() => {
+                          if (!orbitSuppressClickRef.current) openChat(entry.chatId);
+                        }} aria-label={"Abrir conversa com " + entry.person.name}>
+                          <img src={entry.person.avatar} alt={entry.person.name}/>
+                        </button>
+                      )}
+                      <span className="msg-orbit-label">{entry.own ? "Você" : entry.person.name.split(" ")[0]}</span>
+                    </div>
+                  );
                 })}
-                <button className={"msg-own-note " + (note ? "has-note" : "")} onClick={() => { setNoteDraft(note); setNoteOpen(true); }} aria-label={note ? "Editar sua nota" : "Adicionar sua nota"}>
-                  {note && <span className="msg-own-note-text" style={{ background: noteColor }}>{note}</span>}
-                  <img src={people[4].avatar} alt="Seu perfil"/>
-                  {!note && <span className="msg-own-plus"><Icon name="plus" size={13}/></span>}
-                </button>
               </div>
             </div>
             <div className="msg-tabs">
@@ -300,13 +405,16 @@ const styles = `
 .msg-inbox{display:flex;flex:1;min-height:0;flex-direction:column;padding:0 19px 13px}
 .msg-note-stage{position:relative;display:flex;align-items:center;flex-direction:column;height:202px;flex:none;padding-top:2px}
 .msg-add-note{z-index:2;padding:7px 17px;border:0;border-radius:20px;background:linear-gradient(110deg,#713cff,#148bff,#25d5e6);box-shadow:0 4px 22px rgba(43,107,255,.28);color:white;font-size:9px;font-weight:700}
-.msg-note-orbit{position:relative;width:100%;height:166px;margin-top:3px}
-.msg-orbit-avatar{position:absolute;display:flex;align-items:center;flex-direction:column;gap:4px;padding:0;border:0;background:none;color:#cbd9ee}
-.msg-orbit-avatar img{width:42px;height:42px;object-fit:cover;border:2px solid #0a192b;border-radius:50%;outline:1.5px solid rgba(157,225,255,.88);outline-offset:1px;box-shadow:0 0 0 4px rgba(102,194,255,.10),0 0 18px rgba(100,190,255,.34);transition:transform .25s ease,box-shadow .25s ease}.msg-orbit-avatar:active img{transform:scale(1.07);box-shadow:0 0 0 5px rgba(142,214,255,.16),0 0 23px rgba(115,203,255,.48)}
-.msg-orbit-avatar span{font-size:8px}
-.orbit-one{left:8%;top:21px}.orbit-two{left:23%;top:63px}.orbit-three{right:23%;top:63px}.orbit-four{right:8%;top:21px}
-.msg-own-note{position:absolute;left:50%;top:66px;transform:translateX(-50%);width:72px;height:72px;padding:3px;border:2px solid #b6efff;border-radius:50%;background:linear-gradient(145deg,#9a8aff,#70eaff,#438cff);box-shadow:0 0 0 4px rgba(151,218,255,.12),0 0 0 7px rgba(95,161,255,.08),0 0 30px rgba(126,211,255,.42);animation:msgAura 4s ease-in-out infinite}
+.msg-note-orbit{position:relative;width:100%;height:166px;margin-top:3px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.msg-orbit-item{position:absolute;display:flex;align-items:center;flex-direction:column;gap:4px;transform:translate(-50%,-50%);transition:left .16s ease-out,top .16s ease-out}
+.msg-orbit-avatar{display:grid;place-items:center;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:transparent;color:#cbd9ee}
+.msg-orbit-avatar img{width:42px;height:42px;object-fit:cover;border:2px solid #0a192b;border-radius:50%;outline:1.5px solid rgba(157,225,255,.88);outline-offset:1px;box-shadow:0 0 0 4px rgba(102,194,255,.10),0 0 18px rgba(100,190,255,.34);transition:transform .25s ease,box-shadow .25s ease}
+.msg-orbit-avatar:active img{transform:scale(1.07);box-shadow:0 0 0 5px rgba(142,214,255,.16),0 0 23px rgba(115,203,255,.48)}
+.msg-orbit-label{color:#cbd9ee;font-size:8px;line-height:1.1;white-space:nowrap}
+.msg-orbit-note{position:absolute;z-index:2;top:-27px;left:50%;max-width:112px;overflow:hidden;padding:5px 8px;border:1px solid rgba(190,230,255,.32);border-radius:12px;color:#fff;font-size:8px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap;transform:translateX(-50%);pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.msg-own-note{position:relative;display:grid;place-items:center;width:72px;height:72px;flex:none;padding:3px;border:2px solid #b6efff;border-radius:50%;background:linear-gradient(145deg,#9a8aff,#70eaff,#438cff);box-shadow:0 0 0 4px rgba(151,218,255,.12),0 0 0 7px rgba(95,161,255,.08),0 0 30px rgba(126,211,255,.42);animation:msgAura 4s ease-in-out infinite}
 .msg-own-note img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.msg-own-plus{position:absolute;right:-3px;bottom:-5px;display:grid;place-items:center;width:22px;height:22px;border:2px solid #06101f;border-radius:50%;background:#f3fbff;color:#17233b}
 .msg-own-plus{position:absolute;right:-3px;bottom:-5px;display:grid;place-items:center;width:22px;height:22px;border:2px solid #06101f;border-radius:50%;background:#f3fbff;color:#17233b}
 .msg-note-preview{position:absolute;bottom:0;max-width:190px;overflow:hidden;padding:5px 11px;border:1px solid #3a5076;border-radius:15px;background:#111b2c;color:#d9e9ff;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
 .msg-tabs{display:flex;align-self:center;gap:5px;padding:5px;border:1px solid rgba(154,182,230,.08);border-radius:30px;background:#111a2a}
