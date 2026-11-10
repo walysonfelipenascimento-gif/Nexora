@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryNav from "./components/PrimaryNav";
 import PulseGlobalFloat from "./components/PulseGlobalFloat";
+import NotesOrbit from "./components/NotesOrbit";
 import LanguageWelcome from "./components/LanguageWelcome";
 import { getSavedLanguage, translate, type NexoraLanguage } from "../lib/i18n";
 import { ensureOwnProfile, getSupabaseBrowserClient, uploadNexoraMedia } from "../lib/supabase";
@@ -335,68 +336,6 @@ export default function Home() {
   const [notesDraft, setNotesDraft] = useState("");
   const [myNote, setMyNote] = useState("");
   const [noteStyle, setNoteStyle] = useState(0);
-  const [notesOrbitRotation, setNotesOrbitRotation] = useState(0);
-  const notesOrbitDragRef = useRef<{ pointerId: number; startX: number; lastX: number; moved: boolean; lastAt: number; velocity: number } | null>(null);
-  const notesOrbitSuppressClickRef = useRef(false);
-  const notesOrbitAnimationRef = useRef<number | null>(null);
-  const stopNotesOrbitInertia = () => {
-    if (notesOrbitAnimationRef.current !== null) {
-      window.cancelAnimationFrame(notesOrbitAnimationRef.current);
-      notesOrbitAnimationRef.current = null;
-    }
-  };
-  useEffect(() => () => { if (notesOrbitAnimationRef.current !== null) window.cancelAnimationFrame(notesOrbitAnimationRef.current); }, []);
-  const handleNotesOrbitPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    // A nota e o perfil são botões independentes: nunca capture o ponteiro iniciado neles.
-    if ((event.target as Element).closest("button")) return;
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    stopNotesOrbitInertia();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    notesOrbitDragRef.current = { pointerId: event.pointerId, startX: event.clientX, lastX: event.clientX, moved: false, lastAt: performance.now(), velocity: 0 };
-  };
-  const handleNotesOrbitPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const drag = notesOrbitDragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    const now = performance.now();
-    const delta = event.clientX - drag.lastX;
-    if (Math.abs(event.clientX - drag.startX) > 5) drag.moved = true;
-    if (drag.moved) {
-      const elapsed = Math.max(1, now - drag.lastAt);
-      drag.velocity = delta / elapsed;
-      setNotesOrbitRotation(value => value + delta * 0.72);
-    }
-    drag.lastX = event.clientX;
-    drag.lastAt = now;
-  };
-  const handleNotesOrbitPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    const drag = notesOrbitDragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    if (drag.moved) {
-      notesOrbitSuppressClickRef.current = true;
-      let velocity = Math.max(-24, Math.min(24, drag.velocity * 95));
-      let previousTime = 0;
-      const coast = (time: number) => {
-        if (!previousTime) previousTime = time;
-        const frameScale = Math.min(2, (time - previousTime) / 16.67);
-        previousTime = time;
-        setNotesOrbitRotation(value => value + velocity * frameScale);
-        velocity *= Math.pow(0.88, frameScale);
-        if (Math.abs(velocity) > 0.12) notesOrbitAnimationRef.current = window.requestAnimationFrame(coast);
-        else notesOrbitAnimationRef.current = null;
-      };
-      if (Math.abs(velocity) > 0.12) notesOrbitAnimationRef.current = window.requestAnimationFrame(coast);
-      window.setTimeout(() => { notesOrbitSuppressClickRef.current = false; }, 260);
-    }
-    notesOrbitDragRef.current = null;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-  };
-  const handleNotesOrbitPointerCancel = (event: React.PointerEvent<HTMLDivElement>) => {
-    const drag = notesOrbitDragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    notesOrbitDragRef.current = null;
-    stopNotesOrbitInertia();
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-  };
   const notesOrbitPeople = [
     { id: "own", name: "Você", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces", note: myNote || "", own: true, online: false },
     ...initialChats.filter(chat => !chat.group).slice(0, 3).map(chat => ({ id: chat.id, name: chat.name.split(" ")[0], avatar: chat.avatar, note: ["Só vivendo 💜", "Qual a boa? 🎧", "✨ no meu mundo"][initialChats.filter(item => !item.group).findIndex(item => item.id === chat.id)] || "Na minha vibe ✨", own: false, online: Boolean(chat.online) }))
@@ -1242,25 +1181,21 @@ export default function Home() {
           : <><div className="messages-title"><button className="messages-close" onClick={() => setMessagesOpen(false)} aria-label={t("chatBack")}>‹</button><div><h1>{t("chatTitle")}</h1><p>{t("chatTagline")}</p></div></div><button className="messages-new" aria-label="Nova conversa" onClick={() => setNotice("Para iniciar conversas reais, precisamos conectar a autenticação e o backend de mensagens.")}>＋</button></>}
         </header>
         {activeChat && callChoiceOpen && <div className="nexora-call-choice-backdrop" onClick={() => setCallChoiceOpen(false)}><section className="nexora-call-choice" role="dialog" aria-modal="true" aria-label="Escolher tipo de chamada" onClick={event => event.stopPropagation()}><div className="nexora-call-choice-grabber" /><div className="nexora-call-choice-heading"><span className="nexora-call-choice-mark">N</span><div><strong>Iniciar chamada</strong><small>Como você quer conversar?</small></div><button type="button" onClick={() => setCallChoiceOpen(false)} aria-label="Fechar opções">×</button></div><button type="button" className="nexora-call-choice-option" onClick={() => { setCallChoiceOpen(false); setCallMode("audio"); setCallMicMuted(false); setCallCameraOn(false); setCallSpeakerOn(true); }}><span className="nexora-call-choice-icon audio">☎</span><span><strong>Chamada de áudio</strong><small>Conversa por voz</small></span><i>›</i></button><button type="button" className="nexora-call-choice-option" onClick={() => { setCallChoiceOpen(false); setCallMode("video"); setCallMicMuted(false); setCallCameraOn(true); setCallSpeakerOn(true); }}><span className="nexora-call-choice-icon video">▣</span><span><strong>Chamada de vídeo</strong><small>Conversa com câmera</small></span><i>›</i></button><p>As opções visuais estão prontas; chamadas entre contas ainda dependem da integração em tempo real.</p></section></div>}
-        {!activeChat && <><label className="messages-search"><span>⌕</span><input value={chatSearch} onChange={event => setChatSearch(event.target.value)} placeholder={t("chatSearch")} aria-label={t("chatSearch")} />{chatSearch && <button onClick={() => setChatSearch("")} aria-label="Limpar busca">×</button>}</label><div className="messages-business-tabs" style={{display:"flex",gap:8,overflowX:"auto",padding:"8px 0",margin:"4px 0 10px"}} role="tablist" aria-label="Áreas de mensagens"><button type="button" role="tab" aria-selected={inboxSection === "personal"} className={inboxSection === "personal" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "personal"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "personal"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "personal"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "personal"?800:600}} onClick={() => {setInboxSection("personal");setChatFilter("all");}}>Pessoal <span>{chatThreads.filter(chat => (chat.channel || "personal") === "personal").length}</span></button><button type="button" role="tab" aria-selected={inboxSection === "commercial"} className={inboxSection === "commercial" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "commercial"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "commercial"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "commercial"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "commercial"?800:600}} onClick={() => {setInboxSection("commercial");setChatFilter("all");}}>Comercial <span>{chatThreads.filter(chat => chat.channel === "commercial").length}</span></button><button type="button" role="tab" aria-selected={inboxSection === "orders"} className={inboxSection === "orders" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "orders"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "orders"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "orders"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "orders"?800:600}} onClick={() => {setInboxSection("orders");setChatFilter("all");}}>Pedidos <span>{chatThreads.filter(chat => chat.channel === "order").length}</span></button><button type="button" role="tab" aria-selected={inboxSection === "requests"} className={inboxSection === "requests" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "requests"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "requests"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "requests"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "requests"?800:600}} onClick={() => {setInboxSection("requests");setChatFilter("all");}}>Solicitações <span>{chatThreads.filter(chat => chat.channel === "request").length}</span></button></div><div className="messages-filter-tabs" role="tablist" aria-label="Filtros de conversas"><button type="button" role="tab" aria-selected={chatFilter === "all"} className={chatFilter === "all" ? "active" : ""} onClick={() => setChatFilter("all")}>Todas</button><button type="button" role="tab" aria-selected={chatFilter === "unread"} className={chatFilter === "unread" ? "active" : ""} onClick={() => setChatFilter("unread")}>Não lidas <span>{chatThreads.filter(chat => Boolean(chat.unread) && (inboxSection === "personal" ? (chat.channel || "personal") === "personal" : inboxSection === "commercial" ? chat.channel === "commercial" : inboxSection === "orders" ? chat.channel === "order" : chat.channel === "request")).length}</span></button><button type="button" role="tab" aria-selected={chatFilter === "groups"} className={chatFilter === "groups" ? "active" : ""} onClick={() => setChatFilter("groups")}>Grupos</button></div><div className="messages-notes-head"><strong>{t("chatNotes")}</strong><span>{t("chatNotesPrompt")}</span></div><div className="messages-notes-orbit" role="group" aria-label="Notas dos contatos. Arraste horizontalmente para girar os perfis." onPointerDown={handleNotesOrbitPointerDown} onPointerMove={handleNotesOrbitPointerMove} onPointerUp={handleNotesOrbitPointerUp} onPointerCancel={handleNotesOrbitPointerCancel} onLostPointerCapture={() => { notesOrbitDragRef.current = null; }}>
-          <div className="notes-orbit-track" aria-hidden="true" />
-          <div className="notes-orbit-center" aria-hidden="true"><span>N</span><small>NEXORA</small></div>
-          {notesOrbitPeople.map((person,index) => {
-            const angle = (index * (360 / notesOrbitPeople.length) - 90 + notesOrbitRotation) * Math.PI / 180;
-            const radiusX = 37;
-            const radiusY = 39;
-            const x = 50 + Math.cos(angle) * radiusX;
-            const y = 50 + Math.sin(angle) * radiusY;
-            const focused = Math.sin(angle) < -0.72;
-            return <div key={person.id} className={`note-orbit-person ${person.own ? "own-note" : ""} ${focused ? "is-orbit-focus" : ""}`} style={{left:`${x}%`,top:`${y}%`}}>
-              <button type="button" className={`note-bubble note-style-${person.own ? noteStyle : (index+1)%4}`} onClick={() => { if (notesOrbitSuppressClickRef.current) return; setNoteViewer({ id: person.id, name: person.name, avatar: person.avatar, note: person.note, own: Boolean(person.own), style: person.own ? noteStyle : (index+1)%4 }); }} aria-label={`Visualizar nota de ${person.name}`}>{person.note || (person.own ? t("chatNotesPrompt") : "Compartilhe uma ideia ✨")}</button>
-              <button type="button" className="note-orbit-profile" onClick={() => { if (notesOrbitSuppressClickRef.current) return; if (person.own) setNotesComposerOpen(true); else openChat(person.id); }} aria-label={person.own ? "Criar ou editar sua nota" : `Abrir conversa com ${person.name}`}>
-                <span className="note-person-avatar"><img src={person.avatar} alt="" />{person.own ? <i>＋</i> : person.online ? <i /> : null}</span>
-                <small>{person.own ? t("chatMyNote") : person.name}</small>
-              </button>
-            </div>;
+        {!activeChat && <><label className="messages-search"><span>⌕</span><input value={chatSearch} onChange={event => setChatSearch(event.target.value)} placeholder={t("chatSearch")} aria-label={t("chatSearch")} />{chatSearch && <button onClick={() => setChatSearch("")} aria-label="Limpar busca">×</button>}</label><div className="messages-business-tabs" style={{display:"flex",gap:8,overflowX:"auto",padding:"8px 0",margin:"4px 0 10px"}} role="tablist" aria-label="Áreas de mensagens"><button type="button" role="tab" aria-selected={inboxSection === "personal"} className={inboxSection === "personal" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "personal"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "personal"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "personal"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "personal"?800:600}} onClick={() => {setInboxSection("personal");setChatFilter("all");}}>Pessoal <span>{chatThreads.filter(chat => (chat.channel || "personal") === "personal").length}</span></button><button type="button" role="tab" aria-selected={inboxSection === "commercial"} className={inboxSection === "commercial" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "commercial"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "commercial"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "commercial"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "commercial"?800:600}} onClick={() => {setInboxSection("commercial");setChatFilter("all");}}>Comercial <span>{chatThreads.filter(chat => chat.channel === "commercial").length}</span></button><button type="button" role="tab" aria-selected={inboxSection === "orders"} className={inboxSection === "orders" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "orders"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "orders"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "orders"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "orders"?800:600}} onClick={() => {setInboxSection("orders");setChatFilter("all");}}>Pedidos <span>{chatThreads.filter(chat => chat.channel === "order").length}</span></button><button type="button" role="tab" aria-selected={inboxSection === "requests"} className={inboxSection === "requests" ? "active" : ""} style={{whiteSpace:"nowrap",border:"1px solid "+(inboxSection === "requests"?"#4bdcff":"#ffffff20"),borderRadius:999,padding:"9px 13px",background:inboxSection === "requests"?"linear-gradient(110deg,#17445c,#30204c)":"#101725",color:inboxSection === "requests"?"#f3fbff":"#aab8d0",fontSize:12,fontWeight:inboxSection === "requests"?800:600}} onClick={() => {setInboxSection("requests");setChatFilter("all");}}>Solicitações <span>{chatThreads.filter(chat => chat.channel === "request").length}</span></button></div><div className="messages-filter-tabs" role="tablist" aria-label="Filtros de conversas"><button type="button" role="tab" aria-selected={chatFilter === "all"} className={chatFilter === "all" ? "active" : ""} onClick={() => setChatFilter("all")}>Todas</button><button type="button" role="tab" aria-selected={chatFilter === "unread"} className={chatFilter === "unread" ? "active" : ""} onClick={() => setChatFilter("unread")}>Não lidas <span>{chatThreads.filter(chat => Boolean(chat.unread) && (inboxSection === "personal" ? (chat.channel || "personal") === "personal" : inboxSection === "commercial" ? chat.channel === "commercial" : inboxSection === "orders" ? chat.channel === "order" : chat.channel === "request")).length}</span></button><button type="button" role="tab" aria-selected={chatFilter === "groups"} className={chatFilter === "groups" ? "active" : ""} onClick={() => setChatFilter("groups")}>Grupos</button></div><div className="messages-notes-head"><strong>{t("chatNotes")}</strong><span>{t("chatNotesPrompt")}</span></div><NotesOrbit
+          people={notesOrbitPeople}
+          onOpenNote={(person, index) => setNoteViewer({
+            id: person.id,
+            name: person.name,
+            avatar: person.avatar,
+            note: person.note,
+            own: Boolean(person.own),
+            style: person.own ? noteStyle : (index + 1) % 4
           })}
-        </div>{noteViewer && <div className="notes-viewer-backdrop" role="dialog" aria-modal="true" aria-label={`Nota de ${noteViewer.name}`} onClick={() => setNoteViewer(null)}>
+          onOpenProfile={(person) => {
+            if (person.own) setNotesComposerOpen(true);
+            else openChat(person.id);
+          }}
+        />{noteViewer && <div className="notes-viewer-backdrop" role="dialog" aria-modal="true" aria-label={`Nota de ${noteViewer.name}`} onClick={() => setNoteViewer(null)}>
           <section className="notes-viewer-card" onClick={event => event.stopPropagation()}>
             <button type="button" className="notes-viewer-close" onClick={() => setNoteViewer(null)} aria-label="Fechar nota">×</button>
             <div className={`notes-viewer-note note-style-${noteViewer.style}`}>{noteViewer.note || (noteViewer.own ? "Sua nota ainda está vazia. Compartilhe uma ideia com seus contatos." : "Esta nota ainda não tem texto.")}</div>
