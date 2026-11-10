@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { PointerEvent } from "react";
 
 export type NotesOrbitPerson = {
   id: string;
@@ -36,7 +37,7 @@ export default function NotesOrbit({ people, onOpenNote, onOpenProfile }: NotesO
     if (suppressTimerRef.current) clearTimeout(suppressTimerRef.current);
   }, []);
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if ((event.target as Element).closest("button")) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     stopInertia();
