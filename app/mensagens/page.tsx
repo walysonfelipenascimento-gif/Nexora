@@ -438,7 +438,7 @@ const styles = `
 .msg-own-note{position:relative;display:grid;place-items:center;width:72px;height:72px;flex:none;padding:3px;border:2px solid #b6efff;border-radius:50%;background:linear-gradient(145deg,#9a8aff,#70eaff,#438cff);box-shadow:0 0 0 4px rgba(151,218,255,.12),0 0 0 7px rgba(95,161,255,.08),0 0 30px rgba(126,211,255,.42);animation:msgAura 4s ease-in-out infinite}
 .msg-own-note img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .msg-own-plus{position:absolute;right:-3px;bottom:-5px;display:grid;place-items:center;width:22px;height:22px;border:2px solid #06101f;border-radius:50%;background:#f3fbff;color:#17233b}
-.msg-orbit-note{display:block;min-width:0;border:1px solid rgba(190,230,255,.32);font:inherit;cursor:pointer}
+.msg-orbit-note{display:block;min-width:0;border:1px solid rgba(190,230,255,.32);font:inherit;cursor:pointer;pointer-events:auto}
 .msg-note-view-backdrop{position:fixed;inset:0;z-index:11990;display:grid;place-items:center;padding:24px;background:rgba(1,6,16,.52);backdrop-filter:blur(17px) saturate(1.15);-webkit-backdrop-filter:blur(17px) saturate(1.15)}
 .msg-note-view{position:relative;display:flex;align-items:center;flex-direction:column;gap:13px;width:min(100%,340px);padding:24px 18px 20px;border:1px solid rgba(195,231,255,.17);border-radius:27px;background:rgba(10,20,36,.42);box-shadow:0 22px 70px rgba(0,0,0,.38);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 .msg-note-view>small{color:#d7eaff;font-size:11px}
