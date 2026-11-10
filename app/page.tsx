@@ -340,32 +340,43 @@ export default function Home() {
   const notesOrbitSuppressClickRef = useRef(false);
   const handleNotesOrbitPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
     notesOrbitDragRef.current = { pointerId: event.pointerId, startX: event.clientX, lastX: event.clientX, moved: false, lastAt: performance.now(), velocity: 0 };
   };
   const handleNotesOrbitPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = notesOrbitDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+    const now = performance.now();
     const delta = event.clientX - drag.lastX;
     if (Math.abs(event.clientX - drag.startX) > 5) drag.moved = true;
     if (drag.moved) {
-      const now = performance.now();
       const elapsed = Math.max(1, now - drag.lastAt);
       drag.velocity = delta / elapsed;
       setNotesOrbitRotation(value => value + delta * 0.72);
-      drag.lastX = event.clientX;
-      drag.lastAt = now;
     }
+    drag.lastX = event.clientX;
+    drag.lastAt = now;
   };
   const handleNotesOrbitPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = notesOrbitDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     if (drag.moved) {
       notesOrbitSuppressClickRef.current = true;
-      const momentum = Math.max(-24, Math.min(24, drag.velocity * 95));
-      setNotesOrbitRotation(value => value + momentum);
-      window.setTimeout(() => { notesOrbitSuppressClickRef.current = false; }, 180);
+      let velocity = Math.max(-24, Math.min(24, drag.velocity * 95));
+      let previousTime = 0;
+      const coast = (time: number) => {
+        if (!previousTime) previousTime = time;
+        const frameScale = Math.min(2, (time - previousTime) / 16.67);
+        previousTime = time;
+        setNotesOrbitRotation(value => value + velocity * frameScale);
+        velocity *= Math.pow(0.88, frameScale);
+        if (Math.abs(velocity) > 0.12) window.requestAnimationFrame(coast);
+      };
+      if (Math.abs(velocity) > 0.12) window.requestAnimationFrame(coast);
+      window.setTimeout(() => { notesOrbitSuppressClickRef.current = false; }, 260);
     }
     notesOrbitDragRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
   const notesOrbitPeople = [
     { id: "own", name: "Você", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces", note: myNote || "", own: true, online: false },
