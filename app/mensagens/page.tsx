@@ -72,7 +72,7 @@ export default function MessagesPage() {
   const [noteMusic, setNoteMusic] = useState("");
   const [noteFont, setNoteFont] = useState("classic");
   const [expandedNote, setExpandedNote] = useState<{ name: string; text: string; color: string } | null>(null);
-  const [rotationDegrees, setRotationDegrees] = useState(0);
+  const [rotationDegrees, setRotationDegrees] = useState(72);
   const orbitDragRef = useRef<{ pointerId: number; startX: number; lastX: number; lastAt: number; moved: boolean; velocity: number } | null>(null);
   const orbitFrameRef = useRef<number | null>(null);
   const orbitSuppressClickRef = useRef(false);
@@ -257,11 +257,21 @@ export default function MessagesPage() {
                   })),
                   { id: "own", person: people[4], own: true, chatId: "", noteText: note, color: noteColor }
                 ].map((entry, index, entries) => {
-                  const angle = (index * (360 / entries.length) - 90 + rotationDegrees) * Math.PI / 180;
-                  const x = 50 + Math.cos(angle) * 40;
-                  const y = 50 + Math.sin(angle) * 34;
+                  const rotationStep = Math.round(rotationDegrees / 72);
+                  const slotIndex = ((index + rotationStep) % entries.length + entries.length) % entries.length;
+                  // Five fixed visual slots preserve the reference composition:
+                  // one enlarged central profile and four surrounding profiles.
+                  const orbitSlots = [
+                    { x: 50, y: 51 },
+                    { x: 18, y: 27 },
+                    { x: 34, y: 77 },
+                    { x: 66, y: 77 },
+                    { x: 82, y: 27 }
+                  ];
+                  const slot = orbitSlots[slotIndex];
+                  const isFocus = slotIndex === 0;
                   return (
-                    <div className={"msg-orbit-item " + (entry.own ? "is-own " : "") + (Math.sin(angle) < -0.72 ? "is-orbit-focus" : "")} key={entry.id} style={{ left: x + "%", top: y + "%", zIndex: Math.round(10 + Math.sin(angle) * 5) }}>
+                    <div className={"msg-orbit-item " + (entry.own ? "is-own " : "") + (isFocus ? "is-orbit-focus" : "")} key={entry.id} style={{ left: slot.x + "%", top: slot.y + "%", zIndex: isFocus ? 30 : 10 }}>
                       {entry.noteText && <button
                         type="button"
                         className="msg-orbit-note"
@@ -429,8 +439,8 @@ const styles = `
 .msg-note-stage{position:relative;display:flex;align-items:center;flex-direction:column;height:202px;flex:none;padding-top:2px}
 .msg-add-note{z-index:2;padding:7px 17px;border:0;border-radius:20px;background:linear-gradient(110deg,#713cff,#148bff,#25d5e6);box-shadow:0 4px 22px rgba(43,107,255,.28);color:white;font-size:9px;font-weight:700}
 .msg-note-orbit{position:relative;width:100%;height:166px;margin-top:3px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.msg-orbit-item{position:absolute;display:flex;align-items:center;flex-direction:column;gap:4px;transform:translate(-50%,-50%);transition:none}
-.msg-orbit-item.is-orbit-focus{z-index:30!important;filter:drop-shadow(0 0 9px rgba(104,210,255,.28))}.msg-orbit-item.is-orbit-focus .msg-orbit-avatar img{transform:scale(1.08)}.msg-orbit-item.is-orbit-focus .msg-own-note{box-shadow:0 0 0 5px rgba(151,218,255,.18),0 0 0 9px rgba(95,161,255,.12),0 0 34px rgba(126,211,255,.52)}
+.msg-orbit-item{position:absolute;display:flex;align-items:center;flex-direction:column;gap:4px;transform:translate(-50%,-50%);transition:left .34s cubic-bezier(.2,.8,.2,1),top .34s cubic-bezier(.2,.8,.2,1),filter .25s ease}
+.msg-orbit-item.is-orbit-focus{z-index:30!important;filter:drop-shadow(0 0 9px rgba(104,210,255,.28))}.msg-orbit-item.is-orbit-focus .msg-orbit-avatar img{transform:scale(1.08)}.msg-orbit-item.is-orbit-focus .msg-own-note{width:84px;height:84px;box-shadow:0 0 0 5px rgba(151,218,255,.18),0 0 0 9px rgba(95,161,255,.12),0 0 34px rgba(126,211,255,.52)}
 .msg-orbit-avatar{display:grid;place-items:center;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:transparent;color:#cbd9ee}
 .msg-orbit-avatar img{width:42px;height:42px;object-fit:cover;border:2px solid #0a192b;border-radius:50%;outline:1.5px solid rgba(157,225,255,.88);outline-offset:1px;box-shadow:0 0 0 4px rgba(102,194,255,.10),0 0 18px rgba(100,190,255,.34);transition:transform .25s ease,box-shadow .25s ease}
 .msg-orbit-avatar:active img{transform:scale(1.07);box-shadow:0 0 0 5px rgba(142,214,255,.16),0 0 23px rgba(115,203,255,.48)}
