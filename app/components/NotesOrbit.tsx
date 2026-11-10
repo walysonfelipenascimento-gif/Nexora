@@ -35,7 +35,7 @@ export default function NotesOrbit({ people, onOpenNote, onOpenProfile, ownLabel
   };
 
   useEffect(() => () => {
-    stopInertia();
+    if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
     if (suppressTimerRef.current) clearTimeout(suppressTimerRef.current);
   }, []);
 
