@@ -264,8 +264,8 @@ export default function MessagesPage() {
                   const orbitSlots = [
                     { x: 50, y: 51 },
                     { x: 18, y: 27 },
-                    { x: 34, y: 77 },
-                    { x: 66, y: 77 },
+                    { x: 31, y: 77 },
+                    { x: 69, y: 77 },
                     { x: 82, y: 27 }
                   ];
                   const slot = orbitSlots[slotIndex];
