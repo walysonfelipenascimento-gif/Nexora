@@ -345,10 +345,10 @@ export default function Home() {
       notesOrbitAnimationRef.current = null;
     }
   };
-  useEffect(() => () => stopNotesOrbitInertia(), []);
+  useEffect(() => () => { if (notesOrbitAnimationRef.current !== null) window.cancelAnimationFrame(notesOrbitAnimationRef.current); }, []);
   const handleNotesOrbitPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     // A nota e o perfil são botões independentes: nunca capture o ponteiro iniciado neles.
-    if ((event.target as HTMLElement).closest("button")) return;
+    if ((event.target as Element).closest("button")) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     stopNotesOrbitInertia();
     event.currentTarget.setPointerCapture(event.pointerId);
