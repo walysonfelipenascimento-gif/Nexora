@@ -16,9 +16,11 @@ type NotesOrbitProps = {
   people: NotesOrbitPerson[];
   onOpenNote: (person: NotesOrbitPerson, index: number) => void;
   onOpenProfile: (person: NotesOrbitPerson) => void;
+  ownLabel: string;
+  emptyOwnNoteLabel: string;
 };
 
-export default function NotesOrbit({ people, onOpenNote, onOpenProfile }: NotesOrbitProps) {
+export default function NotesOrbit({ people, onOpenNote, onOpenProfile, ownLabel, emptyOwnNoteLabel }: NotesOrbitProps) {
   const [rotation, setRotation] = useState(0);
   const dragRef = useRef<{ pointerId: number; startX: number; lastX: number; lastAt: number; moved: boolean; velocity: number } | null>(null);
   const frameRef = useRef<number | null>(null);
@@ -133,7 +135,7 @@ export default function NotesOrbit({ people, onOpenNote, onOpenProfile }: NotesO
               onClick={() => { if (!suppressClickRef.current) onOpenNote(person, index); }}
               aria-label={`Visualizar nota de ${person.name}`}
             >
-              {person.note || (person.own ? "Compartilhe uma ideia" : "Compartilhe uma ideia ✨")}
+              {person.note || (person.own ? emptyOwnNoteLabel : "Compartilhe uma ideia ✨")}
             </button>
             <button
               type="button"
@@ -145,7 +147,7 @@ export default function NotesOrbit({ people, onOpenNote, onOpenProfile }: NotesO
                 <img src={person.avatar} alt="" />
                 {person.own ? <i>＋</i> : person.online ? <i /> : null}
               </span>
-              <small>{person.own ? "Minha nota" : person.name}</small>
+              <small>{person.own ? ownLabel : person.name}</small>
             </button>
           </div>
         );
