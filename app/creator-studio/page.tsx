@@ -319,7 +319,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
       cameraStreamRef.current?.getTracks().forEach(track => track.stop());
       if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
     };
   }, []);
 
@@ -393,7 +392,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             <button type="button" className={audience === "Amigos Próximos" ? "selected close-friends" : "close-friends"} onClick={() => setAudience("Amigos Próximos")}><span>✦</span> Amigos Próximos</button>
             <button type="button" className="cs-story-share-next" onClick={() => { setEditorTool(null); setStage("share"); }} aria-label="Avançar para compartilhar">›</button>
           </div>
-          <p className="cs-story-local-note">Prévia local · escolha o público e avance para revisar o         </>}ento.</p>
+          <p className="cs-story-local-note">Prévia local · escolha o público e avance para revisar o compartilhamento.</p>
         </> : <>
           <div className="cs-story-edit-top"><button type="button" aria-label="Voltar à edição" onClick={() => setStage("preview")}>‹</button><b className="cs-story-share-title">Compartilhar Story</b><button type="button" aria-label="Voltar à câmera" onClick={() => { setStage("camera"); setCameraError(""); }}>×</button></div>
           <div className="cs-story-share-summary">
