@@ -124,7 +124,7 @@ export default function Home() {
   useEffect(() => { try { const stored = localStorage.getItem("nexora-comments-v1"); if (stored) { const all = JSON.parse(stored); const feed: Record<number,string[]> = {}; Object.entries(all).forEach(([key,value]) => { if (key.startsWith("feed-") && Array.isArray(value)) feed[Number(key.slice(5))] = value as string[]; }); setComments(feed); } } catch {} const sync = (event: StorageEvent) => { if (event.key !== "nexora-comments-v1" || !event.newValue) return; try { const all = JSON.parse(event.newValue); const feed: Record<number,string[]> = {}; Object.entries(all).forEach(([key,value]) => { if (key.startsWith("feed-") && Array.isArray(value)) feed[Number(key.slice(5))] = value as string[]; }); setComments(feed); } catch {} }; window.addEventListener("storage",sync); return () => window.removeEventListener("storage",sync); }, []);
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [composerOpen, setComposerOpen] = useState(false);
-  const [createMode, setCreateMode] = useState<"hub" | "post" | "reel" | "live" | "highlight">("hub");
+  const [createMode, setCreateMode] = useState<"post" | "reel" | "live" | "highlight">("post");
   const [composerText, setComposerText] = useState("");
   const [createFile, setCreateFile] = useState<File | null>(null);
   const [createPreview, setCreatePreview] = useState("");
@@ -621,7 +621,7 @@ export default function Home() {
     setCreateFile(null);
     setCreatePreview("");
     setComposerOpen(false);
-    setCreateMode("hub");
+    setCreateMode("post");
     setNotice(createMode === "reel" ? "Reel adicionado ao Feed nesta sessão." : "Publicação adicionada ao Feed nesta sessão.");
     window.setTimeout(() => setNotice(""), 2800);
   }
@@ -642,7 +642,7 @@ export default function Home() {
       const next = [...current, { id: Date.now(), title, emoji: "🌟", tone: ["#6c4cff", "#e84d9b", "#168db7", "#8a4ce0"][current.length % 4] }];
       localStorage.setItem("nexora-profile-v1", JSON.stringify({ ...data, highlights: next }));
       setComposerOpen(false);
-      setCreateMode("hub");
+      setCreateMode("post");
       setCreateTitle("");
       setNotice("Destaque criado neste dispositivo. Abra o perfil para vê-lo.");
     } catch {
@@ -1376,8 +1376,8 @@ export default function Home() {
 </div>
 {storyFile&&storyPreview&&<div style={{display:"flex",gap:8,margin:"0 14px 8px",alignItems:"center"}}><input value={storyCaption} onChange={event=>setStoryCaption(event.target.value)} maxLength={180} placeholder="Escreva uma legenda..." style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:22,border:"1px solid #ffffff22",background:"#17171d",color:"#fff",outline:"none"}}/><button type="button" onClick={publishStory} disabled={!storyFile||!storyPreview} style={{padding:"11px 15px",border:0,borderRadius:22,background:!storyFile||!storyPreview?"#35353b":"linear-gradient(100deg,#50e5ff,#8e67ff 65%,#e45bd5)",color:!storyFile||!storyPreview?"#85858d":"#080916",fontWeight:800,whiteSpace:"nowrap"}}>Compartilhar</button></div>}
 
-</section></div>}{composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title" style={{maxHeight:"min(88dvh,760px)",overflowY:"auto"}}><header><div><small>NEXORA · CREATIVE STUDIO</small><h2 id="composer-title">{createMode === "post" ? "Nova publicação" : createMode === "reel" ? "Criar Reel" : "Preparar conteúdo"}</h2></div><button onClick={() => {setComposerOpen(false);setCreateMode("hub");}} aria-label="Fechar">×</button></header>
-        {createMode === "hub" ? null : createMode === "live" ? <div style={{paddingTop:12}}>
+</section></div>}{composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title" style={{maxHeight:"min(88dvh,760px)",overflowY:"auto"}}><header><div><small>NEXORA · CREATIVE STUDIO</small><h2 id="composer-title">{createMode === "post" ? "Nova publicação" : createMode === "reel" ? "Criar Reel" : "Preparar conteúdo"}</h2></div><button onClick={() => {setComposerOpen(false);setCreateMode("post");}} aria-label="Fechar">×</button></header>
+        {createMode === "live" ? <div style={{paddingTop:12}}>
           <p style={{fontSize:13,color:"#c3c5dc",lineHeight:1.6}}>Configure o título e a privacidade da sua Live. A transmissão real precisa de integração com câmera, servidor de streaming e moderação; esta tela ainda não inicia vídeo ao vivo.</p>
           <input value={createTitle} onChange={event=>setCreateTitle(event.target.value)} maxLength={80} placeholder="Título da transmissão" style={{width:"100%",padding:13,borderRadius:12,background:"#0b0c18",border:"1px solid #ffffff20",color:"#fff",margin:"10px 0"}} />
           <button type="button" onClick={()=>setNotice(createTitle.trim() ? `Configuração da Live “${createTitle.trim()}” preparada. A transmissão será habilitada com a integração de streaming.` : "Digite um título para a Live.")} style={{width:"100%",padding:13,borderRadius:12,border:0,background:"linear-gradient(90deg,#55e8ff,#a66cff)",color:"#080817",fontWeight:800}}>Preparar transmissão</button>
