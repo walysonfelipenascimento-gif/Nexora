@@ -73,6 +73,26 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const mediaUrlRef = useRef("");
   const mountedRef = useRef(true);
   const filter = effect === "P&B" ? "grayscale(1)" : effect === "Quente" ? "sepia(.35) saturate(1.25)" : effect === "Frio" ? "hue-rotate(12deg) saturate(.85)" : effect === "Contraste" ? "contrast(1.25)" : "none";
+  const sharePreparedRef = useRef(false);
+  useEffect(() => {
+    if (sharePreparedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get("shareTitle");
+    const description = params.get("shareDescription");
+    const link = params.get("shareLink");
+    if (!title && !description && !link) return;
+    sharePreparedRef.current = true;
+    const escapeSvg = (value: string) => value.replace(/[&<>"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as Record<string, string>)[char] || char);
+    const safeTitle = escapeSvg((title || "Uma novidade na Nexora").slice(0, 28));
+    const safeDescription = escapeSvg((description || "Confira esta novidade").slice(0, 120));
+    const safeLink = escapeSvg((link || window.location.origin).slice(0, 65));
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071321"/><stop offset=".55" stop-color="#17204a"/><stop offset="1" stop-color="#35143f"/></linearGradient><radialGradient id="glow"><stop stop-color="#35dfff" stop-opacity=".45"/><stop offset="1" stop-color="#35dfff" stop-opacity="0"/></radialGradient></defs><rect width="1080" height="1920" fill="url(#bg)"/><circle cx="850" cy="350" r="520" fill="url(#glow)"/><circle cx="170" cy="1500" r="500" fill="#9a4cff" opacity=".13"/><rect x="76" y="270" width="928" height="1380" rx="58" fill="#0b1223" stroke="#66ddff" stroke-opacity=".5" stroke-width="3"/><text x="130" y="410" fill="#75eaff" font-family="Arial,sans-serif" font-size="42" font-weight="700" letter-spacing="12">NEXORA · VITRINE</text><text x="130" y="700" fill="#ffffff" font-family="Arial,sans-serif" font-size="72" font-weight="800">${safeTitle}</text><foreignObject x="130" y="790" width="820" height="420"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Arial,sans-serif;color:#d8e5f6;font-size:42px;line-height:1.45;overflow-wrap:anywhere">${safeDescription}</div></foreignObject><text x="130" y="1450" fill="#75eaff" font-family="Arial,sans-serif" font-size="32">DESCUBRA · CONECTE · COMPARTILHE</text><text x="130" y="1530" fill="#b7c7dc" font-family="Arial,sans-serif" font-size="26">${safeLink}</text><text x="130" y="1600" fill="#ffffff" font-family="Arial,sans-serif" font-size="34" font-weight="700">NEXORA</text></svg>`;
+    const file = new File([new Blob([svg], { type: "image/svg+xml" })], "nexora-compartilhamento.svg", { type: "image/svg+xml" });
+    setLocalMedia(file);
+    setCaption([description, link].filter(Boolean).join("\\n").slice(0, 180));
+    setStage("preview");
+    setCameraError("Conteúdo compartilhado preparado. Revise a arte antes de publicar.");
+  }, []);
 
   function stopCamera() {
     cameraStreamRef.current?.getTracks().forEach(track => track.stop());
