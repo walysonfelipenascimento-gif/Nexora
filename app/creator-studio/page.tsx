@@ -85,7 +85,13 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     }
     stopCamera();
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: true });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: true });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+        setCameraError("Microfone indisponível: a câmera funcionará sem áudio.");
+      }
       cameraStreamRef.current = stream;
       setCameraActive(true);
       setSelected("Câmera");
@@ -182,7 +188,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             <div className="cs-camera-tools">
               {["Original", "P&B", "Quente", "Frio", "Contraste"].map(item => <button key={item} className={effect === item ? "active" : ""} onClick={() => setEffect(item)}>{item}</button>)}
             </div>
-            <span className="cs-effect-label">{cameraActive ? "Câmera ativa" : "Prévia ilustrativa"} · {effect}</span>
+            <span className="cs-effect-label">{recording ? "Gravando vídeo…" : cameraActive ? "Câmera ativa" : "Prévia ilustrativa"} · {effect}</span>
           </div>
           {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
           <div className="cs-capture-row">
