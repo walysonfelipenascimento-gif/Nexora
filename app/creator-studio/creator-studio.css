@@ -39,3 +39,27 @@
 .cs-story-preview>.cs-story-selected-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cs-story-preview>input{position:relative;z-index:2}
 .cs-shutter:disabled{opacity:.55;cursor:wait}
+
+
+/* Functional editorial calendar controls */
+.cs-month-controls{display:flex;align-items:center;gap:9px;color:#dce5f8;font-size:11px}
+.cs-month-controls button{width:29px;height:29px;border:1px solid var(--line);border-radius:8px;background:#ffffff08;color:#dce5f8;font-size:18px}
+.cs-calendar-days>i{height:38px}
+.cs-schedule-list-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cs-schedule-list-head button,.cs-scheduled-item>button{border:1px solid var(--line);border-radius:7px;background:#ffffff08;color:#aebbd4;padding:6px 9px;font-size:9px}
+.cs-empty-schedule{color:#7f8da9;font-size:10px}
+.cs-scheduled-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.cs-scheduled-item>div{min-width:0}
+.cs-scheduled-item p{margin:5px 0;color:#b4c0d8;overflow-wrap:anywhere}
+.cs-scheduled-item small{display:block;color:#7786a4;font-size:9px;margin-top:4px}
+.cs-scheduled-item>button{flex:0 0 auto;font-size:15px;color:#ffb1bd}
+.cs-calendar-field{display:flex;flex-direction:column;gap:6px;margin:10px 0;color:#9eacc8;font-size:10px}
+.cs-calendar-field input,.cs-calendar-field select{width:100%;background:#080d18;border:1px solid var(--line);border-radius:8px;padding:10px;color:#e5ecfa;font:inherit;color-scheme:dark}
+.cs-calendar-upload{position:relative;min-height:84px;height:auto;cursor:pointer;overflow:hidden;text-align:center;padding:12px}
+.cs-calendar-upload input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.cs-calendar-upload span{max-width:100%;overflow-wrap:anywhere}
+.cs-calendar-media-preview{display:flex;align-items:center;gap:10px;color:#aebbd4;font-size:9px}
+.cs-calendar-media-preview img,.cs-calendar-media-preview video{width:62px;height:62px;object-fit:cover;border-radius:8px;background:#05070c}
+.cs-calendar-media-preview button{border:1px solid var(--line);background:#ffffff08;color:#ffb1bd;border-radius:7px;padding:7px;font-size:9px}
+.cs-calendar-notice{color:#9fdbf1;font-size:10px;line-height:1.5;margin:4px 0}
+@media(max-width:520px){.cs-calendar-head{align-items:flex-start;gap:10px;flex-direction:column}.cs-month-controls{width:100%;justify-content:space-between}.cs-calendar-days>i{height:34px}}
