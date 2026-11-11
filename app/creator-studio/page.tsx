@@ -86,7 +86,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         <h3>{stage === "camera" ? "Registre o momento." : "Sua história, do seu jeito."}</h3>
         <p>{stage === "camera" ? "Câmera em tela cheia, modos de captura, galeria e ferramentas de acesso rápido." : "Revise a mídia, adicione elementos e escolha o público antes de compartilhar."}</p>
         <div className="cs-option-list">
-          {["Câmera", "Galeria", "Texto", "Boomerang", "Layout"].map(item => <button key={item} className={selected === item ? "selected" : ""} onClick={() => { setSelected(item); if (item === "Galeria") setStage("preview"); else setEffect(item); }}>{item}<span>›</span></button>)}
+          {["Câmera", "Galeria", "Texto", "Boomerang", "Layout"].map(item => <button key={item} className={selected === item ? "selected" : ""} onClick={() => { setSelected(item); if (item === "Galeria") galleryInputRef.current?.click(); else setEffect(item); }}>{item}<span>›</span></button>)}
         </div>
       </div>
     </div>
