@@ -175,7 +175,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       context.fillStyle = "#ffffff";
       context.shadowColor = "#000000";
       context.shadowBlur = Math.max(5, fontSize * 0.35);
-      const words = caption.trim().split(/\\s+/);
+      const words = caption.trim().split(/\s+/);
       const lines: string[] = [];
       let line = "";
       const maxWidth = width * 0.82;
