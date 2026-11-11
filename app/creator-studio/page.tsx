@@ -304,7 +304,6 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
     let recorder: MediaRecorder | null = null;
     let soundtrack: HTMLAudioElement | null = null;
     const chunks: Blob[] = [];
-    let stopped = false;
     const filterValue = filterStyle;
     const drawFrame = (source: CanvasImageSource) => {
       const sw = source instanceof HTMLVideoElement ? source.videoWidth : source instanceof HTMLImageElement ? source.naturalWidth : width;
@@ -356,8 +355,8 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
         const clip=clips[index];
         setNotice(`Renderizando mídia ${index+1} de ${clips.length}…`);
         if (clip.file.type.startsWith("image/")) {
-          const img = new Image(); img.src=clip.url;
-          await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error("Uma das imagens não pôde ser carregada."));});
+          const img = new Image();
+          await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error("Uma das imagens não pôde ser carregada."));img.src=clip.url;});
           const start=performance.now();
           while (performance.now()-start < 4000) { drawFrame(img); setExportProgress(Math.min(99,Math.round(((index+(performance.now()-start)/4000)/clips.length)*100))); await nextFrame(); }
         } else {
@@ -392,7 +391,6 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
       const message=error instanceof Error?error.message:"Não foi possível renderizar este projeto.";
       setNotice(message);
     } finally {
-      stopped=true;
       if (soundtrack) { soundtrack.pause(); soundtrack.src=""; }
       canvasStream.getTracks().forEach(track=>track.stop());
       if (audioContext) await audioContext.close().catch(()=>undefined);
@@ -544,6 +542,23 @@ function CommentsStudio() {
   const [replyTo,setReplyTo]=useState("");
   const [liked,setLiked]=useState<string[]>([]);
   const [items,setItems]=useState(["True fashion begins with the confidence to wear your vision.","When you wear love unapologetically, you’re already winning at style.","Sharp, sleek, and just the right shade of iconic."]);
+  const [hydrated,setHydrated]=useState(false);
+  useEffect(() => {
+    try {
+      const savedItems=window.localStorage.getItem("nexora-creator-comments-v1");
+      const savedLikes=window.localStorage.getItem("nexora-creator-comment-likes-v1");
+      if(savedItems){const parsed=JSON.parse(savedItems);if(Array.isArray(parsed)&&parsed.every(item=>typeof item==="string"))setItems(parsed);}
+      if(savedLikes){const parsed=JSON.parse(savedLikes);if(Array.isArray(parsed)&&parsed.every(item=>typeof item==="string"))setLiked(parsed);}
+    } catch { /* Mantém a demonstração em memória se o armazenamento estiver indisponível. */ }
+    setHydrated(true);
+  },[]);
+  useEffect(() => {
+    if(!hydrated)return;
+    try {
+      window.localStorage.setItem("nexora-creator-comments-v1",JSON.stringify(items));
+      window.localStorage.setItem("nexora-creator-comment-likes-v1",JSON.stringify(liked));
+    } catch { /* As interações continuam disponíveis durante esta sessão. */ }
+  },[items,liked,hydrated]);
   function submitComment(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if(!comment.trim())return; const text=(replyTo?"↳ Resposta para "+replyTo+": ":"")+comment.trim(); setItems(current=>[...current,text]); setComment(""); setReplyTo(""); }
   return <div className="cs-comments-layout"><div className="cs-comment-content"><div className="cs-comment-art">N<span>CONTEÚDO</span></div></div><div className="cs-comments-sheet"><div className="cs-sheet-handle"/><h3>Comentários <small>{items.length}</small></h3><div className="cs-comment-list">{items.map((x,i)=>{const id=String(i);const author=["Ava Monroe","John Brooks","Zoey Hart","Mia Cruz"][i%4];const isLiked=liked.includes(id);return <div className="cs-comment" key={id}><div className="cs-avatar">{["A","J","Z","N"][i%4]}</div><div><b>{author}</b><p>{x}</p><small><button type="button" onClick={()=>{setReplyTo(author);setComment("@"+author+" ");}}>Responder</button>　<button type="button" className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"Curtido":"Curtir"}</button></small></div><button type="button" aria-label={isLiked?"Remover curtida":"Curtir comentário"} className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"♥":"♡"}</button></div>;})}</div><form onSubmit={submitComment}><span>↗</span><input value={comment} onChange={e=>setComment(e.target.value)} placeholder={replyTo?"Responder a "+replyTo:"Adicione um comentário..."} aria-label="Novo comentário ou resposta"/><button type="submit" disabled={!comment.trim()}>➤</button></form><small className="cs-comment-local-note">Interações demonstrativas nesta sessão; ainda não sincronizadas com a conta.</small></div></div>;
 }
