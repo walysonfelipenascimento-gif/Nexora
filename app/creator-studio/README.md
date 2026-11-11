@@ -16,6 +16,7 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 
 - Request camera permission through `getUserMedia`, prefer the rear camera where available, display the live camera preview and stop camera tracks when leaving/unmounting.
 - Capture a still photo from the camera preview.
+- Record video with the browser MediaRecorder API, including microphone audio when permission is available; fall back to silent video if microphone access is unavailable.
 - Import an image or video from the device gallery and preview it.
 - Apply browser preview filters and add editable caption text.
 - Choose an intended audience for the draft and save the selected original media file locally.
