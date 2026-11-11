@@ -65,3 +65,6 @@
 @media(max-width:520px){.cs-calendar-head{align-items:flex-start;gap:10px;flex-direction:column}.cs-month-controls{width:100%;justify-content:space-between}.cs-calendar-days>i{height:34px}}
 
 .cs-story-caption-overlay{position:absolute;z-index:2;left:8%;right:8%;top:42%;text-align:center;color:#fff;font-size:clamp(16px,4vw,25px);font-weight:800;overflow-wrap:anywhere;text-shadow:0 2px 10px #000}
+
+.cs-record-mode{border:1px solid #ffffff55;border-radius:20px;background:#111827aa;color:#fff;padding:7px 10px;font-size:9px;font-weight:700}
+.cs-shutter.recording{background:#ff536e;border-color:#fff;box-shadow:0 0 0 5px #ff536e44}
