@@ -178,10 +178,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     canvas.height = video.videoHeight;
     const context = canvas.getContext("2d");
     if (!context) { setCameraError("Não foi possível preparar a captura neste navegador."); return; }
-    context.save();
-    context.filter = filter;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    context.restore();
     setBusy(true);
     canvas.toBlob(blob => {
       setBusy(false);
@@ -249,8 +246,10 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         canvas.height = image.naturalHeight;
         const context = canvas.getContext("2d");
         if (!context) throw new Error("Não foi possível preparar a imagem para aplicar o efeito.");
+        context.save();
         context.filter = filter;
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        context.restore();
         drawStoryOverlays(context, canvas.width, canvas.height);
         output = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar a imagem com o efeito.")), "image/png"));
         filename = baseName + "-com-efeito.png";
