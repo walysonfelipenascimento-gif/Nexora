@@ -1392,9 +1392,8 @@ export default function Home() {
             {mode:"reel",icon:"▶",title:"Reels",desc:"Crie vídeos e edite seus clipes",tone:"reel"},
             {mode:"planning",icon:"✦",title:"Planejamento",desc:"Organize ideias e rascunhos",tone:"planning"}
           ].map(item => <button key={item.mode} type="button" className={`create-hub-card create-hub-${item.tone}`} onClick={() => {
-            if(item.mode==="story"){setComposerOpen(false);setStoryComposerOpen(true);return;}
-            if(item.mode==="planning"){window.location.href="/creator-studio";return;}
-            openCreateMode(item.mode as "post"|"reel");
+            const section = item.mode === "planning" ? "calendar" : item.mode === "reel" ? "reels" : item.mode;
+            window.location.href = `/creator-studio?section=${section}`;
           }}>
             <span className="create-hub-art" aria-hidden="true"><i>{item.icon}</i><b /></span>
             <span className="create-hub-copy"><strong>{item.title}</strong><small>{item.desc}</small></span>
