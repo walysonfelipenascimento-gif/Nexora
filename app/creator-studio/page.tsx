@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode, type FormEvent } from "react";
 import "./creator-studio.css";
 
 type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
@@ -182,7 +182,7 @@ function CommentsStudio() {
   const [replyTo,setReplyTo]=useState("");
   const [liked,setLiked]=useState<string[]>([]);
   const [items,setItems]=useState(["True fashion begins with the confidence to wear your vision.","When you wear love unapologetically, you’re already winning at style.","Sharp, sleek, and just the right shade of iconic."]);
-  function submitComment(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); if(!comment.trim())return; const text=(replyTo?"↳ Resposta para "+replyTo+": ":"")+comment.trim(); setItems(current=>[...current,text]); setComment(""); setReplyTo(""); }
+  function submitComment(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if(!comment.trim())return; const text=(replyTo?"↳ Resposta para "+replyTo+": ":"")+comment.trim(); setItems(current=>[...current,text]); setComment(""); setReplyTo(""); }
   return <div className="cs-comments-layout"><div className="cs-comment-content"><div className="cs-comment-art">N<span>CONTEÚDO</span></div></div><div className="cs-comments-sheet"><div className="cs-sheet-handle"/><h3>Comentários <small>{items.length}</small></h3><div className="cs-comment-list">{items.map((x,i)=>{const id=String(i);const author=["Ava Monroe","John Brooks","Zoey Hart","Mia Cruz"][i%4];const isLiked=liked.includes(id);return <div className="cs-comment" key={id}><div className="cs-avatar">{["A","J","Z","N"][i%4]}</div><div><b>{author}</b><p>{x}</p><small><button type="button" onClick={()=>{setReplyTo(author);setComment("@"+author+" ");}}>Responder</button>　<button type="button" className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"Curtido":"Curtir"}</button></small></div><button type="button" aria-label={isLiked?"Remover curtida":"Curtir comentário"} className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"♥":"♡"}</button></div>;})}</div><form onSubmit={submitComment}><span>↗</span><input value={comment} onChange={e=>setComment(e.target.value)} placeholder={replyTo?"Responder a "+replyTo:"Adicione um comentário..."} aria-label="Novo comentário ou resposta"/><button type="submit" disabled={!comment.trim()}>➤</button></form><small className="cs-comment-local-note">Interações demonstrativas nesta sessão; ainda não sincronizadas com a conta.</small></div></div>;
 }
 export default function CreatorStudioPage() {
