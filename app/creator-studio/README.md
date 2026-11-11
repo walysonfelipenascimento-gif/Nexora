@@ -31,8 +31,10 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Split a video segment logically at the current playback position.
 - Apply CSS preview filters and add a text overlay to the preview.
 - Adjust video preview volume and playback speed.
-- Import and preview a separate audio file.
-- Download the selected original source file.
+- Import a separate audio track and adjust its volume independently.
+- Render a combined POST/REELS video in the browser with the selected clip order, logical trim/split points, preview filter, text overlay, video playback speed, source-video volume, and optional soundtrack mix.
+- Export the rendered composition as WebM or MP4 when the browser MediaRecorder implementation supports the selected format.
+- Keep the original-source download as a separate recovery option.
 
 ## Calendar — implemented browser capabilities
 
@@ -47,14 +49,14 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Calendar media files are not persisted with the draft; only their filenames and draft metadata persist locally.
 - The Story audience selector is a draft preference only and is not enforced by a publishing service.
 - Story Boomerang and multi-frame Layout modes are not implemented; the UI reports this instead of simulating them.
-- The editor maintains a local editing sequence only; it does not encode a final combined media file.
-- Filter and text changes in the shared editor are preview effects, not baked into exported media.
-- The audio file is previewed separately and is not mixed/synchronized into video output.
-- Download in the shared editor exports the original selected source file, not the edited composition.
+- The shared editor renders and exports a combined local video in supported browsers; export is device-intensive and depends on browser codecs, memory, and available media APIs.
+- Calendar media files are not persisted with the draft; only filenames and draft metadata persist locally.
+- Story filters and caption text remain preview-only; Story saving still downloads the selected original media rather than a rendered Story composition.
+- No server upload, cross-device sync, public posting, automated publishing, or account-level scheduling is connected.
 - Video splitting currently creates logical timeline segments; it does not physically encode a new video file.
-- Comment likes and replies are local demonstration state and are not synchronized to a user account.
+- Comment likes, replies, and new comments persist in localStorage on the same browser/device, but are not synchronized to a user account.
 - Insights remain illustrative sample metrics and must not be interpreted as real audience performance.
-- Object URLs are local to the browser session.
+- Editor source media and generated export files are local to the browser session; calendar metadata and comment interactions use browser-local storage.
 
 ## Technical boundaries
 
