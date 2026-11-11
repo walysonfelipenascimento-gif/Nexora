@@ -90,7 +90,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     canvas.height = video.videoHeight;
     const context = canvas.getContext("2d");
     if (!context) { setCameraError("Não foi possível preparar a captura neste navegador."); return; }
-    context.filter = filter;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     setBusy(true);
     canvas.toBlob(blob => {
@@ -150,6 +149,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           <div className="cs-preview-top"><button onClick={() => { setStage("camera"); setCameraError(""); }}>‹</button><div><button onClick={() => setCaption(value => value + " ✦")}>Aa</button><button onClick={() => galleryInputRef.current?.click()}>▧</button><button onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>◐</button><button onClick={() => setCaption(value => value + " ♫")}>♫</button><button onClick={() => setCaption("")}>Limpar</button></div></div>
           <div className="cs-story-preview">
             {mediaUrl ? (mediaType.startsWith("video/") ? <video className="cs-story-selected-media" src={mediaUrl} controls playsInline style={{ filter }} /> : <img className="cs-story-selected-media" src={mediaUrl} alt="Prévia do Story" style={{ filter }} />) : <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>}
+            {caption && <span className="cs-story-caption-overlay">{caption}</span>}
             <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Adicionar texto..." aria-label="Texto do Story" />
           </div>
           <div className="cs-publish-row">
