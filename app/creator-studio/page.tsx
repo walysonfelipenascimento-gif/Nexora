@@ -57,6 +57,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
+  const recordingFrameRef = useRef<number | null>(null);
+  const recordingCanvasStreamRef = useRef<MediaStream | null>(null);
   const mediaUrlRef = useRef("");
   const mountedRef = useRef(true);
   const filter = effect === "P&B" ? "grayscale(1)" : effect === "Quente" ? "sepia(.35) saturate(1.25)" : effect === "Frio" ? "hue-rotate(12deg) saturate(.85)" : effect === "Contraste" ? "contrast(1.25)" : "none";
@@ -108,18 +110,43 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   }
   function toggleRecording() {
     const stream = cameraStreamRef.current;
+    const video = cameraVideoRef.current;
     if (recording) {
       if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
       return;
     }
-    if (!stream) { setCameraError("Ative a câmera antes de iniciar a gravação."); return; }
-    if (typeof MediaRecorder === "undefined") { setCameraError("Este navegador não oferece gravação de vídeo. Você ainda pode capturar fotos ou importar um vídeo."); return; }
+    if (!stream || !video || !video.videoWidth || !video.videoHeight) { setCameraError("Ative a câmera e aguarde a prévia antes de iniciar a gravação."); return; }
+    if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) { setCameraError("Este navegador não oferece gravação com filtros. Você ainda pode capturar fotos ou importar uma mídia."); return; }
     try {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext("2d");
+      if (!context) { setCameraError("Não foi possível preparar a gravação com efeito."); return; }
+      const canvasStream = canvas.captureStream(30);
+      recordingCanvasStreamRef.current = canvasStream;
+      const outputStream = new MediaStream([...canvasStream.getVideoTracks(), ...stream.getAudioTracks()]);
       const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const recorder = new MediaRecorder(outputStream, mimeType ? { mimeType } : undefined);
       recordedChunksRef.current = [];
+      const renderFrame = () => {
+        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          context.save();
+          context.filter = filter;
+          context.filter = filter;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    context.filter = "none";
+          context.restore();
+        }
+        recordingFrameRef.current = requestAnimationFrame(renderFrame);
+      };
+      renderFrame();
       recorder.ondataavailable = event => { if (event.data.size > 0) recordedChunksRef.current.push(event.data); };
       recorder.onstop = () => {
+        if (recordingFrameRef.current !== null) cancelAnimationFrame(recordingFrameRef.current);
+        recordingFrameRef.current = null;
+        recordingCanvasStreamRef.current?.getTracks().forEach(track => track.stop());
+        recordingCanvasStreamRef.current = null;
         const blob = new Blob(recordedChunksRef.current, { type: recorder.mimeType || "video/webm" });
         recordedChunksRef.current = [];
         recorderRef.current = null;
@@ -134,7 +161,9 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       setRecording(true);
       setCameraError("");
     } catch {
-      setCameraError("Não foi possível iniciar a gravação neste dispositivo.");
+      recordingCanvasStreamRef.current?.getTracks().forEach(track => track.stop());
+      recordingCanvasStreamRef.current = null;
+      setCameraError("Não foi possível iniciar a gravação com efeito neste dispositivo.");
     }
   }
   async function capturePhoto() {
@@ -175,6 +204,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     return () => {
       mountedRef.current = false;
       if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+      if (recordingFrameRef.current !== null) cancelAnimationFrame(recordingFrameRef.current);
+      recordingCanvasStreamRef.current?.getTracks().forEach(track => track.stop());
       cameraStreamRef.current?.getTracks().forEach(track => track.stop());
       if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
     };

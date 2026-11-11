@@ -15,7 +15,8 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 ## Story — implemented browser capabilities
 
 - Request camera permission through `getUserMedia`, prefer the rear camera where available, display the live camera preview and stop camera tracks when leaving/unmounting.
-- Capture a still photo from the camera preview.
+- Capture a still photo from the camera preview with the selected visual filter baked into the saved image.
+- Record camera video through a filtered canvas stream, preserving camera audio when available, so the selected filter is baked into the recorded video.
 - Record video with the browser MediaRecorder API, including microphone audio when permission is available; fall back to silent video if microphone access is unavailable.
 - Import an image or video from the device gallery and preview it.
 - Apply browser preview filters and add editable caption text.
@@ -51,7 +52,7 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Story Boomerang and multi-frame Layout modes are not implemented; the UI reports this instead of simulating them.
 - The shared editor renders and exports a combined local video in supported browsers; export is device-intensive and depends on browser codecs, memory, and available media APIs.
 - Calendar media and draft metadata persist locally in IndexedDB/localStorage on the same browser/device; clearing site data or browser storage can remove them.
-- Story filters and caption text remain preview-only; Story saving still downloads the selected original media rather than a rendered Story composition.
+- Filters are baked into photos captured by the camera and videos recorded through the camera. For media imported from the gallery, Story filters and caption text remain preview-only; saving an imported gallery file still downloads the original media.
 - No server upload, cross-device sync, public posting, automated publishing, or account-level scheduling is connected.
 - Video splitting currently creates logical timeline segments; it does not physically encode a new video file.
 - Comment likes, replies, and new comments persist in localStorage on the same browser/device, but are not synchronized to a user account.
