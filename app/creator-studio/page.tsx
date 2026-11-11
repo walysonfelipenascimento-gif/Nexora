@@ -256,6 +256,9 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   const [speed, setSpeed] = useState(1);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState("");
+  const [audioVolume, setAudioVolume] = useState(0.8);
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
   const [notice, setNotice] = useState("Importe fotos ou vídeos para começar.");
   const videoRef = useRef<HTMLVideoElement>(null);
   const objectUrlsRef = useRef<Set<string>>(new Set());
@@ -284,6 +287,117 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   function splitSelected() { if (!selected || selected.file.type.startsWith("image/")) { setNotice("A divisão está disponível para vídeos."); return; } const point=Math.max(selected.start+.2,Math.min(playhead,selected.end-.2)); if(point<=selected.start||point>=selected.end){setNotice("Posicione a reprodução no interior do clipe para dividi-lo.");return;} const left={...selected,id:crypto.randomUUID(),end:point}; const right={...selected,id:crypto.randomUUID(),start:point}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index),left,right,...current.slice(index+1)]); setSelectedId(right.id); setNotice("Clipe dividido em dois segmentos."); }
   function moveSelected(direction: -1 | 1) { if(!selected)return; const index=clips.findIndex(clip=>clip.id===selected.id), target=index+direction; if(target<0||target>=clips.length)return; const next=[...clips]; [next[index],next[target]]=[next[target],next[index]]; setClips(next); }
   function downloadOriginal() { if(!selected)return; const anchor=document.createElement("a"); anchor.href=selected.url; anchor.download=selected.file.name; anchor.click(); setNotice("Download do arquivo original iniciado. As edições ainda não são renderizadas."); }
+  async function exportEditedVideo() {
+    if (!clips.length || exporting) return;
+    if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) {
+      setNotice("Este navegador não oferece exportação de vídeo pelo editor. Tente uma versão recente do Chrome ou Edge.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    const width = format === "REELS" ? 1080 : 1080;
+    const height = format === "REELS" ? 1920 : 1080;
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) { setNotice("Não foi possível iniciar a renderização neste navegador."); return; }
+    const canvasStream = canvas.captureStream(30);
+    let audioContext: AudioContext | null = null;
+    let recorder: MediaRecorder | null = null;
+    let soundtrack: HTMLAudioElement | null = null;
+    const chunks: Blob[] = [];
+    const filterValue = filterStyle;
+    const drawFrame = (source: CanvasImageSource) => {
+      const sw = source instanceof HTMLVideoElement ? source.videoWidth : source instanceof HTMLImageElement ? source.naturalWidth : width;
+      const sh = source instanceof HTMLVideoElement ? source.videoHeight : source instanceof HTMLImageElement ? source.naturalHeight : height;
+      if (!sw || !sh) return;
+      const scale = Math.max(width / sw, height / sh);
+      const dw = sw * scale, dh = sh * scale;
+      ctx.save(); ctx.clearRect(0, 0, width, height); ctx.filter = filterValue;
+      ctx.drawImage(source, (width-dw)/2, (height-dh)/2, dw, dh);
+      ctx.restore();
+      if (overlayText.trim()) {
+        const fontSize = Math.round(width * 0.055);
+        ctx.save(); ctx.font = `800 ${fontSize}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.lineWidth = Math.max(3, fontSize * 0.12); ctx.strokeStyle = "rgba(0,0,0,.72)"; ctx.fillStyle = "#fff";
+        const words = overlayText.trim().split(/\s+/); const lines: string[] = []; let line = "";
+        for (const word of words) { const test = line ? line + " " + word : word; if (ctx.measureText(test).width > width * .82 && line) { lines.push(line); line = word; } else line = test; }
+        if (line) lines.push(line);
+        const lineHeight = fontSize * 1.18; const startY = height * .5 - ((lines.length-1)*lineHeight)/2;
+        lines.forEach((text,index) => { const y = startY + index*lineHeight; ctx.strokeText(text,width/2,y,width*.84); ctx.fillText(text,width/2,y,width*.84); });
+        ctx.restore();
+      }
+    };
+    const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    try {
+      setExporting(true); setExportProgress(0); setNotice("Preparando renderização em tempo real…");
+      const AudioContextClass = window.AudioContext;
+      if (AudioContextClass) {
+        audioContext = new AudioContextClass();
+        await audioContext.resume();
+      }
+      const audioDestination = audioContext?.createMediaStreamDestination();
+      if ((audioFile || clips.some(clip=>clip.file.type.startsWith("video/"))) && !audioContext) throw new Error("A mixagem de áudio não é compatível com este navegador.");
+      if (audioContext && audioDestination && audioFile && audioUrl) {
+        soundtrack = document.createElement("audio"); soundtrack.src = audioUrl; soundtrack.loop = true; soundtrack.preload = "auto";
+        const source = audioContext.createMediaElementSource(soundtrack);
+        const gain = audioContext.createGain(); gain.gain.value = audioVolume;
+        source.connect(gain); gain.connect(audioDestination);
+      }
+      const mimeType = ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"].find(type => MediaRecorder.isTypeSupported(type));
+      recorder = new MediaRecorder(new MediaStream([...canvasStream.getVideoTracks(), ...(audioDestination?.stream.getAudioTracks() ?? [])]), mimeType ? { mimeType } : undefined);
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      const recordingDone = new Promise<Blob>((resolve,reject) => {
+        if (!recorder) { reject(new Error("Gravador indisponível")); return; }
+        recorder.onerror = () => reject(new Error("O navegador interrompeu a renderização."));
+        recorder.onstop = () => resolve(new Blob(chunks,{type:recorder?.mimeType || "video/webm"}));
+      });
+      recorder.start(250);
+      if (soundtrack) await soundtrack.play().catch(() => { throw new Error("Não foi possível iniciar a faixa de áudio selecionada."); });
+      for (let index=0; index<clips.length; index++) {
+        const clip=clips[index];
+        setNotice(`Renderizando mídia ${index+1} de ${clips.length}…`);
+        if (clip.file.type.startsWith("image/")) {
+          const img = new Image();
+          await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error("Uma das imagens não pôde ser carregada."));img.src=clip.url;});
+          const start=performance.now();
+          while (performance.now()-start < 4000) { drawFrame(img); setExportProgress(Math.min(99,Math.round(((index+(performance.now()-start)/4000)/clips.length)*100))); await nextFrame(); }
+        } else {
+          const video=document.createElement("video"); video.src=clip.url; video.preload="auto"; video.playsInline=true;
+          await new Promise<void>((resolve,reject)=>{video.onloadedmetadata=()=>resolve();video.onerror=()=>reject(new Error("Um dos vídeos não pôde ser decodificado."));});
+          const start=Math.max(0,clip.start); const end=Math.min(video.duration,clip.end>start?clip.end:video.duration);
+          if (audioContext && audioDestination) {
+            const source=audioContext.createMediaElementSource(video); const gain=audioContext.createGain(); gain.gain.value=volume;
+            source.connect(gain); gain.connect(audioDestination);
+          }
+          video.playbackRate=speed;
+          if(start>0) await new Promise<void>((resolve,reject)=>{video.onseeked=()=>resolve();video.onerror=()=>reject(new Error("Falha ao posicionar um vídeo na linha do tempo."));video.currentTime=start;});
+          await video.play();
+          while (!video.ended && video.currentTime < end) {
+            drawFrame(video);
+            setExportProgress(Math.min(99,Math.round(((index+(video.currentTime-start)/Math.max(.1,end-start))/clips.length)*100)));
+            await nextFrame();
+          }
+          video.pause(); video.removeAttribute("src"); video.load();
+        }
+      }
+      if (soundtrack) soundtrack.pause();
+      if (recorder.state !== "inactive") recorder.stop();
+      const blob=await recordingDone;
+      if (!blob.size) throw new Error("A renderização terminou sem gerar um arquivo.");
+      const url=URL.createObjectURL(blob);
+      const anchor=document.createElement("a"); anchor.href=url; anchor.download=`nexora-${format.toLowerCase()}-editado.${blob.type.includes("mp4")?"mp4":"webm"}`; anchor.click();
+      window.setTimeout(()=>URL.revokeObjectURL(url),60000);
+      setExportProgress(100); setNotice("Vídeo renderizado e baixado com filtros, texto, sequência e áudio disponível no navegador.");
+    } catch (error) {
+      if (recorder && recorder.state !== "inactive") recorder.stop();
+      const message=error instanceof Error?error.message:"Não foi possível renderizar este projeto.";
+      setNotice(message);
+    } finally {
+      if (soundtrack) { soundtrack.pause(); soundtrack.src=""; }
+      canvasStream.getTracks().forEach(track=>track.stop());
+      if (audioContext) await audioContext.close().catch(()=>undefined);
+      setExporting(false);
+    }
+  }
   const selectedIsVideo=Boolean(selected?.file.type.startsWith("video/"));
   return <div className="cs-real-editor">
     <div className="cs-real-editor-head"><div><span className="cs-kicker">EDITOR COMPARTILHADO</span><h3>{format==="POST"?"Editar publicação":"Editar Reel"}</h3><p>Um único conjunto de ferramentas para os dois formatos.</p></div><div className="cs-speed-options"><button className={format==="POST"?"active":""} onClick={()=>setFormat("POST")}>POST</button><button className={format==="REELS"?"active":""} onClick={()=>setFormat("REELS")}>REELS</button></div></div>
@@ -300,7 +414,9 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
         <div className="cs-tool-group"><label>Volume <strong>{Math.round(volume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={volume} onChange={event=>{const value=Number(event.target.value);setVolume(value);if(videoRef.current)videoRef.current.volume=value;}}/></div>
         <div className="cs-tool-group"><label>Velocidade <strong>{speed.toFixed(2)}×</strong></label><input type="range" min=".25" max="2" step=".25" value={speed} onChange={event=>{const value=Number(event.target.value);setSpeed(value);if(videoRef.current)videoRef.current.playbackRate=value;}}/></div>
         <label className="cs-audio-picker">＋ Adicionar faixa de áudio<input type="file" accept="audio/*" onChange={event=>{const file=event.target.files?.[0]??null;setAudioFile(file);setAudioUrl(file?createLocalUrl(file):"");}}/></label>{audioFile&&<div className="cs-audio-file"><b>Áudio selecionado:</b> {audioFile.name}<audio controls src={audioUrl}/></div>}
-        <button className="cs-export-original" disabled={!selected} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A edição e a prévia são locais. Renderização final, salvamento e publicação exigem integração de mídia e servidor.</small></section>
+        <div className="cs-tool-group"><label>Volume da faixa de áudio <strong>{Math.round(audioVolume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={audioVolume} onChange={event=>setAudioVolume(Number(event.target.value))} disabled={!audioFile}/></div>
+        <button className="cs-export-original" disabled={!clips.length||exporting} onClick={exportEditedVideo}>{exporting?(`Renderizando… ${exportProgress}%`):"Renderizar e baixar vídeo final"}</button>
+        <button className="cs-export-original cs-download-source" disabled={!selected||exporting} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A renderização acontece neste dispositivo. A publicação na conta e a sincronização entre dispositivos ainda dependem do servidor Nexora.</small></section>
     </div></div>;
 }
 function MiniChart({ title, value, kind = "line" }: { title: string; value: string; kind?: "line" | "bars" }) {
@@ -317,7 +433,47 @@ function InsightsStudio() {
   </div>;
 }
 
-type ScheduledDraft = { id: string; date: string; time: string; format: string; caption: string; mediaName: string };
+type ScheduledDraft = { id: string; date: string; time: string; format: string; caption: string; mediaName: string; mediaId?: string };
+function openCalendarMediaDb(): Promise<IDBDatabase> {
+  return new Promise((resolve,reject) => {
+    if (!("indexedDB" in window)) { reject(new Error("Armazenamento de mídia não disponível.")); return; }
+    const request=window.indexedDB.open("nexora-creator-studio",1);
+    request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains("calendar-media"))db.createObjectStore("calendar-media");};
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error??new Error("Falha ao abrir o armazenamento local."));
+  });
+}
+async function saveCalendarMedia(id:string,file:File):Promise<void> {
+  const db=await openCalendarMediaDb();
+  await new Promise<void>((resolve,reject)=>{
+    const tx=db.transaction("calendar-media","readwrite");
+    tx.objectStore("calendar-media").put(file,id);
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao salvar a mídia do rascunho."));};
+    tx.onabort=()=>{db.close();reject(tx.error??new Error("Salvamento da mídia cancelado."));};
+  });
+}
+async function readCalendarMedia(id:string):Promise<Blob|null> {
+  const db=await openCalendarMediaDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("calendar-media","readonly");
+    const request=tx.objectStore("calendar-media").get(id);
+    request.onsuccess=()=>{const value=request.result;resolve(value instanceof Blob?value:null);};
+    request.onerror=()=>reject(request.error??new Error("Falha ao recuperar a mídia."));
+    tx.oncomplete=()=>db.close();
+    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao ler a mídia."));};
+  });
+}
+async function deleteCalendarMedia(id:string):Promise<void> {
+  const db=await openCalendarMediaDb();
+  await new Promise<void>((resolve,reject)=>{
+    const tx=db.transaction("calendar-media","readwrite");
+    tx.objectStore("calendar-media").delete(id);
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao remover a mídia."));};
+    tx.onabort=()=>{db.close();reject(tx.error??new Error("Remoção da mídia cancelada."));};
+  });
+}
 function CalendarStudio() {
   const today = new Date();
   const toDateKey = (date: Date) => [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
@@ -329,7 +485,7 @@ function CalendarStudio() {
   const [media, setMedia] = useState<File | null>(null);
   const [drafts, setDrafts] = useState<ScheduledDraft[]>([]);
   const [draftsHydrated, setDraftsHydrated] = useState(false);
-  const [notice, setNotice] = useState("Os agendamentos ficam nesta sessão do navegador; não serão publicados automaticamente.");
+  const [notice, setNotice] = useState("Rascunhos e arquivos ficam salvos neste navegador; não serão publicados automaticamente.");
   const [showAll, setShowAll] = useState(false);
   const [mediaPreview, setMediaPreview] = useState("");
   const [mediaPreviewType, setMediaPreviewType] = useState("");
@@ -373,12 +529,16 @@ function CalendarStudio() {
     const nextDate=toDateKey(new Date(next.getFullYear(),next.getMonth(),1));
     setSelectedDate(nextDate);
   }
-  function addDraft(event:FormEvent<HTMLFormElement>) {
+  async function addDraft(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(!caption.trim()&&!media){setNotice("Adicione uma legenda ou selecione um arquivo de mídia antes de salvar.");return;}
     if(!selectedDate||!time){setNotice("Escolha uma data e um horário válidos.");return;}
-    setDrafts(current=>[...current,{id:crypto.randomUUID(),date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??""}]);
-    setNotice("Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
+    const id=crypto.randomUUID();
+    let mediaId:string|undefined;
+    let mediaSaveFailed=false;
+    if(media){try{await saveCalendarMedia(id,media);mediaId=id;}catch{mediaSaveFailed=true;}}
+    setDrafts(current=>[...current,{id,date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??"",mediaId}]);
+    setNotice(mediaSaveFailed?"Rascunho salvo, mas o navegador não conseguiu guardar o arquivo de mídia.":mediaId?"Rascunho e arquivo de mídia salvos neste navegador. Nenhuma publicação foi enviada.":"Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
     setCaption("");
     setMedia(null);
     if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
@@ -387,9 +547,20 @@ function CalendarStudio() {
     setMediaPreviewType("");
     setMediaInputKey(value=>value+1);
   }
-  function removeDraft(id:string) {
+  async function downloadDraftMedia(item:ScheduledDraft) {
+    if(!item.mediaId){setNotice("Este rascunho não possui arquivo de mídia salvo.");return;}
+    try{
+      const blob=await readCalendarMedia(item.mediaId);
+      if(!blob){setNotice("O arquivo não foi encontrado no armazenamento deste navegador.");return;}
+      const url=URL.createObjectURL(blob);const anchor=document.createElement("a");anchor.href=url;anchor.download=item.mediaName||"nexora-rascunho";anchor.click();
+      window.setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }catch{setNotice("Não foi possível recuperar o arquivo deste rascunho.");}
+  }
+  async function removeDraft(id:string) {
+    const item=drafts.find(draft=>draft.id===id);
+    if(item?.mediaId){try{await deleteCalendarMedia(item.mediaId);}catch{setNotice("O rascunho será removido, mas o arquivo local pode permanecer armazenado.");}}
     setDrafts(current=>current.filter(item=>item.id!==id));
-    setNotice("Agendamento removido do calendário local.");
+    setNotice("Rascunho removido do calendário local.");
   }
   function selectDay(day:number) {
     const date=new Date(yearText,monthText-1,day);
@@ -405,7 +576,7 @@ function CalendarStudio() {
       <div className="cs-calendar-days">{["D","S","T","Q","Q","S","S"].map((x,i)=><span key={i}>{x}</span>)}{calendarCells.map((day,index)=>day===0?<i key={"blank-"+index}/>:<button type="button" key={day} className={selectedDate===toDateKey(new Date(yearText,monthText-1,day))?"selected":""} onClick={()=>selectDay(day)}>{day}{drafts.some(item=>item.date===toDateKey(new Date(yearText,monthText-1,day)))&&<i/>}</button>)}</div>
       <div className="cs-schedule-list">
         <div className="cs-schedule-list-head"><b>{new Date(selectedDate+"T12:00:00").toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"})}</b><button type="button" onClick={()=>setShowAll(value=>!value)}>{showAll?"Ver dia":"Ver todos"}</button></div>
-        {visibleDrafts.length===0?<p className="cs-empty-schedule">Nenhum rascunho neste período.</p>:visibleDrafts.map(item=><div className="cs-scheduled-item" key={item.id}><div><b>{item.time} · {item.format}</b><p>{item.caption||item.mediaName||"Publicação sem legenda"}</p>{item.mediaName&&<small>Arquivo: {item.mediaName}</small>}{showAll&&<small>{new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR")}</small>}</div><button type="button" onClick={()=>removeDraft(item.id)} aria-label="Excluir agendamento">×</button></div>)}
+        {visibleDrafts.length===0?<p className="cs-empty-schedule">Nenhum rascunho neste período.</p>:visibleDrafts.map(item=><div className="cs-scheduled-item" key={item.id}><div><b>{item.time} · {item.format}</b><p>{item.caption||item.mediaName||"Publicação sem legenda"}</p>{item.mediaName&&<><small>Arquivo: {item.mediaName}</small>{item.mediaId&&<button type="button" className="cs-draft-media-download" onClick={()=>downloadDraftMedia(item)}>Baixar mídia salva</button>}</>}{showAll&&<small>{new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR")}</small>}</div><button type="button" onClick={()=>removeDraft(item.id)} aria-label="Excluir agendamento">×</button></div>)}
       </div>
     </div>
     <form className="cs-compose-panel" onSubmit={addDraft}>
@@ -427,6 +598,23 @@ function CommentsStudio() {
   const [replyTo,setReplyTo]=useState("");
   const [liked,setLiked]=useState<string[]>([]);
   const [items,setItems]=useState(["True fashion begins with the confidence to wear your vision.","When you wear love unapologetically, you’re already winning at style.","Sharp, sleek, and just the right shade of iconic."]);
+  const [hydrated,setHydrated]=useState(false);
+  useEffect(() => {
+    try {
+      const savedItems=window.localStorage.getItem("nexora-creator-comments-v1");
+      const savedLikes=window.localStorage.getItem("nexora-creator-comment-likes-v1");
+      if(savedItems){const parsed=JSON.parse(savedItems);if(Array.isArray(parsed)&&parsed.every(item=>typeof item==="string"))setItems(parsed);}
+      if(savedLikes){const parsed=JSON.parse(savedLikes);if(Array.isArray(parsed)&&parsed.every(item=>typeof item==="string"))setLiked(parsed);}
+    } catch { /* Mantém a demonstração em memória se o armazenamento estiver indisponível. */ }
+    setHydrated(true);
+  },[]);
+  useEffect(() => {
+    if(!hydrated)return;
+    try {
+      window.localStorage.setItem("nexora-creator-comments-v1",JSON.stringify(items));
+      window.localStorage.setItem("nexora-creator-comment-likes-v1",JSON.stringify(liked));
+    } catch { /* As interações continuam disponíveis durante esta sessão. */ }
+  },[items,liked,hydrated]);
   function submitComment(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if(!comment.trim())return; const text=(replyTo?"↳ Resposta para "+replyTo+": ":"")+comment.trim(); setItems(current=>[...current,text]); setComment(""); setReplyTo(""); }
   return <div className="cs-comments-layout"><div className="cs-comment-content"><div className="cs-comment-art">N<span>CONTEÚDO</span></div></div><div className="cs-comments-sheet"><div className="cs-sheet-handle"/><h3>Comentários <small>{items.length}</small></h3><div className="cs-comment-list">{items.map((x,i)=>{const id=String(i);const author=["Ava Monroe","John Brooks","Zoey Hart","Mia Cruz"][i%4];const isLiked=liked.includes(id);return <div className="cs-comment" key={id}><div className="cs-avatar">{["A","J","Z","N"][i%4]}</div><div><b>{author}</b><p>{x}</p><small><button type="button" onClick={()=>{setReplyTo(author);setComment("@"+author+" ");}}>Responder</button>　<button type="button" className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"Curtido":"Curtir"}</button></small></div><button type="button" aria-label={isLiked?"Remover curtida":"Curtir comentário"} className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"♥":"♡"}</button></div>;})}</div><form onSubmit={submitComment}><span>↗</span><input value={comment} onChange={e=>setComment(e.target.value)} placeholder={replyTo?"Responder a "+replyTo:"Adicione um comentário..."} aria-label="Novo comentário ou resposta"/><button type="submit" disabled={!comment.trim()}>➤</button></form><small className="cs-comment-local-note">Interações demonstrativas nesta sessão; ainda não sincronizadas com a conta.</small></div></div>;
 }

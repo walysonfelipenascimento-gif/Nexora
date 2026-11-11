@@ -68,3 +68,7 @@
 
 .cs-record-mode{border:1px solid #ffffff55;border-radius:20px;background:#111827aa;color:#fff;padding:7px 10px;font-size:9px;font-weight:700}
 .cs-shutter.recording{background:#ff536e;border-color:#fff;box-shadow:0 0 0 5px #ff536e44}
+
+.cs-export-original.cs-download-source{background:#ffffff0a;color:#dce6fa;border:1px solid var(--line)}
+
+.cs-draft-media-download{display:inline-flex;align-items:center;margin-top:5px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:#ffffff08;color:#a9dff5;font-size:9px;cursor:pointer}
