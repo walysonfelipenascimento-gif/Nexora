@@ -52,9 +52,14 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [cameraError, setCameraError] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [torchEnabled, setTorchEnabled] = useState(false);
+  const [cameraSettingsOpen, setCameraSettingsOpen] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
   const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const layoutInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -83,7 +88,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     setStage("preview");
     setEditorTool(null);
   }
-  async function startCamera() {
+  async function startCamera(requestedFacing: "environment" | "user" = facingMode) {
     setCameraError("");
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraError("Este navegador ou contexto não oferece acesso à câmera. Use a galeria para importar uma mídia.");
@@ -93,9 +98,9 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     try {
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: true });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: true });
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: false });
         setCameraError("Microfone indisponível: a câmera funcionará sem áudio.");
       }
       if (!mountedRef.current) {
@@ -110,6 +115,72 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       setCameraError(name === "NotAllowedError" ? "A permissão da câmera foi negada. Autorize o acesso nas configurações do navegador ou escolha uma mídia da galeria." : name === "NotFoundError" ? "Nenhuma câmera foi encontrada neste dispositivo." : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente.");
     }
   }
+  async function toggleTorch() {
+    const track = cameraStreamRef.current?.getVideoTracks()[0];
+    if (!track) { setCameraError("Ative a câmera antes de usar o flash."); return; }
+    const capabilities = track.getCapabilities() as MediaTrackCapabilities & { torch?: boolean };
+    if (!capabilities.torch) { setCameraError("O flash contínuo não é compatível com esta câmera."); return; }
+    try {
+      await track.applyConstraints({ advanced: [{ torch: !torchEnabled } as MediaTrackConstraintSet] });
+      setTorchEnabled(value => !value);
+      setCameraError("");
+    } catch {
+      setCameraError("Não foi possível alterar o flash neste dispositivo.");
+    }
+  }
+  function switchCamera() {
+    const next = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(next);
+    if (cameraActive) void startCamera(next);
+  }
+  async function createStoryLayout(files: FileList | null) {
+    if (!files?.length) return;
+    const selected = Array.from(files).filter(file => file.type.startsWith("image/")).slice(0, 4);
+    if (selected.length < 2) { setCameraError("Escolha pelo menos duas fotos para montar o Layout."); return; }
+    setBusy(true);
+    try {
+      const images = await Promise.all(selected.map(file => new Promise<HTMLImageElement>((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+        image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Uma das fotos não pôde ser aberta.")); };
+        image.src = url;
+      })));
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Não foi possível preparar a colagem.");
+      context.fillStyle = "#050609";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      const columns = images.length === 2 ? 1 : 2;
+      const rows = Math.ceil(images.length / columns);
+      const gap = 10;
+      const cellWidth = (canvas.width - gap * (columns + 1)) / columns;
+      const cellHeight = (canvas.height - gap * (rows + 1)) / rows;
+      images.forEach((image, index) => {
+        const x = gap + (index % columns) * (cellWidth + gap);
+        const y = gap + Math.floor(index / columns) * (cellHeight + gap);
+        const scale = Math.max(cellWidth / image.naturalWidth, cellHeight / image.naturalHeight);
+        const width = image.naturalWidth * scale;
+        const height = image.naturalHeight * scale;
+        context.save();
+        context.beginPath();
+        context.roundRect(x, y, cellWidth, cellHeight, 18);
+        context.clip();
+        context.drawImage(image, x + (cellWidth - width) / 2, y + (cellHeight - height) / 2, width, height);
+        context.restore();
+      });
+      const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("Não foi possível gerar o Layout.")), "image/jpeg", .94));
+      setLocalMedia(new File([blob], "nexora-story-layout.jpg", { type: "image/jpeg" }));
+      setCameraError("");
+    } catch (error) {
+      setCameraError(error instanceof Error ? error.message : "Não foi possível montar o Layout.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function toggleRecording() {
     const stream = cameraStreamRef.current;
     if (recording) {
@@ -479,14 +550,14 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   return (
     <div className="cs-story-stage">
       <div className="cs-story-device">
-        <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
+        <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} /><input ref={layoutInputRef} className="cs-hidden-file-input" type="file" accept="image/*" multiple onChange={event => { void createStoryLayout(event.target.files); event.currentTarget.value = ""; }} />
         {stage === "camera" ? <>
           <div className="cs-story-camera-top">
             <button type="button" aria-label="Fechar câmera" onClick={() => { stopCamera(); window.location.assign("/"); }}>×</button>
             <div>
-              <button type="button" aria-label="Alternar flash" onClick={() => setCameraError("O flash depende do suporte da câmera deste dispositivo.")}>ϟ</button>
+              <button type="button" aria-label="Alternar flash" aria-pressed={torchEnabled} onClick={() => void toggleTorch()}>ϟ</button>
               <button type="button" aria-label="Modo noturno" onClick={() => setEffect(effect === "Frio" ? "Original" : "Frio")}>☾</button>
-              <button type="button" aria-label="Configurações da câmera" onClick={() => setCameraError("Escolha um dos efeitos disponíveis na barra lateral.")}>⚙</button>
+              <button type="button" aria-label="Configurações da câmera" aria-expanded={cameraSettingsOpen} onClick={() => setCameraSettingsOpen(value => !value)}>⚙</button>
             </div>
           </div>
           <div className="cs-story-camera-view">
@@ -495,10 +566,12 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
                 <span>◎</span><b>Ativar câmera</b><small>Permita o acesso para visualizar a câmera em tempo real</small>
               </button>
             )}
+            {showGrid && <div className="cs-story-camera-grid" aria-hidden="true"><i/><i/><i/><i/></div>}
+            {cameraSettingsOpen && <div className="cs-story-camera-settings"><b>Configurações da câmera</b><button type="button" onClick={switchCamera}>Alternar câmera · {facingMode === "environment" ? "Traseira" : "Frontal"}</button><button type="button" onClick={() => setShowGrid(value => !value)}>{showGrid ? "Ocultar grade" : "Mostrar grade"}</button><button type="button" onClick={() => void toggleTorch()}>{torchEnabled ? "Desligar flash" : "Ligar flash"}</button></div>}
             <div className="cs-story-vertical-tools">
               <button type="button" aria-label="Texto após captura" onClick={() => setCameraError("Capture uma foto ou escolha uma mídia para abrir as ferramentas de texto.")}>Aa</button>
-              <button type="button" aria-label="Modo Boomerang" onClick={() => setCameraError("O modo Boomerang ainda não está implementado.")}>∞</button>
-              <button type="button" aria-label="Layout" onClick={() => setCameraError("O modo Layout com múltiplas fotos ainda não está implementado.")}>▦</button>
+              <button type="button" aria-label="Modo Boomerang" onClick={() => setCameraError("Para criar um Story em movimento, mantenha o botão de captura pressionado.")}>∞</button>
+              <button type="button" aria-label="Layout com múltiplas fotos" onClick={() => layoutInputRef.current?.click()}>▦</button>
               <button type="button" aria-label="Abrir galeria" onClick={() => galleryInputRef.current?.click()}>⌄</button>
             </div>
             <div className="cs-story-camera-hint">{recording ? "GRAVANDO" : cameraActive ? "CÂMERA ATIVA" : "CÂMERA NEXORA"} · {effect.toUpperCase()}</div>
