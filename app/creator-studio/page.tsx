@@ -204,8 +204,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         const context = canvas.getContext("2d");
         if (!context) throw new Error("Não foi possível preparar o vídeo para aplicar o efeito.");
         const canvasStream = canvas.captureStream(30);
-        const capturableVideo = video as HTMLVideoElement & { webkitCaptureStream?: () => MediaStream };
-        const sourceStream = typeof video.captureStream === "function" ? video.captureStream() : typeof capturableVideo.webkitCaptureStream === "function" ? capturableVideo.webkitCaptureStream() : null;
+        const capturableVideo = video as HTMLVideoElement & { captureStream?: () => MediaStream; webkitCaptureStream?: () => MediaStream };
+        const sourceStream = typeof capturableVideo.captureStream === "function" ? capturableVideo.captureStream() : typeof capturableVideo.webkitCaptureStream === "function" ? capturableVideo.webkitCaptureStream() : null;
         const outputStream = new MediaStream([
           ...canvasStream.getVideoTracks(),
           ...(sourceStream?.getAudioTracks() ?? []),
