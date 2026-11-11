@@ -209,7 +209,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         context.filter = filter;
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
         output = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar a imagem com o efeito.")), "image/png"));
-        filename = (mediaFile.name.replace(/\\.[^.]+$/, "") || "nexora-story") + "-com-efeito.png";
+        filename = (mediaFile.name.replace(/\.[^.]+$/, "") || "nexora-story") + "-com-efeito.png";
       } else if (mediaType.startsWith("video/")) {
         if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) {
           throw new Error("Este navegador não oferece exportação de vídeo com filtros. Tente salvar uma foto ou use outro navegador compatível.");
@@ -235,27 +235,42 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           ...canvasStream.getVideoTracks(),
           ...(sourceStream?.getAudioTracks() ?? []),
         ]);
-        const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
+        const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
         const recorder = new MediaRecorder(outputStream, mimeType ? { mimeType } : undefined);
         const chunks: Blob[] = [];
-        output = await new Promise<Blob>(async (resolve, reject) => {
+        output = await new Promise<Blob>((resolve, reject) => {
           let stopped = false;
+          let settled = false;
           let frame = 0;
+          let failure: Error | null = null;
           const stopTracks = () => {
             canvasStream.getTracks().forEach(track => track.stop());
             sourceStream?.getTracks().forEach(track => track.stop());
+            video.pause();
           };
-          const finish = () => {
+          const finish = (error?: Error) => {
+            if (error && !failure) failure = error;
             if (stopped) return;
             stopped = true;
             if (frame) cancelAnimationFrame(frame);
-            if (recorder.state !== "inactive") recorder.stop();
-            stopTracks();
+            if (recorder.state !== "inactive") {
+              try { recorder.stop(); } catch { stopTracks(); }
+            } else {
+              stopTracks();
+              if (!settled) {
+                settled = true;
+                reject(failure ?? new Error("A gravação não foi iniciada."));
+              }
+            }
           };
-          recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-          recorder.onerror = () => { finish(); reject(new Error("O navegador encontrou um erro ao renderizar o vídeo com efeito.")); };
+          recorder.ondataavailable = event => { if (event.data.size > 0) chunks.push(event.data); };
+          recorder.onerror = () => finish(new Error("O navegador encontrou um erro ao renderizar o vídeo com efeito."));
           recorder.onstop = () => {
-            const result = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+            stopTracks();
+            if (settled) return;
+            settled = true;
+            if (failure) { reject(failure); return; }
+            const result = new Blob(chunks, { type: recorder.mimeType || mimeType || "video/webm" });
             if (result.size) resolve(result);
             else reject(new Error("A renderização terminou sem gerar um vídeo."));
           };
@@ -268,18 +283,21 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             }
             if (!stopped) frame = requestAnimationFrame(drawFrame);
           };
-          video.onended = finish;
-          video.onerror = () => { finish(); reject(new Error("A leitura do vídeo foi interrompida.")); };
+          video.onended = () => finish();
+          video.onerror = () => finish(new Error("A leitura do vídeo foi interrompida."));
           try {
-            recorder.start(250);
-            drawFrame();
-            await video.play();
+            video.currentTime = 0;
+            void video.play().then(() => {
+              if (stopped) return;
+              recorder.start(250);
+              drawFrame();
+            }).catch(() => finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador.")));
           } catch {
-            finish();
-            reject(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador."));
+            finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador."));
           }
         });
-        filename = (mediaFile.name.replace(/\\.[^.]+$/, "") || "nexora-story") + "-com-efeito.webm";
+        const extension = output.type.includes("mp4") ? "mp4" : "webm";
+        filename = (mediaFile.name.replace(/\\.[^.]+$/, "") || "nexora-story") + "-com-efeito." + extension;
       } else {
         throw new Error("Este formato de mídia não é compatível com a exportação de efeitos.");
       }
