@@ -335,6 +335,7 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
         await audioContext.resume();
       }
       const audioDestination = audioContext?.createMediaStreamDestination();
+      if ((audioFile || clips.some(clip=>clip.file.type.startsWith("video/"))) && !audioContext) throw new Error("A mixagem de áudio não é compatível com este navegador.");
       if (audioContext && audioDestination && audioFile && audioUrl) {
         soundtrack = document.createElement("audio"); soundtrack.src = audioUrl; soundtrack.loop = true; soundtrack.preload = "auto";
         const source = audioContext.createMediaElementSource(soundtrack);
@@ -367,8 +368,8 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
             const source=audioContext.createMediaElementSource(video); const gain=audioContext.createGain(); gain.gain.value=volume;
             source.connect(gain); gain.connect(audioDestination);
           }
-          video.currentTime=start;
-          await new Promise<void>((resolve,reject)=>{video.onseeked=()=>resolve();video.onerror=()=>reject(new Error("Falha ao posicionar um vídeo na linha do tempo."));});
+          video.playbackRate=speed;
+          if(start>0) await new Promise<void>((resolve,reject)=>{video.onseeked=()=>resolve();video.onerror=()=>reject(new Error("Falha ao posicionar um vídeo na linha do tempo."));video.currentTime=start;});
           await video.play();
           while (!video.ended && video.currentTime < end) {
             drawFrame(video);
