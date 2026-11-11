@@ -34,6 +34,9 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const [caption, setCaption] = useState("");
   const [audience, setAudience] = useState("Seu Story");
   const [selected, setSelected] = useState("Câmera");
+  const [storyMediaUrl, setStoryMediaUrl] = useState("");
+  const [storyMediaType, setStoryMediaType] = useState("");
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="cs-story-layout">
       <div className="cs-phone cs-camera-phone">
@@ -58,7 +61,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             <span className="cs-effect-label">{effect}</span>
           </div>
           <div className="cs-capture-row">
-            <button className="cs-gallery-thumb" onClick={() => { setSelected("Galeria"); setStage("preview"); }} aria-label="Abrir galeria">▧</button>
+            <button className="cs-gallery-thumb" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria">▧</button>
+            <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event=>{const file=event.target.files?.[0];if(file){setStoryMediaUrl(URL.createObjectURL(file));setStoryMediaType(file.type);setSelected("Galeria");setStage("preview");}}}/>
             <button className="cs-shutter" onClick={() => setStage("preview")} aria-label="Capturar" />
             <button className="cs-creative-effect" onClick={() => setEffect("Efeito inteligente")}>✧</button>
           </div>
