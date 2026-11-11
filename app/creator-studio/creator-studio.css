@@ -165,3 +165,12 @@
 .cs-story-final-actions button:disabled{opacity:.55}
 
 .cs-story-shutter{touch-action:none;user-select:none;-webkit-user-select:none}
+
+.cs-story-camera-grid{position:absolute;z-index:1;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;pointer-events:none}
+.cs-story-camera-grid i{border-right:1px solid #ffffff55;border-bottom:1px solid #ffffff55}
+.cs-story-camera-grid i:nth-child(2n){border-right:0}
+.cs-story-camera-grid i:nth-child(n+3){border-bottom:0}
+.cs-story-camera-settings{position:absolute;z-index:6;top:12px;right:10px;width:min(250px,calc(100% - 70px));display:flex;flex-direction:column;gap:8px;padding:13px;border:1px solid #ffffff2b;border-radius:14px;background:#10131ded;box-shadow:0 12px 35px #000a;backdrop-filter:blur(18px)}
+.cs-story-camera-settings b{font-size:11px;color:#fff;margin-bottom:3px}
+.cs-story-camera-settings button{padding:9px 10px;border:1px solid #ffffff17;border-radius:9px;background:#ffffff0a;color:#e8ebf5;text-align:left;font-size:10px}
+.cs-story-camera-top>div button[aria-pressed="true"]{color:#ffd66b}
