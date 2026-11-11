@@ -256,6 +256,9 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   const [speed, setSpeed] = useState(1);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState("");
+  const [audioVolume, setAudioVolume] = useState(0.8);
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
   const [notice, setNotice] = useState("Importe fotos ou vídeos para começar.");
   const videoRef = useRef<HTMLVideoElement>(null);
   const objectUrlsRef = useRef<Set<string>>(new Set());
@@ -284,6 +287,118 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   function splitSelected() { if (!selected || selected.file.type.startsWith("image/")) { setNotice("A divisão está disponível para vídeos."); return; } const point=Math.max(selected.start+.2,Math.min(playhead,selected.end-.2)); if(point<=selected.start||point>=selected.end){setNotice("Posicione a reprodução no interior do clipe para dividi-lo.");return;} const left={...selected,id:crypto.randomUUID(),end:point}; const right={...selected,id:crypto.randomUUID(),start:point}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index),left,right,...current.slice(index+1)]); setSelectedId(right.id); setNotice("Clipe dividido em dois segmentos."); }
   function moveSelected(direction: -1 | 1) { if(!selected)return; const index=clips.findIndex(clip=>clip.id===selected.id), target=index+direction; if(target<0||target>=clips.length)return; const next=[...clips]; [next[index],next[target]]=[next[target],next[index]]; setClips(next); }
   function downloadOriginal() { if(!selected)return; const anchor=document.createElement("a"); anchor.href=selected.url; anchor.download=selected.file.name; anchor.click(); setNotice("Download do arquivo original iniciado. As edições ainda não são renderizadas."); }
+  async function exportEditedVideo() {
+    if (!clips.length || exporting) return;
+    if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) {
+      setNotice("Este navegador não oferece exportação de vídeo pelo editor. Tente uma versão recente do Chrome ou Edge.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    const width = format === "REELS" ? 1080 : 1080;
+    const height = format === "REELS" ? 1920 : 1080;
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) { setNotice("Não foi possível iniciar a renderização neste navegador."); return; }
+    const canvasStream = canvas.captureStream(30);
+    let audioContext: AudioContext | null = null;
+    let recorder: MediaRecorder | null = null;
+    let soundtrack: HTMLAudioElement | null = null;
+    const chunks: Blob[] = [];
+    let stopped = false;
+    const filterValue = filterStyle;
+    const drawFrame = (source: CanvasImageSource) => {
+      const sw = source instanceof HTMLVideoElement ? source.videoWidth : source instanceof HTMLImageElement ? source.naturalWidth : width;
+      const sh = source instanceof HTMLVideoElement ? source.videoHeight : source instanceof HTMLImageElement ? source.naturalHeight : height;
+      if (!sw || !sh) return;
+      const scale = Math.max(width / sw, height / sh);
+      const dw = sw * scale, dh = sh * scale;
+      ctx.save(); ctx.clearRect(0, 0, width, height); ctx.filter = filterValue;
+      ctx.drawImage(source, (width-dw)/2, (height-dh)/2, dw, dh);
+      ctx.restore();
+      if (overlayText.trim()) {
+        const fontSize = Math.round(width * 0.055);
+        ctx.save(); ctx.font = `800 ${fontSize}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.lineWidth = Math.max(3, fontSize * 0.12); ctx.strokeStyle = "rgba(0,0,0,.72)"; ctx.fillStyle = "#fff";
+        const words = overlayText.trim().split(/\\s+/); const lines: string[] = []; let line = "";
+        for (const word of words) { const test = line ? line + " " + word : word; if (ctx.measureText(test).width > width * .82 && line) { lines.push(line); line = word; } else line = test; }
+        if (line) lines.push(line);
+        const lineHeight = fontSize * 1.18; const startY = height * .5 - ((lines.length-1)*lineHeight)/2;
+        lines.forEach((text,index) => { const y = startY + index*lineHeight; ctx.strokeText(text,width/2,y,width*.84); ctx.fillText(text,width/2,y,width*.84); });
+        ctx.restore();
+      }
+    };
+    const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    try {
+      setExporting(true); setExportProgress(0); setNotice("Preparando renderização em tempo real…");
+      const AudioContextClass = window.AudioContext;
+      if (AudioContextClass) {
+        audioContext = new AudioContextClass();
+        await audioContext.resume();
+      }
+      const audioDestination = audioContext?.createMediaStreamDestination();
+      if (audioContext && audioDestination && audioFile && audioUrl) {
+        soundtrack = document.createElement("audio"); soundtrack.src = audioUrl; soundtrack.loop = true; soundtrack.preload = "auto";
+        const source = audioContext.createMediaElementSource(soundtrack);
+        const gain = audioContext.createGain(); gain.gain.value = audioVolume;
+        source.connect(gain); gain.connect(audioDestination);
+      }
+      const mimeType = ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"].find(type => MediaRecorder.isTypeSupported(type));
+      recorder = new MediaRecorder(new MediaStream([...canvasStream.getVideoTracks(), ...(audioDestination?.stream.getAudioTracks() ?? [])]), mimeType ? { mimeType } : undefined);
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      const recordingDone = new Promise<Blob>((resolve,reject) => {
+        if (!recorder) { reject(new Error("Gravador indisponível")); return; }
+        recorder.onerror = () => reject(new Error("O navegador interrompeu a renderização."));
+        recorder.onstop = () => resolve(new Blob(chunks,{type:recorder?.mimeType || "video/webm"}));
+      });
+      recorder.start(250);
+      if (soundtrack) await soundtrack.play().catch(() => { throw new Error("Não foi possível iniciar a faixa de áudio selecionada."); });
+      for (let index=0; index<clips.length; index++) {
+        const clip=clips[index];
+        setNotice(`Renderizando mídia ${index+1} de ${clips.length}…`);
+        if (clip.file.type.startsWith("image/")) {
+          const img = new Image(); img.src=clip.url;
+          await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error("Uma das imagens não pôde ser carregada."));});
+          const start=performance.now();
+          while (performance.now()-start < 4000) { drawFrame(img); setExportProgress(Math.min(99,Math.round(((index+(performance.now()-start)/4000)/clips.length)*100))); await nextFrame(); }
+        } else {
+          const video=document.createElement("video"); video.src=clip.url; video.preload="auto"; video.playsInline=true;
+          await new Promise<void>((resolve,reject)=>{video.onloadedmetadata=()=>resolve();video.onerror=()=>reject(new Error("Um dos vídeos não pôde ser decodificado."));});
+          const start=Math.max(0,clip.start); const end=Math.min(video.duration,clip.end>start?clip.end:video.duration);
+          if (audioContext && audioDestination) {
+            const source=audioContext.createMediaElementSource(video); const gain=audioContext.createGain(); gain.gain.value=volume;
+            source.connect(gain); gain.connect(audioDestination);
+          }
+          video.currentTime=start;
+          await new Promise<void>((resolve,reject)=>{video.onseeked=()=>resolve();video.onerror=()=>reject(new Error("Falha ao posicionar um vídeo na linha do tempo."));});
+          await video.play();
+          while (!video.ended && video.currentTime < end) {
+            drawFrame(video);
+            setExportProgress(Math.min(99,Math.round(((index+(video.currentTime-start)/Math.max(.1,end-start))/clips.length)*100)));
+            await nextFrame();
+          }
+          video.pause(); video.removeAttribute("src"); video.load();
+        }
+      }
+      if (soundtrack) soundtrack.pause();
+      if (recorder.state !== "inactive") recorder.stop();
+      const blob=await recordingDone;
+      if (!blob.size) throw new Error("A renderização terminou sem gerar um arquivo.");
+      const url=URL.createObjectURL(blob);
+      const anchor=document.createElement("a"); anchor.href=url; anchor.download=`nexora-${format.toLowerCase()}-editado.${blob.type.includes("mp4")?"mp4":"webm"}`; anchor.click();
+      window.setTimeout(()=>URL.revokeObjectURL(url),60000);
+      setExportProgress(100); setNotice("Vídeo renderizado e baixado com filtros, texto, sequência e áudio disponível no navegador.");
+    } catch (error) {
+      if (recorder && recorder.state !== "inactive") recorder.stop();
+      const message=error instanceof Error?error.message:"Não foi possível renderizar este projeto.";
+      setNotice(message);
+    } finally {
+      stopped=true;
+      if (soundtrack) { soundtrack.pause(); soundtrack.src=""; }
+      canvasStream.getTracks().forEach(track=>track.stop());
+      if (audioContext) await audioContext.close().catch(()=>undefined);
+      setExporting(false);
+    }
+  }
   const selectedIsVideo=Boolean(selected?.file.type.startsWith("video/"));
   return <div className="cs-real-editor">
     <div className="cs-real-editor-head"><div><span className="cs-kicker">EDITOR COMPARTILHADO</span><h3>{format==="POST"?"Editar publicação":"Editar Reel"}</h3><p>Um único conjunto de ferramentas para os dois formatos.</p></div><div className="cs-speed-options"><button className={format==="POST"?"active":""} onClick={()=>setFormat("POST")}>POST</button><button className={format==="REELS"?"active":""} onClick={()=>setFormat("REELS")}>REELS</button></div></div>
@@ -300,7 +415,9 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
         <div className="cs-tool-group"><label>Volume <strong>{Math.round(volume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={volume} onChange={event=>{const value=Number(event.target.value);setVolume(value);if(videoRef.current)videoRef.current.volume=value;}}/></div>
         <div className="cs-tool-group"><label>Velocidade <strong>{speed.toFixed(2)}×</strong></label><input type="range" min=".25" max="2" step=".25" value={speed} onChange={event=>{const value=Number(event.target.value);setSpeed(value);if(videoRef.current)videoRef.current.playbackRate=value;}}/></div>
         <label className="cs-audio-picker">＋ Adicionar faixa de áudio<input type="file" accept="audio/*" onChange={event=>{const file=event.target.files?.[0]??null;setAudioFile(file);setAudioUrl(file?createLocalUrl(file):"");}}/></label>{audioFile&&<div className="cs-audio-file"><b>Áudio selecionado:</b> {audioFile.name}<audio controls src={audioUrl}/></div>}
-        <button className="cs-export-original" disabled={!selected} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A edição e a prévia são locais. Renderização final, salvamento e publicação exigem integração de mídia e servidor.</small></section>
+        <div className="cs-tool-group"><label>Volume da faixa de áudio <strong>{Math.round(audioVolume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={audioVolume} onChange={event=>setAudioVolume(Number(event.target.value))} disabled={!audioFile}/></div>
+        <button className="cs-export-original" disabled={!clips.length||exporting} onClick={exportEditedVideo}>{exporting?(`Renderizando… ${exportProgress}%`):"Renderizar e baixar vídeo final"}</button>
+        <button className="cs-export-original cs-download-source" disabled={!selected||exporting} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A renderização acontece neste dispositivo. A publicação na conta e a sincronização entre dispositivos ainda dependem do servidor Nexora.</small></section>
     </div></div>;
 }
 function MiniChart({ title, value, kind = "line" }: { title: string; value: string; kind?: "line" | "bars" }) {
