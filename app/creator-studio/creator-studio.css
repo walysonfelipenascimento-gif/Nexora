@@ -63,3 +63,5 @@
 .cs-calendar-media-preview button{border:1px solid var(--line);background:#ffffff08;color:#ffb1bd;border-radius:7px;padding:7px;font-size:9px}
 .cs-calendar-notice{color:#9fdbf1;font-size:10px;line-height:1.5;margin:4px 0}
 @media(max-width:520px){.cs-calendar-head{align-items:flex-start;gap:10px;flex-direction:column}.cs-month-controls{width:100%;justify-content:space-between}.cs-calendar-days>i{height:34px}}
+
+.cs-story-caption-overlay{position:absolute;z-index:2;left:8%;right:8%;top:42%;text-align:center;color:#fff;font-size:clamp(16px,4vw,25px);font-weight:800;overflow-wrap:anywhere;text-shadow:0 2px 10px #000}
