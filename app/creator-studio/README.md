@@ -70,3 +70,17 @@ This module is developed on an isolated preview branch. The five user-provided r
 ## Route
 
 `/creator-studio` — isolated preview; no entry point has been added to the live app.
+
+
+## Story — multi-screen creation flow
+
+The Story experience is a dedicated, full-screen flow with separate camera, media preview/editor, tool panels, and share-review screens.
+
+- Camera screen follows the supplied camera reference: top controls, vertical quick tools, capture/gallery controls, and POST / STORY / REEL / LIVE mode strip.
+- Preview screen keeps the selected photo/video while the user edits it.
+- Text tool supports editable caption text; sticker tool supports selectable overlays; effect tool applies the available filters.
+- Text and sticker overlays are included in locally exported image/video output.
+- Music tool imports and previews a local audio file only; it does not mix the track into the exported video.
+- Share-review screen allows choosing the intended audience and returning to editing or saving the media locally.
+- The final action is a local export, not a public Story post. Account publishing, audience enforcement, and server upload remain unconnected.
+- Boomerang, multi-photo Layout, flash hardware control, and LIVE streaming are not implemented and must not be represented as complete.
