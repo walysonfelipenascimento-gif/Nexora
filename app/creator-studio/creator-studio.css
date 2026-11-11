@@ -126,3 +126,40 @@
 .cs-app-story .cs-story-stage{max-width:none;min-height:100svh;justify-content:center;gap:0}
 .cs-app-story .cs-story-device{height:100svh;max-height:900px;min-height:620px}
 @media(max-width:720px){.cs-app-story .cs-story-device{height:100svh;max-height:none;min-height:0;width:100%;border:0;border-radius:0;padding:8px 8px 22px}.cs-app-story .cs-story-stage{min-height:100svh}.cs-app-story .cs-story-camera-view,.cs-app-story .cs-story-edit-canvas{border-radius:0}}
+
+/* Multi-screen Story editing tools and share review */
+.cs-story-tool-sheet{position:absolute;z-index:8;left:8px;right:8px;bottom:78px;max-height:54%;overflow:auto;border:1px solid #ffffff24;border-radius:18px;background:#11131bf2;backdrop-filter:blur(22px);padding:15px;box-shadow:0 14px 48px #000b;display:flex;flex-direction:column;gap:12px}
+.cs-story-tool-head{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:14px}
+.cs-story-tool-head button{width:30px;height:30px;border:0;border-radius:50%;background:#ffffff16;color:#fff;font-size:21px}
+.cs-story-tool-sheet textarea{width:100%;min-height:88px;resize:vertical;border:1px solid #ffffff25;border-radius:10px;background:#080a10;color:#fff;padding:12px;font:inherit;font-size:13px;outline:none}
+.cs-story-tool-sheet small,.cs-story-music-picker p{color:#a7afc2;font-size:10px;line-height:1.5}
+.cs-story-sticker-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.cs-story-sticker-picker button{min-height:48px;border:1px solid #ffffff17;border-radius:12px;background:#ffffff0a;color:#fff;font-size:24px}
+.cs-story-sticker-picker button:last-child{grid-column:1/-1;font-size:11px}
+.cs-story-effect-picker{display:flex;flex-wrap:wrap;gap:8px}
+.cs-story-effect-picker button{border:1px solid #ffffff24;border-radius:20px;background:#ffffff0a;color:#e7eaf3;padding:9px 13px;font-size:11px}
+.cs-story-effect-picker button.active{border-color:#9d81ff;background:#7555d633;color:#fff}
+.cs-story-music-picker{display:flex;flex-direction:column;gap:9px;color:#fff;font-size:11px}
+.cs-story-music-picker input{max-width:100%;font-size:10px}
+.cs-story-music-picker audio{width:100%;height:38px}
+.cs-story-tool-done{border:0;border-radius:22px;background:linear-gradient(100deg,#35c8ed,#9672ff);color:#080b14;padding:11px;font-weight:800}
+.cs-story-sticker-overlay{position:absolute;z-index:3;left:50%;top:32%;transform:translate(-50%,-50%);font-size:54px;filter:drop-shadow(0 3px 8px #0008);pointer-events:none}
+.cs-story-share-title{font-size:14px;color:#fff}
+.cs-story-share-summary{display:flex;align-items:center;gap:13px;padding:14px 4px;border-bottom:1px solid #ffffff18}
+.cs-story-share-summary img,.cs-story-share-summary video{width:76px;height:112px;object-fit:cover;border-radius:10px;background:#080a10}
+.cs-story-share-summary>div{display:flex;flex-direction:column;gap:7px;min-width:0}
+.cs-story-share-summary b{font-size:13px;color:#fff}
+.cs-story-share-summary small{font-size:10px;color:#9ca8bd;overflow-wrap:anywhere}
+.cs-story-audience-screen{display:flex;flex-direction:column;gap:10px;padding:18px 4px;flex:1}
+.cs-story-audience-screen>b{font-size:13px;color:#fff;margin-bottom:3px}
+.cs-story-audience-screen>button{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #ffffff1b;border-radius:13px;background:#ffffff08;color:#fff;padding:13px}
+.cs-story-audience-screen>button.selected{border-color:#9b83ff;background:#7356cf25}
+.cs-story-audience-screen>button>span:first-child{font-size:20px;color:#a9a4ff}
+.cs-story-audience-screen>button>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px}
+.cs-story-audience-screen strong{font-size:11px}
+.cs-story-audience-screen small{font-size:9px;color:#9ba7bd}
+.cs-story-audience-screen i{font-style:normal;color:#a994ff;font-weight:800}
+.cs-story-final-actions{display:flex;gap:9px;margin-top:auto;padding:12px 3px}
+.cs-story-final-actions button{flex:1;min-height:43px;border:1px solid #ffffff25;border-radius:24px;background:#ffffff0d;color:#fff;font-size:11px;font-weight:700}
+.cs-story-final-actions button:last-child{border:0;background:linear-gradient(100deg,#35c8ed,#9672ff);color:#070b15}
+.cs-story-final-actions button:disabled{opacity:.55}
