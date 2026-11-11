@@ -575,7 +575,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           </div>
           <div className="cs-story-camera-view">
             {cameraActive ? <video ref={cameraVideoRef} className="cs-story-live-media" autoPlay muted playsInline style={{ filter }} /> : (
-              <button type="button" className="cs-story-camera-start" onClick={startCamera}>
+              <button type="button" className="cs-story-camera-start" onClick={() => void startCamera()}>
                 <span>◎</span><b>Ativar câmera</b><small>Permita o acesso para visualizar a câmera em tempo real</small>
               </button>
             )}
