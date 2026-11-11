@@ -255,16 +255,83 @@ function InsightsStudio() {
   </div>;
 }
 
+type ScheduledDraft = { id: string; date: string; time: string; format: string; caption: string; mediaName: string };
 function CalendarStudio() {
-  const [month, setMonth] = useState("Outubro 2026");
-  const [selectedDay, setSelectedDay] = useState(2);
+  const today = new Date();
+  const toDateKey = (date: Date) => [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
+  const [monthKey, setMonthKey] = useState(toDateKey(new Date(today.getFullYear(), today.getMonth(), 1)).slice(0,7));
+  const [selectedDate, setSelectedDate] = useState(toDateKey(today));
   const [caption, setCaption] = useState("");
+  const [time, setTime] = useState("18:00");
+  const [format, setFormat] = useState("POST");
+  const [media, setMedia] = useState<File | null>(null);
+  const [drafts, setDrafts] = useState<ScheduledDraft[]>([]);
+  const [notice, setNotice] = useState("Os agendamentos ficam nesta sessão do navegador; não serão publicados automaticamente.");
+  const [showAll, setShowAll] = useState(false);
+  const [mediaPreview, setMediaPreview] = useState("");
+  const [mediaPreviewType, setMediaPreviewType] = useState("");
+  const [mediaInputKey, setMediaInputKey] = useState(0);
+  const [yearText, monthText] = monthKey.split("-").map(Number);
+  const firstDay = new Date(yearText, monthText - 1, 1).getDay();
+  const daysInMonth = new Date(yearText, monthText, 0).getDate();
+  const monthLabel = new Date(yearText, monthText - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const calendarCells = Array.from({length:firstDay+daysInMonth},(_,index)=>index<firstDay?0:index-firstDay+1);
+  const selectedDrafts = drafts.filter(item=>item.date===selectedDate).sort((x,y)=>x.time.localeCompare(y.time));
+  const visibleDrafts = showAll ? [...drafts].sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time)) : selectedDrafts;
+  function changeMonth(offset:number) {
+    const next=new Date(yearText,monthText-1+offset,1);
+    const key=toDateKey(next).slice(0,7);
+    setMonthKey(key);
+    const nextDate=toDateKey(new Date(next.getFullYear(),next.getMonth(),1));
+    setSelectedDate(nextDate);
+  }
+  function addDraft(event:FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if(!caption.trim()&&!media){setNotice("Adicione uma legenda ou selecione um arquivo de mídia antes de salvar.");return;}
+    if(!selectedDate||!time){setNotice("Escolha uma data e um horário válidos.");return;}
+    setDrafts(current=>[...current,{id:crypto.randomUUID(),date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??""}]);
+    setNotice("Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
+    setCaption("");
+    setMedia(null);
+    setMediaPreview("");
+    setMediaPreviewType("");
+    setMediaInputKey(value=>value+1);
+  }
+  function removeDraft(id:string) {
+    setDrafts(current=>current.filter(item=>item.id!==id));
+    setNotice("Agendamento removido do calendário local.");
+  }
+  function selectDay(day:number) {
+    const date=new Date(yearText,monthText-1,day);
+    setSelectedDate(toDateKey(date));
+    setShowAll(false);
+  }
   return <div className="cs-calendar-grid">
-    <div className="cs-calendar-panel"><div className="cs-calendar-head"><div><span className="cs-kicker">PLANEJAMENTO</span><h3>Calendário editorial</h3></div><select value={month} onChange={e=>setMonth(e.target.value)}><option>Outubro 2026</option><option>Novembro 2026</option><option>Dezembro 2026</option></select></div><div className="cs-calendar-days">{["D","S","T","Q","Q","S","S"].map((x,i)=><span key={i}>{x}</span>)}{Array.from({length:35},(_,i)=>{const d=i-2;return <button key={i} disabled={d<1||d>31} className={selectedDay===d?"selected":""} onClick={()=>setSelectedDay(d)}>{d>0&&d<=31?d:""}{[2,8,14,21,27].includes(d)&&<i/>}</button>})}</div><div className="cs-schedule-list"><b>{selectedDay} de {month}</b><p><i/> 10:30 · Carrossel com dicas</p><p><i/> 16:00 · Story de bastidores</p><p><i/> 20:00 · Mini vlog / Reels</p></div></div>
-    <div className="cs-compose-panel"><span className="cs-kicker">NOVA PUBLICAÇÃO</span><h3>Criar e agendar</h3><div className="cs-upload-box">＋<span>Adicionar mídia</span></div><textarea value={caption} onChange={e=>setCaption(e.target.value)} placeholder="Adicione uma legenda..." /><div className="cs-compose-options">{["Escolher formato", "Hashtags", "Adicionar localização", "Agendar publicação"].map(x=><button key={x}>{x}<span>›</span></button>)}</div><button className="cs-primary-action">Salvar rascunho</button></div>
+    <div className="cs-calendar-panel">
+      <div className="cs-calendar-head">
+        <div><span className="cs-kicker">PLANEJAMENTO</span><h3>Calendário editorial</h3></div>
+        <div className="cs-month-controls"><button type="button" onClick={()=>changeMonth(-1)} aria-label="Mês anterior">‹</button><b>{monthLabel}</b><button type="button" onClick={()=>changeMonth(1)} aria-label="Próximo mês">›</button></div>
+      </div>
+      <div className="cs-calendar-days">{["D","S","T","Q","Q","S","S"].map((x,i)=><span key={i}>{x}</span>)}{calendarCells.map((day,index)=>day===0?<i key={"blank-"+index}/>:<button type="button" key={day} className={selectedDate===toDateKey(new Date(yearText,monthText-1,day))?"selected":""} onClick={()=>selectDay(day)}>{day}{drafts.some(item=>item.date===toDateKey(new Date(yearText,monthText-1,day)))&&<i/>}</button>)}</div>
+      <div className="cs-schedule-list">
+        <div className="cs-schedule-list-head"><b>{new Date(selectedDate+"T12:00:00").toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"})}</b><button type="button" onClick={()=>setShowAll(value=>!value)}>{showAll?"Ver dia":"Ver todos"}</button></div>
+        {visibleDrafts.length===0?<p className="cs-empty-schedule">Nenhum rascunho neste período.</p>:visibleDrafts.map(item=><div className="cs-scheduled-item" key={item.id}><div><b>{item.time} · {item.format}</b><p>{item.caption||item.mediaName||"Publicação sem legenda"}</p>{item.mediaName&&<small>Arquivo: {item.mediaName}</small>}{showAll&&<small>{new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR")}</small>}</div><button type="button" onClick={()=>removeDraft(item.id)} aria-label="Excluir agendamento">×</button></div>)}
+      </div>
+    </div>
+    <form className="cs-compose-panel" onSubmit={addDraft}>
+      <span className="cs-kicker">NOVA PUBLICAÇÃO</span><h3>Criar rascunho e planejar</h3>
+      <label className="cs-calendar-field">Data<input type="date" value={selectedDate} onChange={event=>{setSelectedDate(event.target.value);setMonthKey(event.target.value.slice(0,7));setShowAll(false);}} required/></label>
+      <label className="cs-calendar-field">Horário<input type="time" value={time} onChange={event=>setTime(event.target.value)} required/></label>
+      <label className="cs-calendar-field">Formato<select value={format} onChange={event=>setFormat(event.target.value)}><option>POST</option><option>REELS</option><option>STORY</option></select></label>
+      <label className="cs-upload-box cs-calendar-upload">＋<span>{media?media.name:"Adicionar foto ou vídeo"}</span><input key={mediaInputKey} type="file" accept="image/*,video/*" onChange={event=>{const file=event.target.files?.[0]??null;setMedia(file);if(file){setMediaPreview(URL.createObjectURL(file));setMediaPreviewType(file.type);}}}/></label>
+      {mediaPreview&&<div className="cs-calendar-media-preview">{mediaPreviewType.startsWith("video/")?<video src={mediaPreview} controls/>:<img src={mediaPreview} alt="Mídia selecionada para o rascunho"/>}<button type="button" onClick={()=>{setMedia(null);setMediaPreview("");setMediaPreviewType("");setMediaInputKey(value=>value+1);}}>Remover mídia</button></div>}
+      <textarea value={caption} onChange={event=>setCaption(event.target.value)} placeholder="Adicione uma legenda ou observações..." />
+      <button className="cs-primary-action" type="submit">Salvar no calendário</button>
+      <p className="cs-calendar-notice" role="status">{notice}</p>
+      <small className="cs-editor-disclaimer">Planejamento local desta sessão. A publicação automática e a sincronização entre dispositivos ainda não estão conectadas.</small>
+    </form>
   </div>;
 }
-
 function CommentsStudio() {
   const [comment,setComment]=useState("");
   const [replyTo,setReplyTo]=useState("");
