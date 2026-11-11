@@ -271,6 +271,7 @@ function CalendarStudio() {
   const [showAll, setShowAll] = useState(false);
   const [mediaPreview, setMediaPreview] = useState("");
   const [mediaPreviewType, setMediaPreviewType] = useState("");
+  const mediaPreviewRef = useRef("");
   const [mediaInputKey, setMediaInputKey] = useState(0);
   const [yearText, monthText] = monthKey.split("-").map(Number);
   const firstDay = new Date(yearText, monthText - 1, 1).getDay();
@@ -300,6 +301,9 @@ function CalendarStudio() {
       setNotice("O armazenamento do navegador está indisponível ou cheio; os rascunhos podem não persistir.");
     }
   }, [drafts, draftsHydrated]);
+  useEffect(() => () => {
+    if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
+  }, []);
   function changeMonth(offset:number) {
     const next=new Date(yearText,monthText-1+offset,1);
     const key=toDateKey(next).slice(0,7);
@@ -315,6 +319,8 @@ function CalendarStudio() {
     setNotice("Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
     setCaption("");
     setMedia(null);
+    if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
+    mediaPreviewRef.current = "";
     setMediaPreview("");
     setMediaPreviewType("");
     setMediaInputKey(value=>value+1);
@@ -345,8 +351,8 @@ function CalendarStudio() {
       <label className="cs-calendar-field">Data<input type="date" value={selectedDate} onChange={event=>{setSelectedDate(event.target.value);setMonthKey(event.target.value.slice(0,7));setShowAll(false);}} required/></label>
       <label className="cs-calendar-field">Horário<input type="time" value={time} onChange={event=>setTime(event.target.value)} required/></label>
       <label className="cs-calendar-field">Formato<select value={format} onChange={event=>setFormat(event.target.value)}><option>POST</option><option>REELS</option><option>STORY</option></select></label>
-      <label className="cs-upload-box cs-calendar-upload">＋<span>{media?media.name:"Adicionar foto ou vídeo"}</span><input key={mediaInputKey} type="file" accept="image/*,video/*" onChange={event=>{const file=event.target.files?.[0]??null;setMedia(file);if(file){setMediaPreview(URL.createObjectURL(file));setMediaPreviewType(file.type);}}}/></label>
-      {mediaPreview&&<div className="cs-calendar-media-preview">{mediaPreviewType.startsWith("video/")?<video src={mediaPreview} controls/>:<img src={mediaPreview} alt="Mídia selecionada para o rascunho"/>}<button type="button" onClick={()=>{setMedia(null);setMediaPreview("");setMediaPreviewType("");setMediaInputKey(value=>value+1);}}>Remover mídia</button></div>}
+      <label className="cs-upload-box cs-calendar-upload">＋<span>{media?media.name:"Adicionar foto ou vídeo"}</span><input key={mediaInputKey} type="file" accept="image/*,video/*" onChange={event=>{const file=event.target.files?.[0]??null;setMedia(file);if(mediaPreviewRef.current)URL.revokeObjectURL(mediaPreviewRef.current);const url=file?URL.createObjectURL(file):"";mediaPreviewRef.current=url;setMediaPreview(url);setMediaPreviewType(file?.type??"");}}/></label>
+      {mediaPreview&&<div className="cs-calendar-media-preview">{mediaPreviewType.startsWith("video/")?<video src={mediaPreview} controls/>:<img src={mediaPreview} alt="Mídia selecionada para o rascunho"/>}<button type="button" onClick={()=>{setMedia(null);if(mediaPreviewRef.current)URL.revokeObjectURL(mediaPreviewRef.current);mediaPreviewRef.current="";setMediaPreview("");setMediaPreviewType("");setMediaInputKey(value=>value+1);}}>Remover mídia</button></div>}
       <textarea value={caption} onChange={event=>setCaption(event.target.value)} placeholder="Adicione uma legenda ou observações..." />
       <button className="cs-primary-action" type="submit">Salvar no calendário</button>
       <p className="cs-calendar-notice" role="status">{notice}</p>
