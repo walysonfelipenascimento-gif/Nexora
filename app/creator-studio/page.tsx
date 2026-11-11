@@ -315,7 +315,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
         {stage === "camera" ? <>
           <div className="cs-story-camera-top">
-            <button type="button" aria-label="Fechar câmera" onClick={stopCamera}>×</button>
+            <button type="button" aria-label="Fechar câmera" onClick={() => { stopCamera(); window.location.assign("/"); }}>×</button>
             <div>
               <button type="button" aria-label="Alternar flash" onClick={() => setCameraError("O flash depende do suporte da câmera deste dispositivo.")}>ϟ</button>
               <button type="button" aria-label="Modo noturno" onClick={() => setEffect(effect === "Frio" ? "Original" : "Frio")}>☾</button>
@@ -374,11 +374,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           <p className="cs-story-local-note">Prévia e arquivo locais · a publicação na conta ainda não está conectada.</p>
         </>}
         <div className="cs-story-home-indicator" />
-      </div>
-      <div className="cs-story-underbar">
-        <span>NEXORA</span><b>{stage === "camera" ? "Crie seu Story" : "Edite e compartilhe"}</b>
-        <small>{stage === "camera" ? "Capture um momento ou escolha uma mídia da galeria." : "Ajuste o texto, escolha o público e salve sua mídia."}</small>
-        {stage === "camera" && <div className="cs-story-filter-strip">{["Original", "P&B", "Quente", "Frio", "Contraste"].map(item => <button type="button" key={item} className={effect === item ? "active" : ""} onClick={() => setEffect(item)}>{item}</button>)}</div>}
       </div>
     </div>
   );
@@ -580,7 +575,7 @@ export default function CreatorStudioPage() {
     if (requested && allowed.includes(requested as StudioSection)) setActive(requested as StudioSection);
   }, []);
   const title = useMemo(() => sections.find(s=>s.id===active)?.label ?? "Creator Studio",[active]);
-  return <main className="cs-app">
+  return <main className={"cs-app" + (active === "story" ? " cs-app-story" : "")}>
     <header className="cs-header"><a className="cs-brand" href="/"><span>N</span>NEXORA <i>CREATOR</i></a><div className="cs-header-actions"><span className="cs-status"><i/> Ambiente independente</span><button className="cs-profile">L</button></div></header>
     <div className="cs-shell"><aside className="cs-sidebar"><div className="cs-side-label">ESTÚDIO</div>{sections.map(s=><button key={s.id} className={active===s.id?"active":""} onClick={()=>setActive(s.id)}><span>{s.icon}</span>{s.label}</button>)}<div className="cs-side-foot"><span>WORKSPACE</span><b>Nexora Creator</b><small>Prévia independente</small></div></aside><section className="cs-main"><div className="cs-page-heading"><div><span className="cs-kicker">NEXORA / CREATOR STUDIO</span><h1>{title}</h1></div><span className="cs-demo-badge">AMBIENTE DE PRÉVIA</span></div>{active==="story"&&<StoryStudio onOpenEditor={format => setActive(format === "POST" ? "post" : "reels")} />}{active==="post"&&<MediaEditor initialFormat="POST"/>}{active==="reels"&&<MediaEditor initialFormat="REELS"/>}{active==="insights"&&<InsightsStudio/>}{active==="calendar"&&<CalendarStudio/>}{active==="comments"&&<CommentsStudio/>}</section></div>
   </main>;
