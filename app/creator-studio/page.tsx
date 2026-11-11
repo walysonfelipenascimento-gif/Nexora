@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import "./creator-studio.css";
 
 type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
@@ -22,9 +22,6 @@ const metrics: Metric[] = [
   { label: "Compartilhamentos", value: "9.942", change: "+6,1%" },
 ];
 
-function IconButton({ children, label }: { children: ReactNode; label: string }) {
-  return <button className="cs-icon-button" aria-label={label} title={label}>{children}</button>;
-}
 
 function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS") => void }) {
   const [mode, setMode] = useState("STORY");
@@ -177,18 +174,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     </div>
   );
 }
-function Timeline({ compact = false }: { compact?: boolean }) {
-  return <div className={compact ? "cs-timeline compact" : "cs-timeline"}>
-    <div className="cs-time-ruler"><span>00:00</span><span>00:05</span><span>00:10</span><span>00:15</span><span>00:20</span><span>00:25</span></div>
-    <div className="cs-track cs-track-text"><span>Aa</span><b>Legenda · texto na tela</b></div>
-    <div className="cs-track cs-track-sticker"><span>✧</span><b>Sticker / elemento</b></div>
-    <div className="cs-track cs-track-audio"><span>♫</span><b>Trilha sonora · áudio</b></div>
-    <div className="cs-track cs-track-voice"><span>◖</span><b>Narração / Voice-over</b></div>
-    <div className="cs-track cs-track-video"><span>▣</span><b>▥ ▥ ▥ ▥ ▥ ▥ ▥ ▥</b></div>
-    <div className="cs-playhead" />
-  </div>;
-}
-
 type EditorClip = { id: string; file: File; url: string; start: number; end: number };
 type EditorFilter = "Nenhum" | "P&B" | "Quente" | "Frio" | "Contraste";
 function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "REELS" }) {
