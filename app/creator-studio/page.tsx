@@ -275,9 +275,29 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         const canvasStream = canvas.captureStream(30);
         const capturableVideo = video as HTMLVideoElement & { captureStream?: () => MediaStream; webkitCaptureStream?: () => MediaStream };
         const sourceStream = typeof capturableVideo.captureStream === "function" ? capturableVideo.captureStream() : typeof capturableVideo.webkitCaptureStream === "function" ? capturableVideo.webkitCaptureStream() : null;
+        let audioContext: AudioContext | null = null;
+        let audioDestination: MediaStreamAudioDestinationNode | null = null;
+        let musicElement: HTMLAudioElement | null = null;
+        let musicSource: MediaElementAudioSourceNode | null = null;
+        let videoAudioSource: MediaElementAudioSourceNode | null = null;
+        if (audioUrl) {
+          const AudioContextConstructor = window.AudioContext;
+          if (!AudioContextConstructor) throw new Error("Este navegador não oferece mixagem de áudio para exportação.");
+          audioContext = new AudioContextConstructor();
+          audioDestination = audioContext.createMediaStreamDestination();
+          videoAudioSource = audioContext.createMediaElementSource(video);
+          videoAudioSource.connect(audioDestination);
+          musicElement = new Audio(audioUrl);
+          musicElement.loop = true;
+          musicElement.volume = 0.72;
+          musicSource = audioContext.createMediaElementSource(musicElement);
+          musicSource.connect(audioDestination);
+          await audioContext.resume();
+          await musicElement.play();
+        }
         const outputStream = new MediaStream([
           ...canvasStream.getVideoTracks(),
-          ...(sourceStream?.getAudioTracks() ?? []),
+          ...(audioDestination?.stream.getAudioTracks() ?? sourceStream?.getAudioTracks() ?? []),
         ]);
         const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
         const recorder = new MediaRecorder(outputStream, mimeType ? { mimeType } : undefined);
@@ -290,6 +310,11 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           const stopTracks = () => {
             canvasStream.getTracks().forEach(track => track.stop());
             sourceStream?.getTracks().forEach(track => track.stop());
+            audioDestination?.stream.getTracks().forEach(track => track.stop());
+            musicElement?.pause();
+            musicSource?.disconnect();
+            videoAudioSource?.disconnect();
+            if (audioContext && audioContext.state !== "closed") void audioContext.close();
             video.pause();
           };
           const finish = (error?: Error) => {
