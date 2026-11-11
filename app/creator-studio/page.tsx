@@ -35,6 +35,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const [selected, setSelected] = useState("Câmera");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaType, setMediaType] = useState("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [cameraError, setCameraError] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -56,6 +57,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     mediaUrlRef.current = url;
     setMediaUrl(url);
     setMediaType(file.type);
+    setMediaFile(file);
     setSelected("Galeria");
     stopCamera();
     setStage("preview");
@@ -101,7 +103,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     if (!mediaUrl) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
     const anchor = document.createElement("a");
     anchor.href = mediaUrl;
-    anchor.download = "nexora-story" + (mediaType.startsWith("video/") ? ".mp4" : ".jpg");
+    anchor.download = mediaFile?.name || (mediaType.startsWith("video/") ? "nexora-story-video" : "nexora-story.jpg");
     anchor.click();
     setCameraError("Arquivo preparado para salvar no dispositivo. A publicação na conta ainda não está conectada.");
   }
@@ -120,6 +122,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     <div className="cs-story-layout">
       <div className="cs-phone cs-camera-phone">
         <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
+        <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
         {stage === "camera" ? <>
           <div className="cs-camera-top">
             <button className="cs-icon-button" aria-label="Fechar câmera" onClick={stopCamera}>×</button>
@@ -139,7 +142,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
           <div className="cs-capture-row">
             <button className="cs-gallery-thumb" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria">▧</button>
-            <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
             <button className="cs-shutter" onClick={cameraActive ? capturePhoto : startCamera} disabled={busy} aria-label={cameraActive ? "Capturar foto" : "Ativar câmera"} />
             <button className="cs-creative-effect" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Alternar contraste">✧</button>
           </div>
