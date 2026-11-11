@@ -165,6 +165,45 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       setLocalMedia(new File([blob], "nexora-story.jpg", { type: "image/jpeg" }));
     }, "image/jpeg", .94);
   }
+  function drawStoryOverlays(context: CanvasRenderingContext2D, width: number, height: number) {
+    if (caption.trim()) {
+      const fontSize = Math.max(22, Math.round(height * 0.045));
+      context.save();
+      context.font = `800 ${fontSize}px system-ui, sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "#ffffff";
+      context.shadowColor = "#000000";
+      context.shadowBlur = Math.max(5, fontSize * 0.35);
+      const words = caption.trim().split(/\\s+/);
+      const lines: string[] = [];
+      let line = "";
+      const maxWidth = width * 0.82;
+      for (const word of words) {
+        const candidate = line ? line + " " + word : word;
+        if (line && context.measureText(candidate).width > maxWidth) {
+          lines.push(line);
+          line = word;
+        } else line = candidate;
+      }
+      if (line) lines.push(line);
+      const lineHeight = fontSize * 1.2;
+      const startY = height * 0.48 - ((lines.length - 1) * lineHeight) / 2;
+      lines.forEach((item, index) => context.fillText(item, width / 2, startY + index * lineHeight, maxWidth));
+      context.restore();
+    }
+    if (sticker) {
+      context.save();
+      context.font = `${Math.round(height * 0.12)}px system-ui, sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.shadowColor = "#000000";
+      context.shadowBlur = 12;
+      context.fillText(sticker, width / 2, height * 0.32);
+      context.restore();
+    }
+  }
+
   async function downloadStory() {
     if (!mediaUrl || !mediaFile) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
     if (busy) return;
@@ -188,6 +227,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         if (!context) throw new Error("Não foi possível preparar a imagem para aplicar o efeito.");
         context.filter = filter;
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        drawStoryOverlays(context, canvas.width, canvas.height);
         output = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar a imagem com o efeito.")), "image/png"));
         filename = baseName + "-com-efeito.png";
       } else if (mediaType.startsWith("video/")) {
@@ -261,6 +301,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
               context.filter = filter;
               context.drawImage(video, 0, 0, canvas.width, canvas.height);
               context.restore();
+              drawStoryOverlays(context, canvas.width, canvas.height);
             }
             if (!stopped) frame = requestAnimationFrame(drawFrame);
           };
