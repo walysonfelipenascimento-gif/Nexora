@@ -57,6 +57,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const [cameraSettingsOpen, setCameraSettingsOpen] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [loopMode, setLoopMode] = useState(false);
   const [busy, setBusy] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const layoutInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +66,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordHoldTimerRef = useRef<number | null>(null);
+  const loopCaptureTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const recordedChunksRef = useRef<Blob[]>([]);
   const mediaUrlRef = useRef("");
@@ -200,12 +202,15 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         recorderRef.current = null;
         if (!mountedRef.current) return;
         setRecording(false);
-        if (blob.size > 0) setLocalMedia(new File([blob], "nexora-story-video.webm", { type: blob.type }));
+        if (loopCaptureTimerRef.current !== null) window.clearTimeout(loopCaptureTimerRef.current);
+        loopCaptureTimerRef.current = null;
+        if (blob.size > 0) setLocalMedia(new File([blob], loopMode ? "nexora-story-loop.webm" : "nexora-story-video.webm", { type: blob.type }));
         else setCameraError("A gravação terminou sem gerar um arquivo de vídeo.");
       };
       recorder.onerror = () => { setRecording(false); setCameraError("O navegador encontrou um erro durante a gravação."); };
       recorderRef.current = recorder;
       recorder.start(250);
+      if (loopMode) loopCaptureTimerRef.current = window.setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, 1800);
       setRecording(true);
       setCameraError("");
     } catch {
@@ -442,6 +447,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           let settled = false;
           let frame = 0;
           let failure: Error | null = null;
+          let loopRepeats = loopMode ? 2 : 0;
           const stopTracks = () => {
             canvasStream.getTracks().forEach(track => track.stop());
             sourceStream?.getTracks().forEach(track => track.stop());
@@ -488,7 +494,13 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             }
             if (!stopped) frame = requestAnimationFrame(drawFrame);
           };
-          video.onended = () => finish();
+          video.onended = () => {
+            if (loopRepeats > 0) {
+              loopRepeats -= 1;
+              video.currentTime = 0;
+              void video.play().catch(() => finish(new Error("Não foi possível repetir o vídeo no modo Loop.")));
+            } else finish();
+          };
           video.onerror = () => finish(new Error("A leitura do vídeo foi interrompida."));
           try {
             video.currentTime = 0;
@@ -541,6 +553,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     return () => {
       mountedRef.current = false;
       if (recordHoldTimerRef.current !== null) window.clearTimeout(recordHoldTimerRef.current);
+      if (loopCaptureTimerRef.current !== null) window.clearTimeout(loopCaptureTimerRef.current);
       cameraStreamRef.current?.getTracks().forEach(track => track.stop());
       cameraStreamRef.current = null;
       if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
@@ -570,11 +583,11 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             {cameraSettingsOpen && <div className="cs-story-camera-settings"><b>Configurações da câmera</b><button type="button" onClick={switchCamera}>Alternar câmera · {facingMode === "environment" ? "Traseira" : "Frontal"}</button><button type="button" onClick={() => setShowGrid(value => !value)}>{showGrid ? "Ocultar grade" : "Mostrar grade"}</button><button type="button" onClick={() => void toggleTorch()}>{torchEnabled ? "Desligar flash" : "Ligar flash"}</button></div>}
             <div className="cs-story-vertical-tools">
               <button type="button" aria-label="Texto após captura" onClick={() => setCameraError("Capture uma foto ou escolha uma mídia para abrir as ferramentas de texto.")}>Aa</button>
-              <button type="button" aria-label="Modo Boomerang" onClick={() => setCameraError("Para criar um Story em movimento, mantenha o botão de captura pressionado.")}>∞</button>
+              <button type="button" aria-label="Ativar modo Loop" aria-pressed={loopMode} onClick={() => { setLoopMode(value => !value); setCameraError(loopMode ? "Modo Loop desativado." : "Modo Loop ativado: grave um clipe curto para repetir a sequência."); }}>∞</button>
               <button type="button" aria-label="Layout com múltiplas fotos" onClick={() => layoutInputRef.current?.click()}>▦</button>
               <button type="button" aria-label="Abrir galeria" onClick={() => galleryInputRef.current?.click()}>⌄</button>
             </div>
-            <div className="cs-story-camera-hint">{recording ? "GRAVANDO" : cameraActive ? "CÂMERA ATIVA" : "CÂMERA NEXORA"} · {effect.toUpperCase()}</div>
+            <div className="cs-story-camera-hint">{recording ? "GRAVANDO" : loopMode ? "MODO LOOP" : cameraActive ? "CÂMERA ATIVA" : "CÂMERA NEXORA"} · {effect.toUpperCase()}</div>
           </div>
           {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
           <div className="cs-story-capture-controls">
