@@ -373,7 +373,21 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     if (!audioFile) { setAudioUrl(""); return; }
     const url = URL.createObjectURL(audioFile);
     setAudioUrl(url);
-    return (
+    return () => URL.revokeObjectURL(url);
+  }, [audioFile]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (recordHoldTimerRef.current !== null) window.clearTimeout(recordHoldTimerRef.current);
+      cameraStreamRef.current?.getTracks().forEach(track => track.stop());
+      cameraStreamRef.current = null;
+      if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
+    };
+  }, []);
+
+  return (
     <div className="cs-story-stage">
       <div className="cs-story-device">
         <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
@@ -459,7 +473,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       </div>
     </div>
   );
-}
 }
 type EditorClip = { id: string; file: File; url: string; start: number; end: number };
 type EditorFilter = "Nenhum" | "P&B" | "Quente" | "Frio" | "Contraste";
