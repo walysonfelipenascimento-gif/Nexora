@@ -41,7 +41,7 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Navigate months and select exact calendar dates.
 - Create local POST, REELS, or STORY drafts with a date, time, caption and optional media file.
 - Preview selected media, remove it, and remove saved drafts.
-- Persist draft metadata in browser localStorage across reloads on the same browser/device.
+- Persist draft metadata in browser localStorage and selected media files in IndexedDB across reloads on the same browser/device; allow the saved file to be downloaded from its calendar entry.
 
 ## Known limitations — do not describe as completed
 
@@ -50,13 +50,13 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - The Story audience selector is a draft preference only and is not enforced by a publishing service.
 - Story Boomerang and multi-frame Layout modes are not implemented; the UI reports this instead of simulating them.
 - The shared editor renders and exports a combined local video in supported browsers; export is device-intensive and depends on browser codecs, memory, and available media APIs.
-- Calendar media files are not persisted with the draft; only filenames and draft metadata persist locally.
+- Calendar media and draft metadata persist locally in IndexedDB/localStorage on the same browser/device; clearing site data or browser storage can remove them.
 - Story filters and caption text remain preview-only; Story saving still downloads the selected original media rather than a rendered Story composition.
 - No server upload, cross-device sync, public posting, automated publishing, or account-level scheduling is connected.
 - Video splitting currently creates logical timeline segments; it does not physically encode a new video file.
 - Comment likes, replies, and new comments persist in localStorage on the same browser/device, but are not synchronized to a user account.
 - Insights remain illustrative sample metrics and must not be interpreted as real audience performance.
-- Editor source media and generated export files are local to the browser session; calendar metadata and comment interactions use browser-local storage.
+- Editor source media and generated export files are local to the browser session; calendar media, draft metadata, and comment interactions use browser-local storage.
 
 ## Technical boundaries
 
