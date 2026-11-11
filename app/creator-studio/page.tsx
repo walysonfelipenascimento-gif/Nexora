@@ -70,10 +70,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
       cameraStreamRef.current = stream;
-      if (cameraVideoRef.current) {
-        cameraVideoRef.current.srcObject = stream;
-        await cameraVideoRef.current.play();
-      }
       setCameraActive(true);
       setSelected("Câmera");
     } catch (error) {
@@ -109,6 +105,12 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     anchor.click();
     setCameraError("Arquivo preparado para salvar no dispositivo. A publicação na conta ainda não está conectada.");
   }
+  useEffect(() => {
+    if (!cameraActive || !cameraVideoRef.current || !cameraStreamRef.current) return;
+    cameraVideoRef.current.srcObject = cameraStreamRef.current;
+    cameraVideoRef.current.play().catch(() => setCameraError("A câmera foi ativada, mas a prévia não iniciou. Tente novamente."));
+  }, [cameraActive]);
+
   useEffect(() => () => {
     cameraStreamRef.current?.getTracks().forEach(track => track.stop());
     if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
