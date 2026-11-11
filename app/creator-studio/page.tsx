@@ -156,13 +156,139 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       setLocalMedia(new File([blob], "nexora-story.jpg", { type: "image/jpeg" }));
     }, "image/jpeg", .94);
   }
-  function downloadStory() {
-    if (!mediaUrl) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
-    const anchor = document.createElement("a");
-    anchor.href = mediaUrl;
-    anchor.download = mediaFile?.name || (mediaType.startsWith("video/") ? "nexora-story-video" : "nexora-story.jpg");
-    anchor.click();
-    setCameraError("Arquivo preparado para salvar no dispositivo. A publicação na conta ainda não está conectada.");
+  async function downloadStory() {
+    if (!mediaUrl || !mediaFile) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
+    if (busy) return;
+    setBusy(true);
+    setCameraError("");
+    try {
+      let output: Blob;
+      let filename: string;
+      const baseName = mediaFile.name.replace(/\.[^.]+$/, "") || "nexora-story";
+      if (mediaType.startsWith("image/")) {
+        const image = new Image();
+        image.src = mediaUrl;
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error("Não foi possível abrir a imagem importada."));
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Não foi possível preparar a imagem para aplicar o efeito.");
+        context.filter = filter;
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        output = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar a imagem com o efeito.")), "image/png"));
+        filename = baseName + "-com-efeito.png";
+      } else if (mediaType.startsWith("video/")) {
+        if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) {
+          throw new Error("Este navegador não oferece exportação de vídeo com filtros. Tente salvar uma foto ou use outro navegador compatível.");
+        }
+        const video = document.createElement("video");
+        video.src = mediaUrl;
+        video.playsInline = true;
+        video.preload = "auto";
+        video.muted = false;
+        await new Promise<void>((resolve, reject) => {
+          video.onloadedmetadata = () => resolve();
+          video.onerror = () => reject(new Error("Não foi possível abrir o vídeo importado."));
+        });
+        if (!video.videoWidth || !video.videoHeight) throw new Error("O vídeo não possui dimensões válidas para exportação.");
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Não foi possível preparar o vídeo para aplicar o efeito.");
+        const canvasStream = canvas.captureStream(30);
+        const capturableVideo = video as HTMLVideoElement & { webkitCaptureStream?: () => MediaStream };
+        const sourceStream = typeof video.captureStream === "function" ? video.captureStream() : typeof capturableVideo.webkitCaptureStream === "function" ? capturableVideo.webkitCaptureStream() : null;
+        const outputStream = new MediaStream([
+          ...canvasStream.getVideoTracks(),
+          ...(sourceStream?.getAudioTracks() ?? []),
+        ]);
+        const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
+        const recorder = new MediaRecorder(outputStream, mimeType ? { mimeType } : undefined);
+        const chunks: Blob[] = [];
+        output = await new Promise<Blob>((resolve, reject) => {
+          let stopped = false;
+          let settled = false;
+          let frame = 0;
+          let failure: Error | null = null;
+          const stopTracks = () => {
+            canvasStream.getTracks().forEach(track => track.stop());
+            sourceStream?.getTracks().forEach(track => track.stop());
+            video.pause();
+          };
+          const finish = (error?: Error) => {
+            if (error && !failure) failure = error;
+            if (stopped) return;
+            stopped = true;
+            if (frame) cancelAnimationFrame(frame);
+            if (recorder.state !== "inactive") {
+              try { recorder.stop(); } catch { stopTracks(); }
+            } else {
+              stopTracks();
+              if (!settled) {
+                settled = true;
+                reject(failure ?? new Error("A gravação não foi iniciada."));
+              }
+            }
+          };
+          recorder.ondataavailable = event => { if (event.data.size > 0) chunks.push(event.data); };
+          recorder.onerror = () => finish(new Error("O navegador encontrou um erro ao renderizar o vídeo com efeito."));
+          recorder.onstop = () => {
+            stopTracks();
+            if (settled) return;
+            settled = true;
+            if (failure) { reject(failure); return; }
+            const result = new Blob(chunks, { type: recorder.mimeType || mimeType || "video/webm" });
+            if (result.size) resolve(result);
+            else reject(new Error("A renderização terminou sem gerar um vídeo."));
+          };
+          const drawFrame = () => {
+            if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+              context.save();
+              context.filter = filter;
+              context.drawImage(video, 0, 0, canvas.width, canvas.height);
+              context.restore();
+            }
+            if (!stopped) frame = requestAnimationFrame(drawFrame);
+          };
+          video.onended = () => finish();
+          video.onerror = () => finish(new Error("A leitura do vídeo foi interrompida."));
+          try {
+            video.currentTime = 0;
+            void video.play().then(() => {
+              if (stopped) return;
+              try {
+                recorder.start(250);
+                drawFrame();
+              } catch {
+                finish(new Error("Este navegador não conseguiu iniciar a gravação do vídeo processado."));
+              }
+            }).catch(() => finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador.")));
+          } catch {
+            finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador."));
+          }
+        });
+        const extension = output.type.includes("mp4") ? "mp4" : "webm";
+        filename = baseName + "-com-efeito." + extension;
+      } else {
+        throw new Error("Este formato de mídia não é compatível com a exportação de efeitos.");
+      }
+      const url = URL.createObjectURL(output);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+      setCameraError("Arquivo com o efeito aplicado preparado para salvar. A publicação na conta ainda não está conectada.");
+    } catch (error) {
+      setCameraError(error instanceof Error ? error.message : "Não foi possível salvar a mídia com o efeito aplicado.");
+    } finally {
+      setBusy(false);
+    }
   }
   useEffect(() => {
     if (!cameraActive || !cameraVideoRef.current || !cameraStreamRef.current) return;
