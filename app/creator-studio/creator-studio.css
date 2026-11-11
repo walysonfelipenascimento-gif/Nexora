@@ -118,3 +118,11 @@
 .cs-story-filter-strip button{border:1px solid #ffffff1a;border-radius:18px;background:#ffffff08;color:#c4c9d7;padding:7px 12px;font-size:10px;white-space:nowrap}
 .cs-story-filter-strip button.active{border-color:#9b80ff;background:#8a68ff24;color:#fff}
 @media(max-width:720px){.cs-story-stage{gap:0;margin:-18px -13px 0;width:calc(100% + 26px)}.cs-story-device{width:100%;height:calc(100svh - 178px);min-height:510px;border-radius:0;border:0;box-shadow:none;padding:8px 8px 22px}.cs-story-camera-top,.cs-story-edit-top{height:48px;flex-basis:48px}.cs-story-camera-view,.cs-story-edit-canvas{border-radius:0}.cs-story-capture-controls{height:84px;flex-basis:84px;padding:0 28px}.cs-story-mode-picker{height:34px;flex-basis:34px}.cs-story-underbar{padding:12px 16px 18px}.cs-story-share-controls{padding:0 3px}.cs-story-feedback{margin-left:8px;margin-right:8px}}
+
+/* Story opens as a focused camera experience, not inside the Studio dashboard chrome */
+.cs-app-story .cs-header,.cs-app-story .cs-sidebar,.cs-app-story .cs-page-heading{display:none}
+.cs-app-story .cs-shell{display:block;min-height:100svh}
+.cs-app-story .cs-main{padding:0;min-width:0}
+.cs-app-story .cs-story-stage{max-width:none;min-height:100svh;justify-content:center;gap:0}
+.cs-app-story .cs-story-device{height:100svh;max-height:900px;min-height:620px}
+@media(max-width:720px){.cs-app-story .cs-story-device{height:100svh;max-height:none;min-height:0;width:100%;border:0;border-radius:0;padding:8px 8px 22px}.cs-app-story .cs-story-stage{min-height:100svh}.cs-app-story .cs-story-camera-view,.cs-app-story .cs-story-edit-canvas{border-radius:0}}
