@@ -78,7 +78,7 @@ The Story experience is a dedicated, full-screen flow with separate camera, medi
 - Preview screen keeps the selected photo/video while the user edits it.
 - Text tool supports editable caption text; sticker tool supports selectable overlays; effect tool applies the available filters.
 - Text and sticker overlays are included in locally exported image/video output.
-- Music tool imports and previews a local audio file only; it does not mix the track into the exported video.
+- Music tool imports a local audio file, previews it, and mixes it into exported video; a still image with music is exported as a short video.
 - Share-review screen allows choosing the intended audience and returning to editing or saving the media locally.
-- The final action is a local export, not a public Story post. Account publishing, audience enforcement, and server upload remain unconnected.
-- Boomerang, multi-photo Layout, flash hardware control, and LIVE streaming are not implemented and must not be represented as complete.
+- The final action is a local export, not a public Story post. Account publishing, audience enforcement, and server upload remain unconnected until the final Supabase integration.
+- The infinity tool records a short looping clip (repeated forward, not a true reverse Boomerang); Layout creates a 2–4 photo collage; torch control is enabled only on devices that expose the camera torch. LIVE streaming is not implemented.
