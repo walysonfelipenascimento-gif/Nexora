@@ -1,33 +1,26 @@
 # Nexora Creator Studio — isolated implementation
 
-## Scope locked to the supplied references
+## Confirmed product decisions
 
-This module is being developed in parallel on `feat/nexora-creator-studio-isolated`. It does not replace, delete, or import into existing feed, Stories, Reels, profile, messaging, Store, or Supabase flows.
+This module is developed in parallel on `feat/nexora-creator-studio-isolated`. The five user-provided reference images define the visual and interaction direction.
 
-The implementation scope is restricted to the supplied reference set:
+1. Story capture and preview flow with audience choices.
+2. POST and REELS use one shared editing core; they are separate entry points into the same toolset, not separate editors.
+3. Creator analytics: retention, real-time views, engagement, traffic, and audience.
+4. Editorial calendar and post composition/scheduling.
+5. Comments management.
+6. LIVE remains visible as a future creation mode, but its dedicated interface and streaming flow are deferred until separately specified.
+7. AI Creator and AI content generation are excluded from this Creator Studio scope.
 
-1. Story camera + media preview + audience publishing controls.
-2. Reels multitrack editor with preview, timeline, text/sticker/audio/voice/video tracks, and clip actions.
-3. Creator analytics dashboard with retention, real-time view, engagement, traffic, and audience panels.
-4. Editorial calendar plus create/schedule composition.
-5. Clip-level editing controls including volume, speed, color, transitions, and layers.
-6. AI video creation workspace with prompt, featured/recent/saved areas, and preview concepts.
-7. Comments sheet over the content with replies/likes and composer.
+## Technical boundaries
 
-Live Studio is intentionally not implemented in this pass because no Live-specific screen was present in the seven supplied references. It can be specified later from a reference, without guessing its UX.
+- Keep all work isolated under `app/creator-studio/`.
+- Do not delete or overwrite existing feed, Stories, Reels, profile, messaging, or Store flows.
+- Do not connect or modify Supabase schema, credentials, or data in this phase.
+- Demo metrics must remain clearly identified as illustrative.
+- File selection is a local prototype capability; real media processing, persistence, publishing, scheduling, and live streaming require later integrations.
+- No production deploy until build checks, route review, responsive checks, and explicit integration approval are complete.
 
-## Safety and integration rules
+## Route
 
-- Do not delete or overwrite existing routes/components during this phase.
-- Keep all new UI under `app/creator-studio/`.
-- Do not connect or modify Supabase schema, credentials, or data.
-- Metrics shown in the prototype are illustrative interface values and are explicitly labeled as preview/demo data.
-- Media generation, media persistence, actual publication, scheduling, and streaming are not represented as production integrations.
-- Do not alter Stories profile ordering/drag behavior or existing navigation until the new route is reviewed.
-- No production deploy until build checks, route review, responsive checks, and an explicit integration decision are complete.
-
-## Current route
-
-`/creator-studio`
-
-The route is isolated and has no entry point added to the live app yet.
+`/creator-studio` — isolated preview; no entry point has been added to the live app.
