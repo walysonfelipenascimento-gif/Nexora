@@ -80,5 +80,6 @@ The Story experience is a dedicated, full-screen flow with separate camera, medi
 - Text and sticker overlays are included in locally exported image/video output.
 - Music tool imports a local audio file, previews it, and mixes it into exported video; a still image with music is exported as a short video.
 - Share-review screen allows choosing the intended audience and returning to editing or saving the media locally.
-- The final action is a local export, not a public Story post. Account publishing, audience enforcement, and server upload remain unconnected until the final Supabase integration.
+- The final screen offers both local media export and local Feed publishing. Publishing stores the media in the shared Nexora IndexedDB media store and writes a 24-hour entry to `nexora-local-stories-v1`, which the existing home Story rail restores. Cross-account distribution, enforced audience privacy, and server upload remain reserved for the final Supabase integration.
 - The infinity tool records a short looping clip (repeated forward, not a true reverse Boomerang); Layout creates a 2–4 photo collage; torch control is enabled only on devices that expose the camera torch. LIVE streaming is not implemented.
+- The local Story publish action is intentionally compatible with the existing home feed storage and does not activate Supabase or claim cross-account publication.
