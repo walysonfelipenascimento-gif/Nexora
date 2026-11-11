@@ -386,7 +386,7 @@ export default function Home() {
     const orderDraft = params.get("pedido") || sessionStorage.getItem("nexora-store-order-draft-v1");
     const orderStore = params.get("loja");
     const contactType = params.get("contato");
-    if (action === "create") { setCreateMode("hub"); setComposerOpen(true); }
+    if (action === "create") { setComposerOpen(false); router.push("/creator-studio"); }
     if (tab === "mensagens") {
       setMessagesOpen(true);
       if (orderDraft && orderStore) {
