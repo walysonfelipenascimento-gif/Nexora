@@ -53,7 +53,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [cameraError, setCameraError] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
-  const [recordMode, setRecordMode] = useState(false);
   const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +60,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordHoldTimerRef = useRef<number | null>(null);
+  const longPressTriggeredRef = useRef(false);
   const recordedChunksRef = useRef<Blob[]>([]);
   const mediaUrlRef = useRef("");
   const mountedRef = useRef(true);
@@ -143,6 +144,32 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       setCameraError("Não foi possível iniciar a gravação neste dispositivo.");
     }
   }
+  function beginRecordHold() {
+    if (!cameraActive || recording) return;
+    longPressTriggeredRef.current = false;
+    recordHoldTimerRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      toggleRecording();
+    }, 450);
+  }
+  function endRecordHold() {
+    if (recordHoldTimerRef.current !== null) {
+      window.clearTimeout(recordHoldTimerRef.current);
+      recordHoldTimerRef.current = null;
+    }
+    if (longPressTriggeredRef.current && recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
+    }
+  }
+  function handleShutterClick() {
+    if (longPressTriggeredRef.current) {
+      longPressTriggeredRef.current = false;
+      return;
+    }
+    if (!cameraActive) { startCamera(); return; }
+    capturePhoto();
+  }
+
   async function capturePhoto() {
     const video = cameraVideoRef.current;
     if (!video || !video.videoWidth || !video.videoHeight) {
@@ -380,8 +407,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
           <div className="cs-story-capture-controls">
             <button type="button" className="cs-story-gallery" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria"><span>▧</span></button>
-            <button type="button" className={"cs-story-shutter" + (recording ? " is-recording" : "")} onClick={!cameraActive ? startCamera : recordMode ? toggleRecording : capturePhoto} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"}><i /></button>
-            <button type="button" className="cs-story-effects" onClick={() => setRecordMode(value => !value)} aria-label="Alternar foto e vídeo"><span>{recordMode ? "●" : "◉"}</span></button>
+            <button type="button" className={"cs-story-shutter" + (recording ? " is-recording" : "")} onClick={handleShutterClick} onPointerDown={beginRecordHold} onPointerUp={endRecordHold} onPointerLeave={endRecordHold} onPointerCancel={endRecordHold} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"}><i /></button>
+            <button type="button" className="cs-story-effects" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Efeitos"><span>✧</span></button>
           </div>
           <div className="cs-story-mode-picker">
             {["POST", "STORY", "REEL", "LIVE"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
