@@ -58,6 +58,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const mediaUrlRef = useRef("");
+  const mountedRef = useRef(true);
   const filter = effect === "P&B" ? "grayscale(1)" : effect === "Quente" ? "sepia(.35) saturate(1.25)" : effect === "Frio" ? "hue-rotate(12deg) saturate(.85)" : effect === "Contraste" ? "contrast(1.25)" : "none";
 
   function stopCamera() {
@@ -117,6 +118,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         const blob = new Blob(recordedChunksRef.current, { type: recorder.mimeType || "video/webm" });
         recordedChunksRef.current = [];
         recorderRef.current = null;
+        if (!mountedRef.current) return;
         setRecording(false);
         if (blob.size > 0) setLocalMedia(new File([blob], "nexora-story-video.webm", { type: blob.type }));
         else setCameraError("A gravação terminou sem gerar um arquivo de vídeo.");
@@ -163,10 +165,14 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     cameraVideoRef.current.play().catch(() => setCameraError("A câmera foi ativada, mas a prévia não iniciou. Tente novamente."));
   }, [cameraActive]);
 
-  useEffect(() => () => {
-    if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
-    cameraStreamRef.current?.getTracks().forEach(track => track.stop());
-    if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+      cameraStreamRef.current?.getTracks().forEach(track => track.stop());
+      if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
+    };
   }, []);
 
   return (
@@ -194,7 +200,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           <div className="cs-capture-row">
             <button className="cs-gallery-thumb" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria">▧</button>
             <button className="cs-record-mode" onClick={() => { if (recording) return; setRecordMode(value => !value); }}>{recordMode ? "Vídeo" : "Foto"}</button>
-            <button className={"cs-shutter" + (recording ? " recording" : "")} onClick={!cameraActive ? startCamera : recordMode ? toggleRecording : capturePhoto} disabled={busy} aria-label={recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"} />
+            <button className={"cs-shutter" + (recording ? " recording" : "")} onClick={!cameraActive ? startCamera : recordMode ? toggleRecording : capturePhoto} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"} />
             <button className="cs-creative-effect" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Alternar contraste">✧</button>
           </div>
           <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { if (item === "LIVE") { setCameraError("LIVE está reservado para uma etapa futura; a transmissão ainda não foi implementada."); return; } setMode(item); setCameraError(""); if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); } }}>{item}</button>)}</div>
