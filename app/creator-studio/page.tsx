@@ -561,6 +561,11 @@ function CommentsStudio() {
 }
 export default function CreatorStudioPage() {
   const [active, setActive] = useState<StudioSection>("story");
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("section");
+    const allowed: StudioSection[] = ["story", "post", "reels", "calendar"];
+    if (requested && allowed.includes(requested as StudioSection)) setActive(requested as StudioSection);
+  }, []);
   const title = useMemo(() => sections.find(s=>s.id===active)?.label ?? "Creator Studio",[active]);
   return <main className="cs-app">
     <header className="cs-header"><a className="cs-brand" href="/"><span>N</span>NEXORA <i>CREATOR</i></a><div className="cs-header-actions"><span className="cs-status"><i/> Ambiente independente</span><button className="cs-profile">L</button></div></header>
