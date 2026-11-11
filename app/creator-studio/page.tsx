@@ -230,7 +230,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         const context = canvas.getContext("2d");
         if (!context) throw new Error("Não foi possível preparar o vídeo para aplicar o efeito.");
         const canvasStream = canvas.captureStream(30);
-        const sourceStream = typeof video.captureStream === "function" ? video.captureStream() : null;
+        const capturableVideo = video as HTMLVideoElement & { webkitCaptureStream?: () => MediaStream };
+        const sourceStream = typeof video.captureStream === "function" ? video.captureStream() : typeof capturableVideo.webkitCaptureStream === "function" ? capturableVideo.webkitCaptureStream() : null;
         const outputStream = new MediaStream([
           ...canvasStream.getVideoTracks(),
           ...(sourceStream?.getAudioTracks() ?? []),
@@ -289,8 +290,12 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             video.currentTime = 0;
             void video.play().then(() => {
               if (stopped) return;
-              recorder.start(250);
-              drawFrame();
+              try {
+                recorder.start(250);
+                drawFrame();
+              } catch {
+                finish(new Error("Este navegador não conseguiu iniciar a gravação do vídeo processado."));
+              }
             }).catch(() => finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador.")));
           } catch {
             finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador."));
