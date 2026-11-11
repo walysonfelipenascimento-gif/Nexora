@@ -9,11 +9,6 @@ type Metric = { label: string; value: string; change: string };
 
 const sections: { id: StudioSection; label: string; icon: string }[] = [
   { id: "story", label: "Story", icon: "◉" },
-  { id: "post", label: "POST", icon: "▧" },
-  { id: "reels", label: "REELS", icon: "▣" },
-  { id: "insights", label: "Insights", icon: "⌁" },
-  { id: "calendar", label: "Calendário", icon: "▦" },
-  { id: "comments", label: "Comentários", icon: "▤" },
 ];
 
 const metricsByPeriod: Record<string, Metric[]> = {
@@ -624,7 +619,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             <button type="button" className="cs-story-effects" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Efeitos"><span>✧</span></button>
           </div>
           <div className="cs-story-mode-picker">
-            {["POST", "STORY", "REEL", "LIVE"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
+            {["STORY"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
               if (item === "LIVE") { setCameraError("A criação de LIVE será disponibilizada em uma etapa própria."); return; }
               setMode(item); setCameraError("");
               if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); }
@@ -870,7 +865,7 @@ export default function CreatorStudioPage() {
   const [active, setActive] = useState<StudioSection>("story");
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("section");
-    const allowed: StudioSection[] = ["story", "post", "reels", "calendar"];
+    const allowed: StudioSection[] = ["story"];
     if (requested && allowed.includes(requested as StudioSection)) setActive(requested as StudioSection);
   }, []);
   const title = useMemo(() => sections.find(s=>s.id===active)?.label ?? "Creator Studio",[active]);
