@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import "./creator-studio.css";
 
 type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
@@ -101,34 +101,57 @@ function Timeline({ compact = false }: { compact?: boolean }) {
   </div>;
 }
 
+type EditorClip = { id: string; file: File; url: string; start: number; end: number };
+type EditorFilter = "Nenhum" | "P&B" | "Quente" | "Frio" | "Contraste";
 function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "REELS" }) {
-  const [tool, setTool] = useState("Camada");
-  const [playing, setPlaying] = useState(false);
   const [format, setFormat] = useState<"POST" | "REELS">(initialFormat);
-  const [mediaName, setMediaName] = useState("");
-  return <div className="cs-editor-grid">
-    <div className="cs-editor-phone">
-      <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
-      <div className="cs-editor-top"><button aria-label="Desfazer" onClick={() => setTool("Desfazer")}>↶</button><button aria-label="Refazer" onClick={() => setTool("Refazer")}>↷</button><button aria-label="Exportar" onClick={() => setTool("Exportar")}>⇧</button></div>
-      <div className="cs-video-preview"><div className="cs-video-person">N</div><span>PRÉVIA {format}</span></div>
-      <div className="cs-play-controls"><span>00:08 / 00:23</span><button onClick={() => setPlaying(!playing)}>{playing ? "Ⅱ" : "▶"}</button><span>⌄</span></div>
-      <Timeline />
-      <div className="cs-tool-row">{["Cortar", "Dividir", "Texto", "Áudio", "Filtros", "Ajustes"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "active" : ""}>{x}</button>)}</div>
-      <div className="cs-home-indicator" />
-    </div>
-    <div className="cs-editor-phone">
-      <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
-      <div className="cs-editor-top"><button aria-label="Voltar">‹</button><button aria-label="Desfazer" onClick={() => setTool("Desfazer")}>↶</button><button aria-label="Refazer" onClick={() => setTool("Refazer")}>↷</button><button aria-label="Exportar" onClick={() => setTool("Exportar")}>⇧</button></div>
-      <div className="cs-video-preview cs-video-preview-alt"><div className="cs-video-person">N</div><span>EDIÇÃO MULTIFAIXA</span></div>
-      <div className="cs-play-controls"><span>00:15 / 00:32</span><button onClick={() => setPlaying(!playing)}>{playing ? "Ⅱ" : "▶"}</button><span>⌄</span></div>
-      <Timeline compact />
-      <div className="cs-tool-row">{["Duplicar", "Camada", "Dividir", "Como clipe", "Substituir"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "active" : ""}>{x}</button>)}</div>
-      <div className="cs-home-indicator" />
-    </div>
-    <div className="cs-editor-details"><span className="cs-kicker">EDITOR ÚNICO · POST + REELS</span><h3>Uma edição, vários formatos.</h3><p>POST e REELS compartilham a mesma base de ferramentas: cortes, texto, áudio, filtros, ajustes e camadas.</p><div className="cs-speed-options"><button className={format === "POST" ? "active" : ""} onClick={() => setFormat("POST")}>POST</button><button className={format === "REELS" ? "active" : ""} onClick={() => setFormat("REELS")}>REELS</button></div><label className="cs-media-picker">Adicionar fotos ou vídeos<input type="file" accept="image/*,video/*" multiple onChange={e => setMediaName(Array.from(e.target.files ?? []).map(file => file.name).join(", "))}/></label>{mediaName && <small className="cs-demo-note">Selecionado: {mediaName}</small>}<div className="cs-option-list">{["Cortar", "Dividir", "Duplicar", "Texto", "Áudio", "Filtros", "Ajustes", "Camadas", "Substituir", "Excluir"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "selected" : ""}>{x}<span>›</span></button>)}</div></div>
-  </div>;
+  const [clips, setClips] = useState<EditorClip[]>([]);
+  const [selectedId, setSelectedId] = useState("");
+  const [playhead, setPlayhead] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [filter, setFilter] = useState<EditorFilter>("Nenhum");
+  const [overlayText, setOverlayText] = useState("");
+  const [volume, setVolume] = useState(1);
+  const [speed, setSpeed] = useState(1);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [notice, setNotice] = useState("Importe fotos ou vídeos para começar.");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const selected = clips.find(clip => clip.id === selectedId) ?? clips[0];
+  const filterStyle = filter === "P&B" ? "grayscale(1)" : filter === "Quente" ? "sepia(.35) saturate(1.25)" : filter === "Frio" ? "hue-rotate(12deg) saturate(.85)" : filter === "Contraste" ? "contrast(1.3) saturate(1.1)" : "none";
+  function importMedia(files: FileList | null) {
+    if (!files?.length) return;
+    const accepted = Array.from(files).filter(file => file.type.startsWith("image/") || file.type.startsWith("video/"));
+    if (!accepted.length) { setNotice("Formato não suportado. Escolha imagens ou vídeos."); return; }
+    const added = accepted.map(file => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file), start: 0, end: 0 }));
+    setClips(current => [...current, ...added]); setSelectedId(added[0].id); setPlayhead(0);
+    setNotice(accepted.length + " arquivo(s) importado(s) localmente. Ainda não foram enviados para a Nexora.");
+  }
+  function updateClip(id: string, patch: Partial<EditorClip>) { setClips(current => current.map(clip => clip.id === id ? { ...clip, ...patch } : clip)); }
+  function removeSelected() { if (!selected) return; URL.revokeObjectURL(selected.url); const remaining=clips.filter(clip=>clip.id!==selected.id); setClips(remaining); setSelectedId(remaining[0]?.id??""); setPlayhead(0); setPlaying(false); setNotice("Clipe removido da sequência."); }
+  function duplicateSelected() { if (!selected) return; const copy={...selected,id:crypto.randomUUID()}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index+1),copy,...current.slice(index+1)]); setNotice("Clipe duplicado na sequência."); }
+  function splitSelected() { if (!selected || selected.file.type.startsWith("image/")) { setNotice("A divisão está disponível para vídeos."); return; } const point=Math.max(selected.start+.2,Math.min(playhead,selected.end-.2)); if(point<=selected.start||point>=selected.end){setNotice("Posicione a reprodução no interior do clipe para dividi-lo.");return;} const left={...selected,id:crypto.randomUUID(),end:point}; const right={...selected,id:crypto.randomUUID(),start:point}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index),left,right,...current.slice(index+1)]); setSelectedId(right.id); setNotice("Clipe dividido em dois segmentos."); }
+  function moveSelected(direction: -1 | 1) { if(!selected)return; const index=clips.findIndex(clip=>clip.id===selected.id), target=index+direction; if(target<0||target>=clips.length)return; const next=[...clips]; [next[index],next[target]]=[next[target],next[index]]; setClips(next); }
+  function downloadOriginal() { if(!selected)return; const anchor=document.createElement("a"); anchor.href=selected.url; anchor.download=selected.file.name; anchor.click(); setNotice("Download do arquivo original iniciado. As edições ainda não são renderizadas."); }
+  const selectedIsVideo=Boolean(selected?.file.type.startsWith("video/"));
+  return <div className="cs-real-editor">
+    <div className="cs-real-editor-head"><div><span className="cs-kicker">EDITOR COMPARTILHADO</span><h3>{format==="POST"?"Editar publicação":"Editar Reel"}</h3><p>Um único conjunto de ferramentas para os dois formatos.</p></div><div className="cs-speed-options"><button className={format==="POST"?"active":""} onClick={()=>setFormat("POST")}>POST</button><button className={format==="REELS"?"active":""} onClick={()=>setFormat("REELS")}>REELS</button></div></div>
+    <div className="cs-real-editor-grid">
+      <section className="cs-real-preview-panel"><div className={"cs-real-preview "+(format==="REELS"?"vertical":"post")}>
+        {selected ? (selectedIsVideo ? <video ref={videoRef} key={selected.id} src={selected.url} playsInline style={{filter:filterStyle}} onLoadedMetadata={event=>{const video=event.currentTarget;const end=selected.end||video.duration;setDuration(end-selected.start);updateClip(selected.id,{end});video.currentTime=selected.start;video.volume=volume;video.playbackRate=speed;}} onTimeUpdate={event=>{const video=event.currentTarget;setPlayhead(video.currentTime);if(selected.end&&video.currentTime>=selected.end){video.pause();setPlaying(false);}}}/> : <img src={selected.url} alt={selected.file.name} style={{filter:filterStyle}}/>) : <div className="cs-empty-preview"><span>＋</span><b>Sua prévia aparecerá aqui</b><small>Adicione fotos ou vídeos para começar</small></div>}
+        {overlayText&&selected&&<span className="cs-preview-overlay">{overlayText}</span>}</div>
+      <div className="cs-real-playbar"><span>{selected?selected.file.name:"Nenhuma mídia selecionada"}</span>{selectedIsVideo&&<><input aria-label="Posição do vídeo" type="range" min={selected?.start??0} max={selected?.end||duration||1} step=".05" value={Math.min(playhead,selected?.end||duration||1)} onChange={event=>{const value=Number(event.target.value);setPlayhead(value);if(videoRef.current)videoRef.current.currentTime=value;}}/><button onClick={async()=>{if(!videoRef.current)return;if(playing){videoRef.current.pause();setPlaying(false);}else{try{await videoRef.current.play();setPlaying(true);}catch{setNotice("Não foi possível reproduzir este vídeo.");}}}}>{playing?"Pausar":"Reproduzir"}</button></>}</div>
+      <div className="cs-real-timeline-head"><b>Linha do tempo</b><small>{clips.length} clipe(s)</small></div><div className="cs-real-timeline">{clips.map((clip,index)=><button key={clip.id} className={clip.id===selected?.id?"selected":""} onClick={()=>{setSelectedId(clip.id);setPlayhead(clip.start);setPlaying(false);}}><b>{index+1}. {clip.file.name}</b><small>{clip.file.type.startsWith("video/")?"Vídeo":"Imagem"}{clip.end>clip.start?" · "+(clip.end-clip.start).toFixed(1)+"s":""}</small></button>)}</div></section>
+      <section className="cs-real-tools-panel"><label className="cs-media-picker">＋ Importar fotos e vídeos<input type="file" accept="image/*,video/*" multiple onChange={event=>importMedia(event.target.files)}/></label>
+        <div className="cs-tool-group"><b>Clipe selecionado</b><div className="cs-tool-buttons"><button disabled={!selected} onClick={duplicateSelected}>Duplicar</button><button disabled={!selected||!selectedIsVideo} onClick={splitSelected}>Dividir no cursor</button><button disabled={!selected} onClick={()=>moveSelected(-1)}>Mover ←</button><button disabled={!selected} onClick={()=>moveSelected(1)}>Mover →</button><button disabled={!selected} className="danger" onClick={removeSelected}>Excluir</button></div></div>
+        <div className="cs-tool-group"><b>Texto sobre a mídia</b><input className="cs-editor-text-input" value={overlayText} onChange={event=>setOverlayText(event.target.value)} placeholder="Digite o texto da publicação"/></div>
+        <div className="cs-tool-group"><b>Filtros de prévia</b><div className="cs-tool-buttons">{(["Nenhum","P&B","Quente","Frio","Contraste"] as EditorFilter[]).map(item=><button key={item} className={filter===item?"active":""} onClick={()=>setFilter(item)}>{item}</button>)}</div></div>
+        <div className="cs-tool-group"><label>Volume <strong>{Math.round(volume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={volume} onChange={event=>{const value=Number(event.target.value);setVolume(value);if(videoRef.current)videoRef.current.volume=value;}}/></div>
+        <div className="cs-tool-group"><label>Velocidade <strong>{speed.toFixed(2)}×</strong></label><input type="range" min=".25" max="2" step=".25" value={speed} onChange={event=>{const value=Number(event.target.value);setSpeed(value);if(videoRef.current)videoRef.current.playbackRate=value;}}/></div>
+        <label className="cs-audio-picker">＋ Adicionar faixa de áudio<input type="file" accept="audio/*" onChange={event=>setAudioFile(event.target.files?.[0]??null)}/></label>{audioFile&&<div className="cs-audio-file"><b>Áudio selecionado:</b> {audioFile.name}<audio controls src={URL.createObjectURL(audioFile)}/></div>}
+        <button className="cs-export-original" disabled={!selected} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A edição e a prévia são locais. Renderização final, salvamento e publicação exigem integração de mídia e servidor.</small></section>
+    </div></div>;
 }
-
 function MiniChart({ title, value, kind = "line" }: { title: string; value: string; kind?: "line" | "bars" }) {
   return <div className="cs-chart-card"><div className="cs-chart-head"><span>{title}</span><b>{value}</b></div>{kind === "line" ? <svg viewBox="0 0 300 90" role="img" aria-label={title}><path d="M0 72 C20 64 24 48 42 55 S70 22 90 40 S120 18 142 36 S170 49 190 26 S220 42 240 18 S275 28 300 8" fill="none" stroke="url(#cs-line)" strokeWidth="3"/><defs><linearGradient id="cs-line"><stop stopColor="#39d9ff"/><stop offset="1" stopColor="#a56bff"/></linearGradient></defs><path d="M0 72 C20 64 24 48 42 55 S70 22 90 40 S120 18 142 36 S170 49 190 26 S220 42 240 18 S275 28 300 8 L300 90 L0 90Z" fill="url(#cs-fill)" opacity=".18"/><defs><linearGradient id="cs-fill" x2="0" y2="1"><stop stopColor="#6e75ff"/><stop offset="1" stopColor="#6e75ff" stopOpacity="0"/></linearGradient></defs></svg> : <div className="cs-bars">{Array.from({length:18},(_,i)=><i key={i} style={{height:(20+((i*17)%63))+"%"}} />)}</div>}</div>;
 }
