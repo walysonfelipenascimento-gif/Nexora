@@ -163,3 +163,5 @@
 .cs-story-final-actions button{flex:1;min-height:43px;border:1px solid #ffffff25;border-radius:24px;background:#ffffff0d;color:#fff;font-size:11px;font-weight:700}
 .cs-story-final-actions button:last-child{border:0;background:linear-gradient(100deg,#35c8ed,#9672ff);color:#070b15}
 .cs-story-final-actions button:disabled{opacity:.55}
+
+.cs-story-shutter{touch-action:none;user-select:none;-webkit-user-select:none}
