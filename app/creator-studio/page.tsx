@@ -15,12 +15,26 @@ const sections: { id: StudioSection; label: string; icon: string }[] = [
   { id: "comments", label: "Comentários", icon: "▤" },
 ];
 
-const metrics: Metric[] = [
-  { label: "Visualizações", value: "24,892", change: "+12,8%" },
-  { label: "Engajamento", value: "78,4%", change: "+8,2%" },
-  { label: "Seguidores", value: "32,3K", change: "+3,5%" },
-  { label: "Compartilhamentos", value: "9.942", change: "+6,1%" },
-];
+const metricsByPeriod: Record<string, Metric[]> = {
+  "7 dias": [
+    { label: "Visualizações", value: "24.892", change: "+12,8%" },
+    { label: "Engajamento", value: "7,84%", change: "+8,2%" },
+    { label: "Seguidores", value: "323", change: "+3,5%" },
+    { label: "Compartilhamentos", value: "942", change: "+6,1%" },
+  ],
+  "30 dias": [
+    { label: "Visualizações", value: "98.430", change: "+18,4%" },
+    { label: "Engajamento", value: "8,12%", change: "+5,7%" },
+    { label: "Seguidores", value: "1.284", change: "+4,1%" },
+    { label: "Compartilhamentos", value: "3.716", change: "+9,3%" },
+  ],
+  "90 dias": [
+    { label: "Visualizações", value: "286.710", change: "+22,6%" },
+    { label: "Engajamento", value: "7,96%", change: "+6,4%" },
+    { label: "Seguidores", value: "3.902", change: "+7,8%" },
+    { label: "Compartilhamentos", value: "10.584", change: "+12,2%" },
+  ],
+};
 
 
 function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS") => void }) {
@@ -244,9 +258,9 @@ function InsightsStudio() {
   const [period, setPeriod] = useState("7 dias");
   return <div className="cs-dashboard">
     <div className="cs-dashboard-heading"><div><span className="cs-kicker">CREATOR ANALYTICS</span><h3>Visão geral</h3><p>Indicadores demonstrativos de interface</p></div><select value={period} onChange={e=>setPeriod(e.target.value)}><option>7 dias</option><option>30 dias</option><option>90 dias</option></select></div>
-    <div className="cs-metric-grid">{metrics.map(m=><div className="cs-metric" key={m.label}><span>{m.label}</span><b>{m.value}</b><small>{m.change} <em>vs. período anterior</em></small></div>)}</div>
-    <div className="cs-insights-grid"><MiniChart title="Retenção de audiência" value="68%" /><MiniChart title="Visualizações em tempo real" value="24,892" kind="bars" /><MiniChart title="Engajamento por conteúdo" value="78,4%" /><MiniChart title="Origem do tráfego" value="Distribuição" kind="bars" /></div>
-    <div className="cs-audience-row"><div><span className="cs-kicker">AUDIÊNCIA</span><h4>Conheça quem acompanha seu conteúdo</h4><p>Localização, atividade e evolução do público.</p></div><div className="cs-donut"><span>72%<small>atividade</small></span></div></div>
+    <div className="cs-metric-grid">{metricsByPeriod[period].map(m=><div className="cs-metric" key={m.label}><span>{m.label}</span><b>{m.value}</b><small>{m.change} <em>vs. período anterior</em></small></div>)}</div>
+    <div className="cs-insights-grid"><MiniChart title="Retenção de audiência" value={period==="7 dias"?"68%":period==="30 dias"?"71%":"74%"} /><MiniChart title="Visualizações no período" value={metricsByPeriod[period][0].value} kind="bars" /><MiniChart title="Engajamento por conteúdo" value={metricsByPeriod[period][1].value} /><MiniChart title="Origem do tráfego" value={period==="7 dias"?"Distribuição semanal":period==="30 dias"?"Distribuição mensal":"Distribuição trimestral"} kind="bars" /></div>
+    <div className="cs-audience-row"><div><span className="cs-kicker">AUDIÊNCIA · DADOS DE EXEMPLO</span><h4>Conheça quem acompanha seu conteúdo</h4><p>Localização, atividade e evolução do público.</p></div><div className="cs-donut"><span>{period==="7 dias"?"72%":period==="30 dias"?"76%":"79%"}<small>atividade</small></span></div></div>
   </div>;
 }
 
