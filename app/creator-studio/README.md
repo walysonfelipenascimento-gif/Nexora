@@ -18,7 +18,6 @@ This module is developed on an isolated preview branch. The five user-provided r
 - Capture a still photo from the camera preview with the selected filter baked into the saved image.
 - Record video with the browser MediaRecorder API, including microphone audio when permission is available; fall back to silent video if microphone access is unavailable.
 - Import an image or video from the device gallery and preview it.
-- Import an image or video from the device gallery and preview it.
 - Apply the selected browser filter to gallery media and bake it into locally exported images and videos; source audio is retained when the browser exposes capture tracks.
 - Add editable caption text to the preview.
 - Choose an intended audience for the draft and save the processed media file locally.
@@ -56,8 +55,7 @@ This module is developed on an isolated preview branch. The five user-provided r
 - Video splitting currently creates logical timeline segments; it does not physically encode a new video file.
 - Comment likes and replies are local demonstration state and are not synchronized to a user account.
 - Insights remain illustrative sample metrics and must not be interpreted as real audience performance.
-- Story video recording currently records the camera stream without baking the selected filter into the recording.
-- Story caption text remains a preview overlay and is not burned into exported media.
+- Camera capture stores the original recording first; the local export pass applies the selected filter and burns text/sticker overlays into the exported copy.
 - Object URLs are local to the browser session.
 
 ## Technical boundaries
@@ -69,7 +67,7 @@ This module is developed on an isolated preview branch. The five user-provided r
 
 ## Route
 
-`/creator-studio` — isolated preview; no entry point has been added to the live app.
+`/creator-studio` — isolated preview route. The branch also wires the creation hub to this route; it becomes available in the live app only after the draft is reviewed and integrated.
 
 
 ## Story — multi-screen creation flow
