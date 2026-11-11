@@ -1384,24 +1384,23 @@ export default function Home() {
 </div>
 {storyFile&&storyPreview&&<div style={{display:"flex",gap:8,margin:"0 14px 8px",alignItems:"center"}}><input value={storyCaption} onChange={event=>setStoryCaption(event.target.value)} maxLength={180} placeholder="Escreva uma legenda..." style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:22,border:"1px solid #ffffff22",background:"#17171d",color:"#fff",outline:"none"}}/><button type="button" onClick={publishStory} disabled={!storyFile||!storyPreview} style={{padding:"11px 15px",border:0,borderRadius:22,background:!storyFile||!storyPreview?"#35353b":"linear-gradient(100deg,#50e5ff,#8e67ff 65%,#e45bd5)",color:!storyFile||!storyPreview?"#85858d":"#080916",fontWeight:800,whiteSpace:"nowrap"}}>Compartilhar</button></div>}
 
-</section></div>}{composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title" style={{maxHeight:"min(88dvh,760px)",overflowY:"auto"}}><header><div><small>NEXORA · CENTRAL DE CRIAÇÃO</small><h2 id="composer-title">{createMode === "hub" ? "O que vamos criar?" : createMode === "post" ? "Nova publicação" : createMode === "reel" ? "Criar Reel" : "Preparar Live"}</h2></div><button onClick={() => {setComposerOpen(false);setCreateMode("hub");}} aria-label="Fechar">×</button></header>
-        {createMode === "hub" ? <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10,marginTop:16}}>
+</section></div>}{composerOpen && <div className="overlay" onClick={event => { if (event.target === event.currentTarget) setComposerOpen(false); }}><section className={`composer ${createMode === "hub" ? "create-hub-shell" : ""}`} role="dialog" aria-modal="true" aria-labelledby="composer-title" style={{maxHeight:"min(88dvh,760px)",overflowY:"auto"}}><header className={createMode === "hub" ? "create-hub-header" : ""}><div><small>NEXORA · CREATIVE STUDIO</small><h2 id="composer-title">{createMode === "hub" ? "Dê vida às suas ideias" : createMode === "post" ? "Nova publicação" : createMode === "reel" ? "Criar Reel" : "Preparar Live"}</h2>{createMode === "hub" && <p>Escolha como você quer criar hoje</p>}</div><button onClick={() => {setComposerOpen(false);setCreateMode("hub");}} aria-label="Fechar">×</button></header>
+        {createMode === "hub" ? <div className="create-hub-grid">
           {[
-            {mode:"story",icon:"◉",title:"Story",desc:"Foto ou vídeo por 24 horas"},
-            {mode:"post",icon:"▧",title:"Publicação",desc:"Foto, vídeo ou texto"},
-            {mode:"reel",icon:"▶",title:"Reels",desc:"Vídeos verticais"},
-            {mode:"highlight",icon:"✦",title:"Destaques",desc:"Organize Stories no perfil"},
-            {mode:"live",icon:"●",title:"Live",desc:"Prepare uma transmissão"},
-            {mode:"note",icon:"✎",title:"Nota",desc:"Compartilhe um pensamento"}
-          ].map(item => <button key={item.mode} type="button" onClick={() => {
+            {mode:"story",icon:"◉",title:"Story",desc:"Momentos que ficam por 24 horas",tone:"story"},
+            {mode:"post",icon:"▧",title:"Publicação",desc:"Compartilhe fotos e carrosséis",tone:"post"},
+            {mode:"reel",icon:"▶",title:"Reels",desc:"Crie vídeos e edite seus clipes",tone:"reel"},
+            {mode:"planning",icon:"✦",title:"Planejamento",desc:"Organize ideias e rascunhos",tone:"planning"}
+          ].map(item => <button key={item.mode} type="button" className={`create-hub-card create-hub-${item.tone}`} onClick={() => {
             if(item.mode==="story"){setComposerOpen(false);setStoryComposerOpen(true);return;}
-            if(item.mode==="note"){setComposerOpen(false);setNotesComposerOpen(true);return;}
-            if(item.mode==="highlight"){openCreateMode("highlight");return;}
-            openCreateMode(item.mode as "post"|"reel"|"live");
-          }} style={{textAlign:"left",padding:14,borderRadius:16,border:"1px solid #8e78ff45",background:"linear-gradient(135deg,#15152a,#0c1221)",color:"#fff",minHeight:106,cursor:"pointer"}}>
-            <span style={{display:"grid",placeItems:"center",width:35,height:35,borderRadius:12,background:"linear-gradient(135deg,#55e8ff30,#a66cff35)",color:"#8ceeff",fontSize:20,marginBottom:9}}>{item.icon}</span><strong style={{display:"block",fontSize:13}}>{item.title}</strong><small style={{display:"block",fontSize:10,color:"#9da2bd",marginTop:5,lineHeight:1.45}}>{item.desc}</small>
+            if(item.mode==="planning"){window.location.href="/creator-studio";return;}
+            openCreateMode(item.mode as "post"|"reel");
+          }}>
+            <span className="create-hub-art" aria-hidden="true"><i>{item.icon}</i><b /></span>
+            <span className="create-hub-copy"><strong>{item.title}</strong><small>{item.desc}</small></span>
+            <span className="create-hub-arrow" aria-hidden="true">↗</span>
           </button>)}
-        </div> : createMode === "live" ? <div style={{paddingTop:12}}>
+        </div> <div style={{paddingTop:12}}>
           <p style={{fontSize:13,color:"#c3c5dc",lineHeight:1.6}}>Configure o título e a privacidade da sua Live. A transmissão real precisa de integração com câmera, servidor de streaming e moderação; esta tela ainda não inicia vídeo ao vivo.</p>
           <input value={createTitle} onChange={event=>setCreateTitle(event.target.value)} maxLength={80} placeholder="Título da transmissão" style={{width:"100%",padding:13,borderRadius:12,background:"#0b0c18",border:"1px solid #ffffff20",color:"#fff",margin:"10px 0"}} />
           <button type="button" onClick={()=>setNotice(createTitle.trim() ? `Configuração da Live “${createTitle.trim()}” preparada. A transmissão será habilitada com a integração de streaming.` : "Digite um título para a Live.")} style={{width:"100%",padding:13,borderRadius:12,border:0,background:"linear-gradient(90deg,#55e8ff,#a66cff)",color:"#080817",fontWeight:800}}>Preparar transmissão</button>
