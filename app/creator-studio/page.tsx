@@ -133,9 +133,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
           context.save();
           context.filter = filter;
-          context.filter = filter;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    context.filter = "none";
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
           context.restore();
         }
         recordingFrameRef.current = requestAnimationFrame(renderFrame);
@@ -177,7 +175,10 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     canvas.height = video.videoHeight;
     const context = canvas.getContext("2d");
     if (!context) { setCameraError("Não foi possível preparar a captura neste navegador."); return; }
+    context.save();
+    context.filter = filter;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    context.restore();
     setBusy(true);
     canvas.toBlob(blob => {
       setBusy(false);
