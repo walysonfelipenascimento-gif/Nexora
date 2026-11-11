@@ -19,8 +19,9 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Record camera video through a filtered canvas stream, preserving camera audio when available, so the selected filter is baked into the recorded video.
 - Record video with the browser MediaRecorder API, including microphone audio when permission is available; fall back to silent video if microphone access is unavailable.
 - Import an image or video from the device gallery and preview it.
-- Apply browser preview filters and add editable caption text.
-- Choose an intended audience for the draft and save the selected original media file locally.
+- Apply browser filters to gallery media and bake the selected filter into the locally exported image or video; video export preserves source audio when the browser exposes its media tracks.
+- Add editable caption text to the preview.
+- Choose an intended audience for the draft and save the processed media file locally.
 - Explain permission failures and unsupported camera contexts without pretending the camera is active.
 
 ## Shared POST / REELS editor — current local capabilities
@@ -52,7 +53,7 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Story Boomerang and multi-frame Layout modes are not implemented; the UI reports this instead of simulating them.
 - The shared editor renders and exports a combined local video in supported browsers; export is device-intensive and depends on browser codecs, memory, and available media APIs.
 - Calendar media and draft metadata persist locally in IndexedDB/localStorage on the same browser/device; clearing site data or browser storage can remove them.
-- Filters are baked into photos captured by the camera and videos recorded through the camera. For media imported from the gallery, Story filters and caption text remain preview-only; saving an imported gallery file still downloads the original media.
+- Story filters are baked into camera captures and into exported gallery images/videos. Caption text remains a preview overlay and is not burned into the exported media.
 - No server upload, cross-device sync, public posting, automated publishing, or account-level scheduling is connected.
 - Video splitting currently creates logical timeline segments; it does not physically encode a new video file.
 - Comment likes, replies, and new comments persist in localStorage on the same browser/device, but are not synchronized to a user account.
