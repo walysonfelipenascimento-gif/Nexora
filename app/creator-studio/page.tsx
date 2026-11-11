@@ -310,62 +310,75 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   }, []);
 
   return (
-    <div className="cs-story-layout">
-      <div className="cs-phone cs-camera-phone">
-        <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
+    <div className="cs-story-stage">
+      <div className="cs-story-device">
         <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
         {stage === "camera" ? <>
-          <div className="cs-camera-top">
-            <button className="cs-icon-button" aria-label="Fechar câmera" onClick={stopCamera}>×</button>
-            <div className="cs-camera-top-actions">
-              <button className="cs-icon-button" aria-label="Alternar efeito P&B" onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>◐</button>
-              <button className="cs-icon-button" aria-label="Alternar efeito quente" onClick={() => setEffect(effect === "Quente" ? "Original" : "Quente")}>✦</button>
-              <button className="cs-icon-button" aria-label="Iniciar câmera" onClick={startCamera}>◎</button>
+          <div className="cs-story-camera-top">
+            <button type="button" aria-label="Fechar câmera" onClick={stopCamera}>×</button>
+            <div>
+              <button type="button" aria-label="Alternar flash" onClick={() => setCameraError("O flash depende do suporte da câmera deste dispositivo.")}>ϟ</button>
+              <button type="button" aria-label="Modo noturno" onClick={() => setEffect(effect === "Frio" ? "Original" : "Frio")}>☾</button>
+              <button type="button" aria-label="Configurações da câmera" onClick={() => setCameraError("Escolha um dos efeitos disponíveis na barra lateral.")}>⚙</button>
             </div>
           </div>
-          <div className="cs-camera-view">
-            {cameraActive ? <video ref={cameraVideoRef} className="cs-story-selected-media" autoPlay muted playsInline style={{ filter }} /> : <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>}
-            <div className="cs-camera-tools">
-              {["Original", "P&B", "Quente", "Frio", "Contraste"].map(item => <button key={item} className={effect === item ? "active" : ""} onClick={() => setEffect(item)}>{item}</button>)}
+          <div className="cs-story-camera-view">
+            {cameraActive ? <video ref={cameraVideoRef} className="cs-story-live-media" autoPlay muted playsInline style={{ filter }} /> : (
+              <button type="button" className="cs-story-camera-start" onClick={startCamera}>
+                <span>◎</span><b>Ativar câmera</b><small>Permita o acesso para visualizar a câmera em tempo real</small>
+              </button>
+            )}
+            <div className="cs-story-vertical-tools">
+              <button type="button" aria-label="Adicionar texto" onClick={() => setCameraError("Capture ou escolha uma mídia para adicionar texto na edição.")}>Aa</button>
+              <button type="button" aria-label="Modo Boomerang" onClick={() => setCameraError("O modo Boomerang ainda não está implementado.")}>∞</button>
+              <button type="button" aria-label="Layout" onClick={() => setCameraError("O modo Layout ainda não está implementado.")}>▦</button>
+              <button type="button" aria-label="Abrir galeria" onClick={() => galleryInputRef.current?.click()}>⌄</button>
             </div>
-            <span className="cs-effect-label">{recording ? "Gravando vídeo…" : cameraActive ? "Câmera ativa" : "Prévia ilustrativa"} · {effect}</span>
+            <div className="cs-story-camera-hint">{recording ? "GRAVANDO" : cameraActive ? "CÂMERA ATIVA" : "CÂMERA NEXORA"} · {effect.toUpperCase()}</div>
           </div>
-          {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
-          <div className="cs-capture-row">
-            <button className="cs-gallery-thumb" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria">▧</button>
-            <button className="cs-record-mode" onClick={() => { if (recording) return; setRecordMode(value => !value); }}>{recordMode ? "Vídeo" : "Foto"}</button>
-            <button className={"cs-shutter" + (recording ? " recording" : "")} onClick={!cameraActive ? startCamera : recordMode ? toggleRecording : capturePhoto} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"} />
-            <button className="cs-creative-effect" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Alternar contraste">✧</button>
+          {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
+          <div className="cs-story-capture-controls">
+            <button type="button" className="cs-story-gallery" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria"><span>▧</span></button>
+            <button type="button" className={"cs-story-shutter" + (recording ? " is-recording" : "")} onClick={!cameraActive ? startCamera : recordMode ? toggleRecording : capturePhoto} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"}><i /></button>
+            <button type="button" className="cs-story-effects" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Efeitos"><span>✧</span></button>
           </div>
-          <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { if (item === "LIVE") { setCameraError("LIVE está reservado para uma etapa futura; a transmissão ainda não foi implementada."); return; } setMode(item); setCameraError(""); if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); } }}>{item}</button>)}</div>
+          <div className="cs-story-mode-picker">
+            {["POST", "STORY", "REEL", "LIVE"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
+              if (item === "LIVE") { setCameraError("A criação de LIVE será disponibilizada em uma etapa própria."); return; }
+              setMode(item); setCameraError("");
+              if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); }
+            }}>{item}</button>)}
+          </div>
         </> : <>
-          <div className="cs-preview-top"><button onClick={() => { setStage("camera"); setCameraError(""); }}>‹</button><div><button onClick={() => setCaption(value => value + " ✦")}>Aa</button><button onClick={() => galleryInputRef.current?.click()}>▧</button><button onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>◐</button><button onClick={() => setCaption(value => value + " ♫")}>♫</button><button onClick={() => setCaption("")}>Limpar</button></div></div>
-          <div className="cs-story-preview">
-            {mediaUrl ? (mediaType.startsWith("video/") ? <video className="cs-story-selected-media" src={mediaUrl} controls playsInline style={{ filter }} /> : <img className="cs-story-selected-media" src={mediaUrl} alt="Prévia do Story" style={{ filter }} />) : <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>}
+          <div className="cs-story-edit-top">
+            <button type="button" aria-label="Voltar para câmera" onClick={() => { setStage("camera"); setCameraError(""); }}>‹</button>
+            <div>
+              <button type="button" aria-label="Adicionar texto" onClick={() => setCaption(value => value + (value ? " " : "") + "Seu texto")}>Aa</button>
+              <button type="button" aria-label="Figurinhas" onClick={() => setCaption(value => value + " ✦")}>☻</button>
+              <button type="button" aria-label="Efeitos" onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>✣</button>
+              <button type="button" aria-label="Música" onClick={() => setCameraError("A seleção e sincronização de músicas será conectada em uma etapa própria.")}>♫</button>
+              <button type="button" aria-label="Mais opções" onClick={() => setCameraError("Mais opções de edição serão adicionadas sem alterar a mídia original.")}>•••</button>
+            </div>
+          </div>
+          <div className="cs-story-edit-canvas">
+            {mediaUrl ? (mediaType.startsWith("video/") ? <video className="cs-story-edit-media" src={mediaUrl} controls playsInline style={{ filter }} /> : <img className="cs-story-edit-media" src={mediaUrl} alt="Prévia do Story" style={{ filter }} />) : null}
             {caption && <span className="cs-story-caption-overlay">{caption}</span>}
-            <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Adicionar texto..." aria-label="Texto do Story" />
+            <input className="cs-story-caption-input" value={caption} onChange={event => setCaption(event.target.value)} placeholder="Adicione uma legenda..." aria-label="Texto do Story" />
           </div>
-          <div className="cs-publish-row">
-            <button className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}>◉ Seu Story</button>
-            <button className={audience === "Amigos Próximos" ? "selected" : ""} onClick={() => setAudience("Amigos Próximos")}>✦ Amigos Próximos</button>
-            <button className="cs-next" onClick={downloadStory} disabled={busy}>{busy ? "Aplicando efeito…" : "Salvar"}</button>
+          {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
+          <div className="cs-story-share-controls">
+            <button type="button" className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}><span>◉</span> Seu Story</button>
+            <button type="button" className={audience === "Amigos Próximos" ? "selected close-friends" : "close-friends"} onClick={() => setAudience("Amigos Próximos")}><span>✦</span> Amigos Próximos</button>
+            <button type="button" className="cs-story-share-next" onClick={downloadStory} disabled={busy} aria-label="Salvar Story">{busy ? "…" : "›"}</button>
           </div>
-          <p className="cs-story-local-note">Prévia local · público selecionado não é aplicado até a integração de publicação.</p>
+          <p className="cs-story-local-note">Prévia e arquivo locais · a publicação na conta ainda não está conectada.</p>
         </>}
-        <div className="cs-home-indicator" />
+        <div className="cs-story-home-indicator" />
       </div>
-      <div className="cs-story-side">
-        <span className="cs-kicker">CAPTURA E PUBLICAÇÃO</span>
-        <h3>{stage === "camera" ? "Registre o momento." : "Sua história, do seu jeito."}</h3>
-        <p>{stage === "camera" ? "Ative a câmera com permissão do navegador ou escolha uma foto ou vídeo da galeria." : "Revise a mídia, aplique um filtro de prévia, escreva uma legenda e salve o arquivo."}</p>
-        <div className="cs-option-list">
-          <button className={selected === "Câmera" ? "selected" : ""} onClick={startCamera}>Câmera<span>›</span></button>
-          <button className={selected === "Galeria" ? "selected" : ""} onClick={() => galleryInputRef.current?.click()}>Galeria<span>›</span></button>
-          <button onClick={() => setCaption(value => value + " Texto")}>Texto<span>›</span></button>
-          <button onClick={() => setCameraError("Boomerang ainda não foi implementado; não será simulado.")}>Boomerang<span>›</span></button>
-          <button onClick={() => setCameraError("Layout de múltiplas capturas ainda não foi implementado.")}>Layout<span>›</span></button>
-        </div>
-        {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
+      <div className="cs-story-underbar">
+        <span>NEXORA</span><b>{stage === "camera" ? "Crie seu Story" : "Edite e compartilhe"}</b>
+        <small>{stage === "camera" ? "Capture um momento ou escolha uma mídia da galeria." : "Ajuste o texto, escolha o público e salve sua mídia."}</small>
+        {stage === "camera" && <div className="cs-story-filter-strip">{["Original", "P&B", "Quente", "Frio", "Contraste"].map(item => <button type="button" key={item} className={effect === item ? "active" : ""} onClick={() => setEffect(item)}>{item}</button>)}</div>}
       </div>
     </div>
   );
