@@ -60,7 +60,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           <div className="cs-capture-row">
             <button className="cs-gallery-thumb" onClick={() => { setSelected("Galeria"); setStage("preview"); }} aria-label="Abrir galeria">▧</button>
             <button className="cs-shutter" onClick={() => setStage("preview")} aria-label="Capturar" />
-            <button className="cs-ai-effect" onClick={() => setEffect("Efeito inteligente")}>✧</button>
+            <button className="cs-creative-effect" onClick={() => setEffect("Efeito inteligente")}>✧</button>
           </div>
           <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { setMode(item); if (item === "POST" || item === "REEL") onOpenEditor(item === "POST" ? "POST" : "REELS"); }}>{item}</button>)}</div>
         </> : <>
