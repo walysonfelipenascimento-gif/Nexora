@@ -49,10 +49,14 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [cameraError, setCameraError] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
+  const [recordMode, setRecordMode] = useState(false);
+  const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
   const mediaUrlRef = useRef("");
   const filter = effect === "P&B" ? "grayscale(1)" : effect === "Quente" ? "sepia(.35) saturate(1.25)" : effect === "Frio" ? "hue-rotate(12deg) saturate(.85)" : effect === "Contraste" ? "contrast(1.25)" : "none";
 
@@ -81,13 +85,43 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     }
     stopCamera();
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: true });
       cameraStreamRef.current = stream;
       setCameraActive(true);
       setSelected("Câmera");
     } catch (error) {
       const name = error instanceof DOMException ? error.name : "";
       setCameraError(name === "NotAllowedError" ? "A permissão da câmera foi negada. Autorize o acesso nas configurações do navegador ou escolha uma mídia da galeria." : name === "NotFoundError" ? "Nenhuma câmera foi encontrada neste dispositivo." : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente.");
+    }
+  }
+  function toggleRecording() {
+    const stream = cameraStreamRef.current;
+    if (recording) {
+      if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+      return;
+    }
+    if (!stream) { setCameraError("Ative a câmera antes de iniciar a gravação."); return; }
+    if (typeof MediaRecorder === "undefined") { setCameraError("Este navegador não oferece gravação de vídeo. Você ainda pode capturar fotos ou importar um vídeo."); return; }
+    try {
+      const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recordedChunksRef.current = [];
+      recorder.ondataavailable = event => { if (event.data.size > 0) recordedChunksRef.current.push(event.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: recorder.mimeType || "video/webm" });
+        recordedChunksRef.current = [];
+        recorderRef.current = null;
+        setRecording(false);
+        if (blob.size > 0) setLocalMedia(new File([blob], "nexora-story-video.webm", { type: blob.type }));
+        else setCameraError("A gravação terminou sem gerar um arquivo de vídeo.");
+      };
+      recorder.onerror = () => { setRecording(false); setCameraError("O navegador encontrou um erro durante a gravação."); };
+      recorderRef.current = recorder;
+      recorder.start(250);
+      setRecording(true);
+      setCameraError("");
+    } catch {
+      setCameraError("Não foi possível iniciar a gravação neste dispositivo.");
     }
   }
   async function capturePhoto() {
@@ -124,6 +158,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   }, [cameraActive]);
 
   useEffect(() => () => {
+    if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
     cameraStreamRef.current?.getTracks().forEach(track => track.stop());
     if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
   }, []);
@@ -152,7 +187,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
           <div className="cs-capture-row">
             <button className="cs-gallery-thumb" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria">▧</button>
-            <button className="cs-shutter" onClick={cameraActive ? capturePhoto : startCamera} disabled={busy} aria-label={cameraActive ? "Capturar foto" : "Ativar câmera"} />
+            <button className="cs-record-mode" onClick={() => { if (recording) return; setRecordMode(value => !value); }}>{recordMode ? "Vídeo" : "Foto"}</button>
+            <button className={"cs-shutter" + (recording ? " recording" : "")} onClick={!cameraActive ? startCamera : recordMode ? toggleRecording : capturePhoto} disabled={busy} aria-label={recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"} />
             <button className="cs-creative-effect" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Alternar contraste">✧</button>
           </div>
           <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { if (item === "LIVE") { setCameraError("LIVE está reservado para uma etapa futura; a transmissão ainda não foi implementada."); return; } setMode(item); setCameraError(""); if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); } }}>{item}</button>)}</div>
