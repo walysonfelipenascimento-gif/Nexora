@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import "./creator-studio.css";
 
 type StudioSection = "story" | "reels" | "insights" | "calendar" | "editing" | "ai" | "comments";
@@ -23,7 +23,7 @@ const metrics: Metric[] = [
   { label: "Compartilhamentos", value: "9.942", change: "+6,1%" },
 ];
 
-function IconButton({ children, label }: { children: React.ReactNode; label: string }) {
+function IconButton({ children, label }: { children: ReactNode; label: string }) {
   return <button className="cs-icon-button" aria-label={label} title={label}>{children}</button>;
 }
 
