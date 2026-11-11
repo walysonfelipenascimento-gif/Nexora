@@ -266,6 +266,7 @@ function CalendarStudio() {
   const [format, setFormat] = useState("POST");
   const [media, setMedia] = useState<File | null>(null);
   const [drafts, setDrafts] = useState<ScheduledDraft[]>([]);
+  const [draftsHydrated, setDraftsHydrated] = useState(false);
   const [notice, setNotice] = useState("Os agendamentos ficam nesta sessão do navegador; não serão publicados automaticamente.");
   const [showAll, setShowAll] = useState(false);
   const [mediaPreview, setMediaPreview] = useState("");
@@ -278,6 +279,27 @@ function CalendarStudio() {
   const calendarCells = Array.from({length:firstDay+daysInMonth},(_,index)=>index<firstDay?0:index-firstDay+1);
   const selectedDrafts = drafts.filter(item=>item.date===selectedDate).sort((x,y)=>x.time.localeCompare(y.time));
   const visibleDrafts = showAll ? [...drafts].sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time)) : selectedDrafts;
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("nexora-creator-calendar-v1");
+      if (saved) {
+        const parsed = JSON.parse(saved) as ScheduledDraft[];
+        if (Array.isArray(parsed)) setDrafts(parsed.filter(item => item && typeof item.id === "string" && typeof item.date === "string" && typeof item.time === "string"));
+      }
+    } catch {
+      setNotice("Não foi possível recuperar os rascunhos locais salvos neste navegador.");
+    } finally {
+      setDraftsHydrated(true);
+    }
+  }, []);
+  useEffect(() => {
+    if (!draftsHydrated) return;
+    try {
+      window.localStorage.setItem("nexora-creator-calendar-v1", JSON.stringify(drafts));
+    } catch {
+      setNotice("O armazenamento do navegador está indisponível ou cheio; os rascunhos podem não persistir.");
+    }
+  }, [drafts, draftsHydrated]);
   function changeMonth(offset:number) {
     const next=new Date(yearText,monthText-1+offset,1);
     const key=toDateKey(next).slice(0,7);
