@@ -2143,3 +2143,41 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
   .messages-app .note-orbit-person{transition:none}
   .notes-viewer-backdrop,.notes-viewer-card{animation:none}
 }
+
+
+/* Create hub — cinematic frosted-glass surface inspired by the supplied reference */
+.create-hub-shell{
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  width:min(94vw,560px)!important;max-width:560px!important;
+  padding:clamp(20px,4vw,30px)!important;border:1px solid rgba(211,196,255,.28)!important;
+  border-radius:30px!important;color:#f8f7ff!important;
+  background:radial-gradient(ellipse at 12% 4%,rgba(99,91,255,.55),transparent 42%),radial-gradient(ellipse at 90% 12%,rgba(230,82,196,.36),transparent 38%),radial-gradient(ellipse at 50% 110%,rgba(34,205,255,.28),transparent 48%),linear-gradient(145deg,#17152f 0%,#17132b 48%,#21152f 100%)!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.16),0 0 55px rgba(124,93,255,.16)!important;
+  backdrop-filter:blur(28px) saturate(145%);
+}
+.create-hub-shell:before,.create-hub-shell:after{content:"";position:absolute;pointer-events:none;z-index:-1;border-radius:50%;filter:blur(2px)}
+.create-hub-shell:before{width:260px;height:260px;right:-105px;top:105px;background:radial-gradient(circle,rgba(211,88,208,.23),transparent 68%)}
+.create-hub-shell:after{width:240px;height:240px;left:-100px;bottom:-115px;background:radial-gradient(circle,rgba(57,177,255,.2),transparent 68%)}
+.create-hub-header{position:relative!important;display:flex!important;align-items:flex-start!important;gap:12px!important;margin:0 0 22px!important;padding:0 0 18px!important;border-bottom:1px solid rgba(255,255,255,.13)!important}
+.create-hub-header small{display:inline-flex!important;align-items:center;gap:7px;color:#b9b4ed!important;font-size:9px!important;font-weight:850!important;letter-spacing:.2em!important}
+.create-hub-header small:before{content:"";width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#67edff,#d17cff);box-shadow:0 0 12px #8b8aff}
+.create-hub-header h2{margin:9px 0 0!important;color:#fff!important;font-size:clamp(24px,5vw,31px)!important;line-height:1.08!important;letter-spacing:-.045em!important;font-weight:850!important}
+.create-hub-header p{margin:8px 0 0!important;color:rgba(231,228,255,.7)!important;font-size:12px!important}
+.create-hub-header>button{flex:0 0 38px!important;width:38px!important;height:38px!important;border:1px solid rgba(255,255,255,.19)!important;border-radius:50%!important;background:rgba(255,255,255,.09)!important;color:#fff!important;backdrop-filter:blur(12px)}
+.create-hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;position:relative}
+.create-hub-card{position:relative!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:space-between!important;gap:17px!important;min-width:0!important;min-height:184px!important;padding:16px!important;overflow:hidden!important;text-align:left!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:22px!important;background:linear-gradient(145deg,rgba(255,255,255,.17),rgba(255,255,255,.055))!important;color:#fff!important;box-shadow:inset 0 1px rgba(255,255,255,.17),0 14px 32px rgba(5,5,25,.2)!important;backdrop-filter:blur(18px) saturate(140%);transition:transform .22s,border-color .22s,box-shadow .22s!important;cursor:pointer}
+.create-hub-card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 10%,rgba(255,255,255,.2),transparent 42%);pointer-events:none}
+.create-hub-card:hover,.create-hub-card:focus-visible{transform:translateY(-3px)!important;border-color:rgba(177,220,255,.65)!important;box-shadow:inset 0 1px rgba(255,255,255,.2),0 18px 38px rgba(6,8,30,.34),0 0 22px rgba(117,133,255,.16)!important;outline:none}
+.create-hub-art{position:relative;display:grid;place-items:center;width:57px;height:57px;border:1px solid rgba(255,255,255,.25);border-radius:19px;background:linear-gradient(145deg,rgba(255,255,255,.24),rgba(255,255,255,.07));box-shadow:inset 0 1px rgba(255,255,255,.2),0 8px 22px rgba(0,0,0,.15);backdrop-filter:blur(14px)}
+.create-hub-art i{font-style:normal;font-size:25px;color:#fff;text-shadow:0 2px 15px rgba(255,255,255,.35)}
+.create-hub-art b{position:absolute;width:6px;height:6px;right:8px;top:8px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff}
+.create-hub-copy{display:flex;flex-direction:column;gap:6px;max-width:calc(100% - 18px)}
+.create-hub-copy strong{font-size:16px;font-weight:800;letter-spacing:-.025em;color:#fff}
+.create-hub-copy small{font-size:10px;line-height:1.45;color:rgba(239,237,255,.73)}
+.create-hub-arrow{position:absolute;right:15px;bottom:17px;color:rgba(255,255,255,.75);font-size:16px}
+.create-hub-story .create-hub-art{background:linear-gradient(145deg,rgba(242,108,188,.42),rgba(111,91,255,.3))}
+.create-hub-post .create-hub-art{background:linear-gradient(145deg,rgba(66,199,255,.4),rgba(111,108,255,.32))}
+.create-hub-reel .create-hub-art{background:linear-gradient(145deg,rgba(126,104,255,.48),rgba(222,91,205,.3))}
+.create-hub-planning .create-hub-art{background:linear-gradient(145deg,rgba(75,218,224,.35),rgba(122,108,255,.34))}
+@media(max-width:420px){.create-hub-shell{padding:18px!important;border-radius:25px!important}.create-hub-grid{gap:10px}.create-hub-card{min-height:164px!important;padding:13px!important;border-radius:19px!important}.create-hub-art{width:50px;height:50px;border-radius:16px}.create-hub-copy strong{font-size:14px}.create-hub-copy small{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.create-hub-card{transition:none!important}}
