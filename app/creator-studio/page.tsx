@@ -433,7 +433,47 @@ function InsightsStudio() {
   </div>;
 }
 
-type ScheduledDraft = { id: string; date: string; time: string; format: string; caption: string; mediaName: string };
+type ScheduledDraft = { id: string; date: string; time: string; format: string; caption: string; mediaName: string; mediaId?: string };
+function openCalendarMediaDb(): Promise<IDBDatabase> {
+  return new Promise((resolve,reject) => {
+    if (!("indexedDB" in window)) { reject(new Error("Armazenamento de mídia não disponível.")); return; }
+    const request=window.indexedDB.open("nexora-creator-studio",1);
+    request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains("calendar-media"))db.createObjectStore("calendar-media");};
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error??new Error("Falha ao abrir o armazenamento local."));
+  });
+}
+async function saveCalendarMedia(id:string,file:File):Promise<void> {
+  const db=await openCalendarMediaDb();
+  await new Promise<void>((resolve,reject)=>{
+    const tx=db.transaction("calendar-media","readwrite");
+    tx.objectStore("calendar-media").put(file,id);
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao salvar a mídia do rascunho."));};
+    tx.onabort=()=>{db.close();reject(tx.error??new Error("Salvamento da mídia cancelado."));};
+  });
+}
+async function readCalendarMedia(id:string):Promise<Blob|null> {
+  const db=await openCalendarMediaDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("calendar-media","readonly");
+    const request=tx.objectStore("calendar-media").get(id);
+    request.onsuccess=()=>{const value=request.result;resolve(value instanceof Blob?value:null);};
+    request.onerror=()=>reject(request.error??new Error("Falha ao recuperar a mídia."));
+    tx.oncomplete=()=>db.close();
+    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao ler a mídia."));};
+  });
+}
+async function deleteCalendarMedia(id:string):Promise<void> {
+  const db=await openCalendarMediaDb();
+  await new Promise<void>((resolve,reject)=>{
+    const tx=db.transaction("calendar-media","readwrite");
+    tx.objectStore("calendar-media").delete(id);
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao remover a mídia."));};
+    tx.onabort=()=>{db.close();reject(tx.error??new Error("Remoção da mídia cancelada."));};
+  });
+}
 function CalendarStudio() {
   const today = new Date();
   const toDateKey = (date: Date) => [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
@@ -489,12 +529,15 @@ function CalendarStudio() {
     const nextDate=toDateKey(new Date(next.getFullYear(),next.getMonth(),1));
     setSelectedDate(nextDate);
   }
-  function addDraft(event:FormEvent<HTMLFormElement>) {
+  async function addDraft(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(!caption.trim()&&!media){setNotice("Adicione uma legenda ou selecione um arquivo de mídia antes de salvar.");return;}
     if(!selectedDate||!time){setNotice("Escolha uma data e um horário válidos.");return;}
-    setDrafts(current=>[...current,{id:crypto.randomUUID(),date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??""}]);
-    setNotice("Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
+    const id=crypto.randomUUID();
+    let mediaId:string|undefined;
+    if(media){try{await saveCalendarMedia(id,media);mediaId=id;}catch{setNotice("O rascunho será salvo, mas o navegador não conseguiu guardar o arquivo de mídia.");}}
+    setDrafts(current=>[...current,{id,date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??"",mediaId}]);
+    setNotice(mediaId?"Rascunho e arquivo de mídia salvos neste navegador. Nenhuma publicação foi enviada.":"Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
     setCaption("");
     setMedia(null);
     if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
@@ -503,9 +546,20 @@ function CalendarStudio() {
     setMediaPreviewType("");
     setMediaInputKey(value=>value+1);
   }
-  function removeDraft(id:string) {
+  async function downloadDraftMedia(item:ScheduledDraft) {
+    if(!item.mediaId){setNotice("Este rascunho não possui arquivo de mídia salvo.");return;}
+    try{
+      const blob=await readCalendarMedia(item.mediaId);
+      if(!blob){setNotice("O arquivo não foi encontrado no armazenamento deste navegador.");return;}
+      const url=URL.createObjectURL(blob);const anchor=document.createElement("a");anchor.href=url;anchor.download=item.mediaName||"nexora-rascunho";anchor.click();
+      window.setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }catch{setNotice("Não foi possível recuperar o arquivo deste rascunho.");}
+  }
+  async function removeDraft(id:string) {
+    const item=drafts.find(draft=>draft.id===id);
+    if(item?.mediaId){try{await deleteCalendarMedia(item.mediaId);}catch{setNotice("O rascunho será removido, mas o arquivo local pode permanecer armazenado.");}}
     setDrafts(current=>current.filter(item=>item.id!==id));
-    setNotice("Agendamento removido do calendário local.");
+    setNotice("Rascunho removido do calendário local.");
   }
   function selectDay(day:number) {
     const date=new Date(yearText,monthText-1,day);
@@ -521,7 +575,7 @@ function CalendarStudio() {
       <div className="cs-calendar-days">{["D","S","T","Q","Q","S","S"].map((x,i)=><span key={i}>{x}</span>)}{calendarCells.map((day,index)=>day===0?<i key={"blank-"+index}/>:<button type="button" key={day} className={selectedDate===toDateKey(new Date(yearText,monthText-1,day))?"selected":""} onClick={()=>selectDay(day)}>{day}{drafts.some(item=>item.date===toDateKey(new Date(yearText,monthText-1,day)))&&<i/>}</button>)}</div>
       <div className="cs-schedule-list">
         <div className="cs-schedule-list-head"><b>{new Date(selectedDate+"T12:00:00").toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"})}</b><button type="button" onClick={()=>setShowAll(value=>!value)}>{showAll?"Ver dia":"Ver todos"}</button></div>
-        {visibleDrafts.length===0?<p className="cs-empty-schedule">Nenhum rascunho neste período.</p>:visibleDrafts.map(item=><div className="cs-scheduled-item" key={item.id}><div><b>{item.time} · {item.format}</b><p>{item.caption||item.mediaName||"Publicação sem legenda"}</p>{item.mediaName&&<small>Arquivo: {item.mediaName}</small>}{showAll&&<small>{new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR")}</small>}</div><button type="button" onClick={()=>removeDraft(item.id)} aria-label="Excluir agendamento">×</button></div>)}
+        {visibleDrafts.length===0?<p className="cs-empty-schedule">Nenhum rascunho neste período.</p>:visibleDrafts.map(item=><div className="cs-scheduled-item" key={item.id}><div><b>{item.time} · {item.format}</b><p>{item.caption||item.mediaName||"Publicação sem legenda"}</p>{item.mediaName&&<><small>Arquivo: {item.mediaName}</small>{item.mediaId&&<button type="button" className="cs-draft-media-download" onClick={()=>downloadDraftMedia(item)}>Baixar mídia salva</button>}</>}{showAll&&<small>{new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR")}</small>}</div><button type="button" onClick={()=>removeDraft(item.id)} aria-label="Excluir agendamento">×</button></div>)}
       </div>
     </div>
     <form className="cs-compose-panel" onSubmit={addDraft}>
