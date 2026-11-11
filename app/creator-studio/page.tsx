@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import "./creator-studio.css";
+import { isIndexedProfileMedia, resolveProfileMedia, saveProfileMedia } from "../../lib/profileMedia";
 
 type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
 type Metric = { label: string; value: string; change: string };
@@ -39,26 +40,36 @@ const metricsByPeriod: Record<string, Metric[]> = {
 
 function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS") => void }) {
   const [mode, setMode] = useState("STORY");
-  const [stage, setStage] = useState<"camera" | "preview">("camera");
+  const [stage, setStage] = useState<"camera" | "preview" | "share">("camera");
+  const [editorTool, setEditorTool] = useState<"text" | "stickers" | "effects" | "music" | null>(null);
+  const [sticker, setSticker] = useState("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioUrl, setAudioUrl] = useState("");
   const [effect, setEffect] = useState("Original");
   const [caption, setCaption] = useState("");
   const [audience, setAudience] = useState("Seu Story");
-  const [selected, setSelected] = useState("Câmera");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaType, setMediaType] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [cameraError, setCameraError] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
-  const [recordMode, setRecordMode] = useState(false);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [torchEnabled, setTorchEnabled] = useState(false);
+  const [cameraSettingsOpen, setCameraSettingsOpen] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [loopMode, setLoopMode] = useState(false);
   const [busy, setBusy] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const layoutInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordHoldTimerRef = useRef<number | null>(null);
+  const loopCaptureTimerRef = useRef<number | null>(null);
+  const longPressTriggeredRef = useRef(false);
   const recordedChunksRef = useRef<Blob[]>([]);
-  const recordingFrameRef = useRef<number | null>(null);
-  const recordingCanvasStreamRef = useRef<MediaStream | null>(null);
   const mediaUrlRef = useRef("");
   const mountedRef = useRef(true);
   const filter = effect === "P&B" ? "grayscale(1)" : effect === "Quente" ? "sepia(.35) saturate(1.25)" : effect === "Frio" ? "hue-rotate(12deg) saturate(.85)" : effect === "Contraste" ? "contrast(1.25)" : "none";
@@ -76,11 +87,11 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     setMediaUrl(url);
     setMediaType(file.type);
     setMediaFile(file);
-    setSelected("Galeria");
     stopCamera();
     setStage("preview");
+    setEditorTool(null);
   }
-  async function startCamera() {
+  async function startCamera(requestedFacing: "environment" | "user" = facingMode) {
     setCameraError("");
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraError("Este navegador ou contexto não oferece acesso à câmera. Use a galeria para importar uma mídia.");
@@ -90,9 +101,9 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     try {
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: true });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: true });
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: false });
         setCameraError("Microfone indisponível: a câmera funcionará sem áudio.");
       }
       if (!mountedRef.current) {
@@ -101,69 +112,138 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       }
       cameraStreamRef.current = stream;
       setCameraActive(true);
-      setSelected("Câmera");
     } catch (error) {
       if (!mountedRef.current) return;
       const name = error instanceof DOMException ? error.name : "";
       setCameraError(name === "NotAllowedError" ? "A permissão da câmera foi negada. Autorize o acesso nas configurações do navegador ou escolha uma mídia da galeria." : name === "NotFoundError" ? "Nenhuma câmera foi encontrada neste dispositivo." : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente.");
     }
   }
+  async function toggleTorch() {
+    const track = cameraStreamRef.current?.getVideoTracks()[0];
+    if (!track) { setCameraError("Ative a câmera antes de usar o flash."); return; }
+    const capabilities = track.getCapabilities() as MediaTrackCapabilities & { torch?: boolean };
+    if (!capabilities.torch) { setCameraError("O flash contínuo não é compatível com esta câmera."); return; }
+    try {
+      await track.applyConstraints({ advanced: [{ torch: !torchEnabled } as MediaTrackConstraintSet] });
+      setTorchEnabled(value => !value);
+      setCameraError("");
+    } catch {
+      setCameraError("Não foi possível alterar o flash neste dispositivo.");
+    }
+  }
+  function switchCamera() {
+    const next = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(next);
+    if (cameraActive) void startCamera(next);
+  }
+  async function createStoryLayout(files: FileList | null) {
+    if (!files?.length) return;
+    const selected = Array.from(files).filter(file => file.type.startsWith("image/")).slice(0, 4);
+    if (selected.length < 2) { setCameraError("Escolha pelo menos duas fotos para montar o Layout."); return; }
+    setBusy(true);
+    try {
+      const images = await Promise.all(selected.map(file => new Promise<HTMLImageElement>((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+        image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Uma das fotos não pôde ser aberta.")); };
+        image.src = url;
+      })));
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Não foi possível preparar a colagem.");
+      context.fillStyle = "#050609";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      const columns = images.length === 2 ? 1 : 2;
+      const rows = Math.ceil(images.length / columns);
+      const gap = 10;
+      const cellWidth = (canvas.width - gap * (columns + 1)) / columns;
+      const cellHeight = (canvas.height - gap * (rows + 1)) / rows;
+      images.forEach((image, index) => {
+        const x = gap + (index % columns) * (cellWidth + gap);
+        const y = gap + Math.floor(index / columns) * (cellHeight + gap);
+        const scale = Math.max(cellWidth / image.naturalWidth, cellHeight / image.naturalHeight);
+        const width = image.naturalWidth * scale;
+        const height = image.naturalHeight * scale;
+        context.save();
+        context.beginPath();
+        context.roundRect(x, y, cellWidth, cellHeight, 18);
+        context.clip();
+        context.drawImage(image, x + (cellWidth - width) / 2, y + (cellHeight - height) / 2, width, height);
+        context.restore();
+      });
+      const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("Não foi possível gerar o Layout.")), "image/jpeg", .94));
+      setLocalMedia(new File([blob], "nexora-story-layout.jpg", { type: "image/jpeg" }));
+      setCameraError("");
+    } catch (error) {
+      setCameraError(error instanceof Error ? error.message : "Não foi possível montar o Layout.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function toggleRecording() {
     const stream = cameraStreamRef.current;
-    const video = cameraVideoRef.current;
     if (recording) {
       if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
       return;
     }
-    if (!stream || !video || !video.videoWidth || !video.videoHeight) { setCameraError("Ative a câmera e aguarde a prévia antes de iniciar a gravação."); return; }
-    if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) { setCameraError("Este navegador não oferece gravação com filtros. Você ainda pode capturar fotos ou importar uma mídia."); return; }
+    if (!stream) { setCameraError("Ative a câmera antes de iniciar a gravação."); return; }
+    if (typeof MediaRecorder === "undefined") { setCameraError("Este navegador não oferece gravação de vídeo. Você ainda pode capturar fotos ou importar um vídeo."); return; }
     try {
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const context = canvas.getContext("2d");
-      if (!context) { setCameraError("Não foi possível preparar a gravação com efeito."); return; }
-      const canvasStream = canvas.captureStream(30);
-      recordingCanvasStreamRef.current = canvasStream;
-      const outputStream = new MediaStream([...canvasStream.getVideoTracks(), ...stream.getAudioTracks()]);
       const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
-      const recorder = new MediaRecorder(outputStream, mimeType ? { mimeType } : undefined);
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       recordedChunksRef.current = [];
-      const renderFrame = () => {
-        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-          context.save();
-          context.filter = filter;
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          context.restore();
-        }
-        recordingFrameRef.current = requestAnimationFrame(renderFrame);
-      };
-      renderFrame();
       recorder.ondataavailable = event => { if (event.data.size > 0) recordedChunksRef.current.push(event.data); };
       recorder.onstop = () => {
-        if (recordingFrameRef.current !== null) cancelAnimationFrame(recordingFrameRef.current);
-        recordingFrameRef.current = null;
-        recordingCanvasStreamRef.current?.getTracks().forEach(track => track.stop());
-        recordingCanvasStreamRef.current = null;
         const blob = new Blob(recordedChunksRef.current, { type: recorder.mimeType || "video/webm" });
         recordedChunksRef.current = [];
         recorderRef.current = null;
         if (!mountedRef.current) return;
         setRecording(false);
-        if (blob.size > 0) setLocalMedia(new File([blob], "nexora-story-video.webm", { type: blob.type }));
+        if (loopCaptureTimerRef.current !== null) window.clearTimeout(loopCaptureTimerRef.current);
+        loopCaptureTimerRef.current = null;
+        if (blob.size > 0) setLocalMedia(new File([blob], loopMode ? "nexora-story-loop.webm" : "nexora-story-video.webm", { type: blob.type }));
         else setCameraError("A gravação terminou sem gerar um arquivo de vídeo.");
       };
       recorder.onerror = () => { setRecording(false); setCameraError("O navegador encontrou um erro durante a gravação."); };
       recorderRef.current = recorder;
       recorder.start(250);
+      if (loopMode) loopCaptureTimerRef.current = window.setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, 1800);
       setRecording(true);
       setCameraError("");
     } catch {
-      recordingCanvasStreamRef.current?.getTracks().forEach(track => track.stop());
-      recordingCanvasStreamRef.current = null;
-      setCameraError("Não foi possível iniciar a gravação com efeito neste dispositivo.");
+      setCameraError("Não foi possível iniciar a gravação neste dispositivo.");
     }
   }
+  function beginRecordHold() {
+    if (!cameraActive || recording) return;
+    longPressTriggeredRef.current = false;
+    recordHoldTimerRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      toggleRecording();
+    }, 450);
+  }
+  function endRecordHold() {
+    if (recordHoldTimerRef.current !== null) {
+      window.clearTimeout(recordHoldTimerRef.current);
+      recordHoldTimerRef.current = null;
+    }
+    if (longPressTriggeredRef.current && recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
+    }
+  }
+  function handleShutterClick() {
+    if (longPressTriggeredRef.current) {
+      longPressTriggeredRef.current = false;
+      return;
+    }
+    if (!cameraActive) { startCamera(); return; }
+    capturePhoto();
+  }
+
   async function capturePhoto() {
     const video = cameraVideoRef.current;
     if (!video || !video.videoWidth || !video.videoHeight) {
@@ -175,10 +255,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     canvas.height = video.videoHeight;
     const context = canvas.getContext("2d");
     if (!context) { setCameraError("Não foi possível preparar a captura neste navegador."); return; }
-    context.save();
-    context.filter = filter;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    context.restore();
     setBusy(true);
     canvas.toBlob(blob => {
       setBusy(false);
@@ -186,13 +263,305 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       setLocalMedia(new File([blob], "nexora-story.jpg", { type: "image/jpeg" }));
     }, "image/jpeg", .94);
   }
-  function downloadStory() {
-    if (!mediaUrl) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
-    const anchor = document.createElement("a");
-    anchor.href = mediaUrl;
-    anchor.download = mediaFile?.name || (mediaType.startsWith("video/") ? "nexora-story-video" : "nexora-story.jpg");
-    anchor.click();
-    setCameraError("Arquivo preparado para salvar no dispositivo. A publicação na conta ainda não está conectada.");
+  function drawStoryOverlays(context: CanvasRenderingContext2D, width: number, height: number) {
+    if (caption.trim()) {
+      const fontSize = Math.max(22, Math.round(height * 0.045));
+      context.save();
+      context.font = `800 ${fontSize}px system-ui, sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = "#ffffff";
+      context.shadowColor = "#000000";
+      context.shadowBlur = Math.max(5, fontSize * 0.35);
+      const words = caption.trim().split(/\s+/);
+      const lines: string[] = [];
+      let line = "";
+      const maxWidth = width * 0.82;
+      for (const word of words) {
+        const candidate = line ? line + " " + word : word;
+        if (line && context.measureText(candidate).width > maxWidth) {
+          lines.push(line);
+          line = word;
+        } else line = candidate;
+      }
+      if (line) lines.push(line);
+      const lineHeight = fontSize * 1.2;
+      const startY = height * 0.48 - ((lines.length - 1) * lineHeight) / 2;
+      lines.forEach((item, index) => context.fillText(item, width / 2, startY + index * lineHeight, maxWidth));
+      context.restore();
+    }
+    if (sticker) {
+      context.save();
+      context.font = `${Math.round(height * 0.12)}px system-ui, sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.shadowColor = "#000000";
+      context.shadowBlur = 12;
+      context.fillText(sticker, width / 2, height * 0.32);
+      context.restore();
+    }
+  }
+
+  async function downloadStory(publishToFeed = false) {
+    if (!mediaUrl || !mediaFile) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
+    if (busy) return;
+    setBusy(true);
+    setCameraError("");
+    try {
+      let output: Blob;
+      let filename: string;
+      const baseName = mediaFile.name.replace(/\.[^.]+$/, "") || "nexora-story";
+      if (mediaType.startsWith("image/")) {
+        const image = new Image();
+        image.src = mediaUrl;
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error("Não foi possível abrir a imagem importada."));
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Não foi possível preparar a imagem para aplicar o efeito.");
+        if (audioUrl) {
+          if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream || !window.AudioContext) {
+            throw new Error("Este navegador não oferece exportação de Story com música. Remova o áudio ou use outro navegador compatível.");
+          }
+          const music = new Audio(audioUrl);
+          music.loop = true;
+          music.volume = 0.85;
+          await new Promise<void>(resolve => {
+            if (music.readyState >= HTMLMediaElement.HAVE_METADATA) resolve();
+            else { music.onloadedmetadata = () => resolve(); music.onerror = () => resolve(); }
+          });
+          if (music.error) throw new Error("Não foi possível carregar o áudio selecionado.");
+          const audioContext = new AudioContext();
+          const destination = audioContext.createMediaStreamDestination();
+          const musicNode = audioContext.createMediaElementSource(music);
+          musicNode.connect(destination);
+          const canvasStream = canvas.captureStream(30);
+          const stream = new MediaStream([...canvasStream.getVideoTracks(), ...destination.stream.getAudioTracks()]);
+          const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
+          const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+          const chunks: Blob[] = [];
+          const duration = Number.isFinite(music.duration) && music.duration > 0 ? Math.min(music.duration, 15) : 15;
+          output = await new Promise<Blob>(async (resolve, reject) => {
+            let frame = 0;
+            let timer = 0;
+            const cleanup = () => {
+              if (frame) cancelAnimationFrame(frame);
+              if (timer) window.clearTimeout(timer);
+              canvasStream.getTracks().forEach(track => track.stop());
+              destination.stream.getTracks().forEach(track => track.stop());
+              music.pause();
+              musicNode.disconnect();
+              if (audioContext.state !== "closed") void audioContext.close();
+            };
+            recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+            recorder.onerror = () => { cleanup(); reject(new Error("O navegador encontrou um erro ao criar o Story com música.")); };
+            recorder.onstop = () => {
+              cleanup();
+              const result = new Blob(chunks, { type: recorder.mimeType || mimeType || "video/webm" });
+              if (result.size) resolve(result);
+              else reject(new Error("A exportação do Story com música ficou vazia."));
+            };
+            const draw = () => {
+              context.save();
+              context.filter = filter;
+              context.drawImage(image, 0, 0, canvas.width, canvas.height);
+              context.restore();
+              drawStoryOverlays(context, canvas.width, canvas.height);
+              frame = requestAnimationFrame(draw);
+            };
+            try {
+              await audioContext.resume();
+              await music.play();
+              recorder.start(250);
+              draw();
+              timer = window.setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, duration * 1000);
+            } catch {
+              cleanup();
+              reject(new Error("Não foi possível iniciar a música para exportar o Story."));
+            }
+          });
+          filename = baseName + "-com-musica." + (output.type.includes("mp4") ? "mp4" : "webm");
+        } else {
+          context.save();
+          context.filter = filter;
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          context.restore();
+          drawStoryOverlays(context, canvas.width, canvas.height);
+          output = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar a imagem com o efeito.")), "image/png"));
+          filename = baseName + "-com-efeito.png";
+        }
+      } else if (mediaType.startsWith("video/")) {
+        if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) {
+          throw new Error("Este navegador não oferece exportação de vídeo com filtros. Tente salvar uma foto ou use outro navegador compatível.");
+        }
+        const video = document.createElement("video");
+        video.src = mediaUrl;
+        video.playsInline = true;
+        video.preload = "auto";
+        video.muted = false;
+        await new Promise<void>((resolve, reject) => {
+          video.onloadedmetadata = () => resolve();
+          video.onerror = () => reject(new Error("Não foi possível abrir o vídeo importado."));
+        });
+        if (!video.videoWidth || !video.videoHeight) throw new Error("O vídeo não possui dimensões válidas para exportação.");
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Não foi possível preparar o vídeo para aplicar o efeito.");
+        const canvasStream = canvas.captureStream(30);
+        const capturableVideo = video as HTMLVideoElement & { captureStream?: () => MediaStream; webkitCaptureStream?: () => MediaStream };
+        const sourceStream = typeof capturableVideo.captureStream === "function" ? capturableVideo.captureStream() : typeof capturableVideo.webkitCaptureStream === "function" ? capturableVideo.webkitCaptureStream() : null;
+        let audioContext: AudioContext | null = null;
+        let audioDestination: MediaStreamAudioDestinationNode | null = null;
+        let musicElement: HTMLAudioElement | null = null;
+        let musicSource: MediaElementAudioSourceNode | null = null;
+        let videoAudioSource: MediaElementAudioSourceNode | null = null;
+        if (audioUrl) {
+          const AudioContextConstructor = window.AudioContext;
+          if (!AudioContextConstructor) throw new Error("Este navegador não oferece mixagem de áudio para exportação.");
+          audioContext = new AudioContextConstructor();
+          audioDestination = audioContext.createMediaStreamDestination();
+          videoAudioSource = audioContext.createMediaElementSource(video);
+          videoAudioSource.connect(audioDestination);
+          musicElement = new Audio(audioUrl);
+          musicElement.loop = true;
+          musicElement.volume = 0.72;
+          musicSource = audioContext.createMediaElementSource(musicElement);
+          musicSource.connect(audioDestination);
+          await audioContext.resume();
+          await musicElement.play();
+        }
+        const outputStream = new MediaStream([
+          ...canvasStream.getVideoTracks(),
+          ...(audioDestination?.stream.getAudioTracks() ?? sourceStream?.getAudioTracks() ?? []),
+        ]);
+        const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
+        const recorder = new MediaRecorder(outputStream, mimeType ? { mimeType } : undefined);
+        const chunks: Blob[] = [];
+        output = await new Promise<Blob>((resolve, reject) => {
+          let stopped = false;
+          let settled = false;
+          let frame = 0;
+          let failure: Error | null = null;
+          let loopRepeats = loopMode ? 2 : 0;
+          const stopTracks = () => {
+            canvasStream.getTracks().forEach(track => track.stop());
+            sourceStream?.getTracks().forEach(track => track.stop());
+            audioDestination?.stream.getTracks().forEach(track => track.stop());
+            musicElement?.pause();
+            musicSource?.disconnect();
+            videoAudioSource?.disconnect();
+            if (audioContext && audioContext.state !== "closed") void audioContext.close();
+            video.pause();
+          };
+          const finish = (error?: Error) => {
+            if (error && !failure) failure = error;
+            if (stopped) return;
+            stopped = true;
+            if (frame) cancelAnimationFrame(frame);
+            if (recorder.state !== "inactive") {
+              try { recorder.stop(); } catch { stopTracks(); }
+            } else {
+              stopTracks();
+              if (!settled) {
+                settled = true;
+                reject(failure ?? new Error("A gravação não foi iniciada."));
+              }
+            }
+          };
+          recorder.ondataavailable = event => { if (event.data.size > 0) chunks.push(event.data); };
+          recorder.onerror = () => finish(new Error("O navegador encontrou um erro ao renderizar o vídeo com efeito."));
+          recorder.onstop = () => {
+            stopTracks();
+            if (settled) return;
+            settled = true;
+            if (failure) { reject(failure); return; }
+            const result = new Blob(chunks, { type: recorder.mimeType || mimeType || "video/webm" });
+            if (result.size) resolve(result);
+            else reject(new Error("A renderização terminou sem gerar um vídeo."));
+          };
+          const drawFrame = () => {
+            if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+              context.save();
+              context.filter = filter;
+              context.drawImage(video, 0, 0, canvas.width, canvas.height);
+              context.restore();
+              drawStoryOverlays(context, canvas.width, canvas.height);
+            }
+            if (!stopped) frame = requestAnimationFrame(drawFrame);
+          };
+          video.onended = () => {
+            if (loopRepeats > 0) {
+              loopRepeats -= 1;
+              video.currentTime = 0;
+              void video.play().catch(() => finish(new Error("Não foi possível repetir o vídeo no modo Loop.")));
+            } else finish();
+          };
+          video.onerror = () => finish(new Error("A leitura do vídeo foi interrompida."));
+          try {
+            video.currentTime = 0;
+            void video.play().then(() => {
+              if (stopped) return;
+              try {
+                recorder.start(250);
+                drawFrame();
+              } catch {
+                finish(new Error("Este navegador não conseguiu iniciar a gravação do vídeo processado."));
+              }
+            }).catch(() => finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador.")));
+          } catch {
+            finish(new Error("Não foi possível iniciar a renderização deste vídeo neste navegador."));
+          }
+        });
+        const extension = output.type.includes("mp4") ? "mp4" : "webm";
+        filename = baseName + "-com-efeito." + extension;
+      } else {
+        throw new Error("Este formato de mídia não é compatível com a exportação de efeitos.");
+      }
+      if (publishToFeed) {
+        const exportedFile = new File([output], filename, { type: output.type || mediaType });
+        const mediaRef = await saveProfileMedia(exportedFile);
+        const resolvedMedia = await resolveProfileMedia(mediaRef);
+        if (!resolvedMedia) throw new Error("O Story foi preparado, mas a mídia local não pôde ser recuperada.");
+        const createdAt = Date.now();
+        const storyCaption = [caption.trim(), sticker].filter(Boolean).join(" · ").slice(0, 180);
+        const localStory = {
+          name: "Licinhosz.bb",
+          own: true,
+          image: resolvedMedia,
+          mediaType: output.type.startsWith("video/") ? "video" as const : "image" as const,
+          caption: storyCaption,
+          id: "local-" + createdAt,
+          createdAt,
+          audience,
+        };
+        const stored = JSON.parse(localStorage.getItem("nexora-local-stories-v1") || "[]");
+        const activeExisting = Array.isArray(stored) ? stored.filter((item: { image?: string; createdAt?: number }) =>
+          item && typeof item.image === "string" && isIndexedProfileMedia(item.image) &&
+          typeof item.createdAt === "number" && Date.now() - item.createdAt < 24 * 60 * 60 * 1000
+        ) : [];
+        localStorage.setItem("nexora-local-stories-v1", JSON.stringify([{ ...localStory, image: mediaRef }, ...activeExisting].slice(0, 20)));
+        setCameraError("Story publicado no Feed deste dispositivo por 24 horas. A distribuição entre contas e a privacidade por público serão ativadas na integração final.");
+        window.setTimeout(() => window.location.assign("/"), 900);
+      } else {
+        const url = URL.createObjectURL(output);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+        setCameraError("Arquivo com o efeito aplicado preparado para salvar.");
+      }
+    } catch (error) {
+      setCameraError(error instanceof Error ? error.message : "Não foi possível salvar a mídia com o efeito aplicado.");
+    } finally {
+      setBusy(false);
+    }
   }
   useEffect(() => {
     if (!cameraActive || !cameraVideoRef.current || !cameraStreamRef.current) return;
@@ -201,74 +570,109 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   }, [cameraActive]);
 
   useEffect(() => {
+    if (!audioFile) { setAudioUrl(""); return; }
+    const url = URL.createObjectURL(audioFile);
+    setAudioUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [audioFile]);
+
+  useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
-      if (recordingFrameRef.current !== null) cancelAnimationFrame(recordingFrameRef.current);
-      recordingCanvasStreamRef.current?.getTracks().forEach(track => track.stop());
+      if (recordHoldTimerRef.current !== null) window.clearTimeout(recordHoldTimerRef.current);
+      if (loopCaptureTimerRef.current !== null) window.clearTimeout(loopCaptureTimerRef.current);
       cameraStreamRef.current?.getTracks().forEach(track => track.stop());
+      cameraStreamRef.current = null;
       if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
     };
   }, []);
 
   return (
-    <div className="cs-story-layout">
-      <div className="cs-phone cs-camera-phone">
-        <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
-        <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
+    <div className="cs-story-stage">
+      <div className="cs-story-device">
+        <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} /><input ref={layoutInputRef} className="cs-hidden-file-input" type="file" accept="image/*" multiple onChange={event => { void createStoryLayout(event.target.files); event.currentTarget.value = ""; }} />
         {stage === "camera" ? <>
-          <div className="cs-camera-top">
-            <button className="cs-icon-button" aria-label="Fechar câmera" onClick={stopCamera}>×</button>
-            <div className="cs-camera-top-actions">
-              <button className="cs-icon-button" aria-label="Alternar efeito P&B" onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>◐</button>
-              <button className="cs-icon-button" aria-label="Alternar efeito quente" onClick={() => setEffect(effect === "Quente" ? "Original" : "Quente")}>✦</button>
-              <button className="cs-icon-button" aria-label="Iniciar câmera" onClick={startCamera}>◎</button>
+          <div className="cs-story-camera-top">
+            <button type="button" aria-label="Fechar câmera" onClick={() => { stopCamera(); window.location.assign("/"); }}>×</button>
+            <div>
+              <button type="button" aria-label="Alternar flash" aria-pressed={torchEnabled} onClick={() => void toggleTorch()}>ϟ</button>
+              <button type="button" aria-label="Modo noturno" onClick={() => setEffect(effect === "Frio" ? "Original" : "Frio")}>☾</button>
+              <button type="button" aria-label="Configurações da câmera" aria-expanded={cameraSettingsOpen} onClick={() => setCameraSettingsOpen(value => !value)}>⚙</button>
             </div>
           </div>
-          <div className="cs-camera-view">
-            {cameraActive ? <video ref={cameraVideoRef} className="cs-story-selected-media" autoPlay muted playsInline style={{ filter }} /> : <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>}
-            <div className="cs-camera-tools">
-              {["Original", "P&B", "Quente", "Frio", "Contraste"].map(item => <button key={item} className={effect === item ? "active" : ""} onClick={() => setEffect(item)}>{item}</button>)}
+          <div className="cs-story-camera-view">
+            {cameraActive ? <video ref={cameraVideoRef} className="cs-story-live-media" autoPlay muted playsInline style={{ filter }} /> : (
+              <button type="button" className="cs-story-camera-start" onClick={() => void startCamera()}>
+                <span>◎</span><b>Ativar câmera</b><small>Permita o acesso para visualizar a câmera em tempo real</small>
+              </button>
+            )}
+            {showGrid && <div className="cs-story-camera-grid" aria-hidden="true"><i/><i/><i/><i/></div>}
+            {cameraSettingsOpen && <div className="cs-story-camera-settings"><b>Configurações da câmera</b><button type="button" onClick={switchCamera}>Alternar câmera · {facingMode === "environment" ? "Traseira" : "Frontal"}</button><button type="button" onClick={() => setShowGrid(value => !value)}>{showGrid ? "Ocultar grade" : "Mostrar grade"}</button><button type="button" onClick={() => void toggleTorch()}>{torchEnabled ? "Desligar flash" : "Ligar flash"}</button></div>}
+            <div className="cs-story-vertical-tools">
+              <button type="button" aria-label="Texto após captura" onClick={() => setCameraError("Capture uma foto ou escolha uma mídia para abrir as ferramentas de texto.")}>Aa</button>
+              <button type="button" aria-label="Ativar modo Loop" aria-pressed={loopMode} onClick={() => { setLoopMode(value => !value); setCameraError(loopMode ? "Modo Loop desativado." : "Modo Loop ativado: grave um clipe curto para repetir a sequência."); }}>∞</button>
+              <button type="button" aria-label="Layout com múltiplas fotos" onClick={() => layoutInputRef.current?.click()}>▦</button>
+              <button type="button" aria-label="Abrir galeria" onClick={() => galleryInputRef.current?.click()}>⌄</button>
             </div>
-            <span className="cs-effect-label">{recording ? "Gravando vídeo…" : cameraActive ? "Câmera ativa" : "Prévia ilustrativa"} · {effect}</span>
+            <div className="cs-story-camera-hint">{recording ? "GRAVANDO" : loopMode ? "MODO LOOP" : cameraActive ? "CÂMERA ATIVA" : "CÂMERA NEXORA"} · {effect.toUpperCase()}</div>
           </div>
-          {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
-          <div className="cs-capture-row">
-            <button className="cs-gallery-thumb" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria">▧</button>
-            <button className="cs-record-mode" onClick={() => { if (recording) return; setRecordMode(value => !value); }}>{recordMode ? "Vídeo" : "Foto"}</button>
-            <button className={"cs-shutter" + (recording ? " recording" : "")} onClick={!cameraActive ? startCamera : recordMode ? toggleRecording : capturePhoto} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"} />
-            <button className="cs-creative-effect" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Alternar contraste">✧</button>
+          {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
+          <div className="cs-story-capture-controls">
+            <button type="button" className="cs-story-gallery" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria"><span>▧</span></button>
+            <button type="button" className={"cs-story-shutter" + (recording ? " is-recording" : "")} onClick={handleShutterClick} onPointerDown={beginRecordHold} onPointerUp={endRecordHold} onPointerLeave={endRecordHold} onPointerCancel={endRecordHold} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recording ? "Parar gravação" : "Capturar foto"}><i /></button>
+            <button type="button" className="cs-story-effects" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Efeitos"><span>✧</span></button>
           </div>
-          <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { if (item === "LIVE") { setCameraError("LIVE está reservado para uma etapa futura; a transmissão ainda não foi implementada."); return; } setMode(item); setCameraError(""); if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); } }}>{item}</button>)}</div>
-        </> : <>
-          <div className="cs-preview-top"><button onClick={() => { setStage("camera"); setCameraError(""); }}>‹</button><div><button onClick={() => setCaption(value => value + " ✦")}>Aa</button><button onClick={() => galleryInputRef.current?.click()}>▧</button><button onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>◐</button><button onClick={() => setCaption(value => value + " ♫")}>♫</button><button onClick={() => setCaption("")}>Limpar</button></div></div>
-          <div className="cs-story-preview">
-            {mediaUrl ? (mediaType.startsWith("video/") ? <video className="cs-story-selected-media" src={mediaUrl} controls playsInline style={{ filter }} /> : <img className="cs-story-selected-media" src={mediaUrl} alt="Prévia do Story" style={{ filter }} />) : <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>}
+          <div className="cs-story-mode-picker">
+            {["POST", "STORY", "REEL", "LIVE"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
+              if (item === "LIVE") { setCameraError("A criação de LIVE será disponibilizada em uma etapa própria."); return; }
+              setMode(item); setCameraError("");
+              if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); }
+            }}>{item}</button>)}
+          </div>
+        </> : stage === "preview" ? <>
+          <div className="cs-story-edit-top">
+            <button type="button" aria-label="Voltar para câmera" onClick={() => { setStage("camera"); setCameraError(""); }}>‹</button>
+            <div>
+              <button type="button" aria-label="Adicionar texto" onClick={() => setEditorTool("text")}>Aa</button>
+              <button type="button" aria-label="Figurinhas" onClick={() => setEditorTool("stickers")}>☻</button>
+              <button type="button" aria-label="Efeitos" onClick={() => setEditorTool("effects")}>✣</button>
+              <button type="button" aria-label="Música" onClick={() => setEditorTool("music")}>♫</button>
+              <button type="button" aria-label="Mais opções" onClick={() => setStage("share")}>•••</button>
+            </div>
+          </div>
+          <div className="cs-story-edit-canvas">
+            {mediaUrl ? (mediaType.startsWith("video/") ? <video className="cs-story-edit-media" src={mediaUrl} controls playsInline style={{ filter }} /> : <img className="cs-story-edit-media" src={mediaUrl} alt="Prévia do Story" style={{ filter }} />) : null}
             {caption && <span className="cs-story-caption-overlay">{caption}</span>}
-            <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Adicionar texto..." aria-label="Texto do Story" />
+            {sticker && <span className="cs-story-sticker-overlay">{sticker}</span>}
           </div>
-          <div className="cs-publish-row">
-            <button className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}>◉ Seu Story</button>
-            <button className={audience === "Amigos Próximos" ? "selected" : ""} onClick={() => setAudience("Amigos Próximos")}>✦ Amigos Próximos</button>
-            <button className="cs-next" onClick={downloadStory}>Salvar</button>
+          {editorTool && <div className="cs-story-tool-sheet" role="dialog" aria-label="Ferramentas de edição do Story">
+            <div className="cs-story-tool-head"><b>{editorTool === "text" ? "Texto" : editorTool === "stickers" ? "Figurinhas" : editorTool === "effects" ? "Efeitos" : "Música"}</b><button type="button" onClick={() => setEditorTool(null)} aria-label="Fechar ferramenta">×</button></div>
+            {editorTool === "text" && <><textarea autoFocus value={caption} onChange={event => setCaption(event.target.value)} placeholder="Digite seu texto..." aria-label="Texto do Story"/><small>O texto aparece sobre a mídia na prévia.</small></>}
+            {editorTool === "stickers" && <div className="cs-story-sticker-picker">{["❤️","✨","😂","🔥","🌙","⭐","🦋","💜","☀️","🎉","📍","💫"].map(item => <button type="button" key={item} onClick={() => { setSticker(item); setEditorTool(null); }}>{item}</button>)}<button type="button" onClick={() => { setSticker(""); setEditorTool(null); }}>Remover</button></div>}
+            {editorTool === "effects" && <div className="cs-story-effect-picker">{["Original","P&B","Quente","Frio","Contraste"].map(item => <button type="button" key={item} className={effect === item ? "active" : ""} onClick={() => setEffect(item)}>{item}</button>)}</div>}
+            {editorTool === "music" && <div className="cs-story-music-picker"><p>Escolha um áudio do seu dispositivo para ouvir como referência.</p><input ref={audioInputRef} type="file" accept="audio/*" onChange={event => setAudioFile(event.target.files?.[0] ?? null)}/>{audioFile && <><b>{audioFile.name}</b>{audioUrl && <audio controls src={audioUrl}/>}</>}<small>O áudio é apenas pré-visualizado nesta etapa; ainda não é incorporado ao arquivo final nem publicado.</small></div>}
+            <button type="button" className="cs-story-tool-done" onClick={() => setEditorTool(null)}>Concluir</button>
+          </div>}
+          {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
+          <div className="cs-story-share-controls">
+            <button type="button" className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}><span>◉</span> Seu Story</button>
+            <button type="button" className={audience === "Amigos Próximos" ? "selected close-friends" : "close-friends"} onClick={() => setAudience("Amigos Próximos")}><span>✦</span> Amigos Próximos</button>
+            <button type="button" className="cs-story-share-next" onClick={() => { setEditorTool(null); setStage("share"); }} aria-label="Avançar para compartilhar">›</button>
           </div>
-          <p className="cs-story-local-note">Prévia local · público selecionado não é aplicado até a integração de publicação.</p>
+          <p className="cs-story-local-note">Prévia local · escolha o público e avance para revisar o compartilhamento.</p>
+        </> : <>
+          <div className="cs-story-edit-top"><button type="button" aria-label="Voltar à edição" onClick={() => setStage("preview")}>‹</button><b className="cs-story-share-title">Compartilhar Story</b><button type="button" aria-label="Voltar à câmera" onClick={() => { setStage("camera"); setCameraError(""); }}>×</button></div>
+          <div className="cs-story-share-summary">
+            {mediaUrl && (mediaType.startsWith("video/") ? <video src={mediaUrl} muted playsInline /> : <img src={mediaUrl} alt="Mídia selecionada para o Story"/>)}
+            <div><b>Seu Story está pronto para revisão</b><small>{mediaFile?.name ?? "Mídia selecionada"} · {audience}</small></div>
+          </div>
+          <div className="cs-story-audience-screen"><b>Quem pode ver?</b><button type="button" className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}><span>◉</span><span><strong>Seu Story</strong><small>Compartilhar com seus seguidores</small></span><i>{audience === "Seu Story" ? "✓" : ""}</i></button><button type="button" className={audience === "Amigos Próximos" ? "selected close-friends" : ""} onClick={() => setAudience("Amigos Próximos")}><span>✦</span><span><strong>Amigos Próximos</strong><small>Compartilhar apenas com sua lista</small></span><i>{audience === "Amigos Próximos" ? "✓" : ""}</i></button></div>
+          {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
+          <div className="cs-story-final-actions"><button type="button" onClick={() => setStage("preview")}>Voltar à edição</button><button type="button" onClick={() => void downloadStory(false)} disabled={busy}>{busy ? "Preparando..." : "Salvar mídia"}</button><button type="button" onClick={() => void downloadStory(true)} disabled={busy}>{busy ? "Publicando..." : "Publicar Story"}</button></div>
+          <p className="cs-story-local-note">O botão Publicar Story salva o conteúdo no Feed local deste dispositivo por 24 horas. A publicação entre contas e o controle real de audiência entram na integração final.</p>
         </>}
-        <div className="cs-home-indicator" />
-      </div>
-      <div className="cs-story-side">
-        <span className="cs-kicker">CAPTURA E PUBLICAÇÃO</span>
-        <h3>{stage === "camera" ? "Registre o momento." : "Sua história, do seu jeito."}</h3>
-        <p>{stage === "camera" ? "Ative a câmera com permissão do navegador ou escolha uma foto ou vídeo da galeria." : "Revise a mídia, aplique um filtro de prévia, escreva uma legenda e salve o arquivo."}</p>
-        <div className="cs-option-list">
-          <button className={selected === "Câmera" ? "selected" : ""} onClick={startCamera}>Câmera<span>›</span></button>
-          <button className={selected === "Galeria" ? "selected" : ""} onClick={() => galleryInputRef.current?.click()}>Galeria<span>›</span></button>
-          <button onClick={() => setCaption(value => value + " Texto")}>Texto<span>›</span></button>
-          <button onClick={() => setCameraError("Boomerang ainda não foi implementado; não será simulado.")}>Boomerang<span>›</span></button>
-          <button onClick={() => setCameraError("Layout de múltiplas capturas ainda não foi implementado.")}>Layout<span>›</span></button>
-        </div>
-        {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
+        <div className="cs-story-home-indicator" />
       </div>
     </div>
   );
@@ -288,9 +692,6 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   const [speed, setSpeed] = useState(1);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState("");
-  const [audioVolume, setAudioVolume] = useState(0.8);
-  const [exporting, setExporting] = useState(false);
-  const [exportProgress, setExportProgress] = useState(0);
   const [notice, setNotice] = useState("Importe fotos ou vídeos para começar.");
   const videoRef = useRef<HTMLVideoElement>(null);
   const objectUrlsRef = useRef<Set<string>>(new Set());
@@ -319,117 +720,6 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   function splitSelected() { if (!selected || selected.file.type.startsWith("image/")) { setNotice("A divisão está disponível para vídeos."); return; } const point=Math.max(selected.start+.2,Math.min(playhead,selected.end-.2)); if(point<=selected.start||point>=selected.end){setNotice("Posicione a reprodução no interior do clipe para dividi-lo.");return;} const left={...selected,id:crypto.randomUUID(),end:point}; const right={...selected,id:crypto.randomUUID(),start:point}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index),left,right,...current.slice(index+1)]); setSelectedId(right.id); setNotice("Clipe dividido em dois segmentos."); }
   function moveSelected(direction: -1 | 1) { if(!selected)return; const index=clips.findIndex(clip=>clip.id===selected.id), target=index+direction; if(target<0||target>=clips.length)return; const next=[...clips]; [next[index],next[target]]=[next[target],next[index]]; setClips(next); }
   function downloadOriginal() { if(!selected)return; const anchor=document.createElement("a"); anchor.href=selected.url; anchor.download=selected.file.name; anchor.click(); setNotice("Download do arquivo original iniciado. As edições ainda não são renderizadas."); }
-  async function exportEditedVideo() {
-    if (!clips.length || exporting) return;
-    if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) {
-      setNotice("Este navegador não oferece exportação de vídeo pelo editor. Tente uma versão recente do Chrome ou Edge.");
-      return;
-    }
-    const canvas = document.createElement("canvas");
-    const width = format === "REELS" ? 1080 : 1080;
-    const height = format === "REELS" ? 1920 : 1080;
-    canvas.width = width; canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) { setNotice("Não foi possível iniciar a renderização neste navegador."); return; }
-    const canvasStream = canvas.captureStream(30);
-    let audioContext: AudioContext | null = null;
-    let recorder: MediaRecorder | null = null;
-    let soundtrack: HTMLAudioElement | null = null;
-    const chunks: Blob[] = [];
-    const filterValue = filterStyle;
-    const drawFrame = (source: CanvasImageSource) => {
-      const sw = source instanceof HTMLVideoElement ? source.videoWidth : source instanceof HTMLImageElement ? source.naturalWidth : width;
-      const sh = source instanceof HTMLVideoElement ? source.videoHeight : source instanceof HTMLImageElement ? source.naturalHeight : height;
-      if (!sw || !sh) return;
-      const scale = Math.max(width / sw, height / sh);
-      const dw = sw * scale, dh = sh * scale;
-      ctx.save(); ctx.clearRect(0, 0, width, height); ctx.filter = filterValue;
-      ctx.drawImage(source, (width-dw)/2, (height-dh)/2, dw, dh);
-      ctx.restore();
-      if (overlayText.trim()) {
-        const fontSize = Math.round(width * 0.055);
-        ctx.save(); ctx.font = `800 ${fontSize}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.lineWidth = Math.max(3, fontSize * 0.12); ctx.strokeStyle = "rgba(0,0,0,.72)"; ctx.fillStyle = "#fff";
-        const words = overlayText.trim().split(/\s+/); const lines: string[] = []; let line = "";
-        for (const word of words) { const test = line ? line + " " + word : word; if (ctx.measureText(test).width > width * .82 && line) { lines.push(line); line = word; } else line = test; }
-        if (line) lines.push(line);
-        const lineHeight = fontSize * 1.18; const startY = height * .5 - ((lines.length-1)*lineHeight)/2;
-        lines.forEach((text,index) => { const y = startY + index*lineHeight; ctx.strokeText(text,width/2,y,width*.84); ctx.fillText(text,width/2,y,width*.84); });
-        ctx.restore();
-      }
-    };
-    const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    try {
-      setExporting(true); setExportProgress(0); setNotice("Preparando renderização em tempo real…");
-      const AudioContextClass = window.AudioContext;
-      if (AudioContextClass) {
-        audioContext = new AudioContextClass();
-        await audioContext.resume();
-      }
-      const audioDestination = audioContext?.createMediaStreamDestination();
-      if ((audioFile || clips.some(clip=>clip.file.type.startsWith("video/"))) && !audioContext) throw new Error("A mixagem de áudio não é compatível com este navegador.");
-      if (audioContext && audioDestination && audioFile && audioUrl) {
-        soundtrack = document.createElement("audio"); soundtrack.src = audioUrl; soundtrack.loop = true; soundtrack.preload = "auto";
-        const source = audioContext.createMediaElementSource(soundtrack);
-        const gain = audioContext.createGain(); gain.gain.value = audioVolume;
-        source.connect(gain); gain.connect(audioDestination);
-      }
-      const mimeType = ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"].find(type => MediaRecorder.isTypeSupported(type));
-      recorder = new MediaRecorder(new MediaStream([...canvasStream.getVideoTracks(), ...(audioDestination?.stream.getAudioTracks() ?? [])]), mimeType ? { mimeType } : undefined);
-      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-      const recordingDone = new Promise<Blob>((resolve,reject) => {
-        if (!recorder) { reject(new Error("Gravador indisponível")); return; }
-        recorder.onerror = () => reject(new Error("O navegador interrompeu a renderização."));
-        recorder.onstop = () => resolve(new Blob(chunks,{type:recorder?.mimeType || "video/webm"}));
-      });
-      recorder.start(250);
-      if (soundtrack) await soundtrack.play().catch(() => { throw new Error("Não foi possível iniciar a faixa de áudio selecionada."); });
-      for (let index=0; index<clips.length; index++) {
-        const clip=clips[index];
-        setNotice(`Renderizando mídia ${index+1} de ${clips.length}…`);
-        if (clip.file.type.startsWith("image/")) {
-          const img = new Image();
-          await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error("Uma das imagens não pôde ser carregada."));img.src=clip.url;});
-          const start=performance.now();
-          while (performance.now()-start < 4000) { drawFrame(img); setExportProgress(Math.min(99,Math.round(((index+(performance.now()-start)/4000)/clips.length)*100))); await nextFrame(); }
-        } else {
-          const video=document.createElement("video"); video.src=clip.url; video.preload="auto"; video.playsInline=true;
-          await new Promise<void>((resolve,reject)=>{video.onloadedmetadata=()=>resolve();video.onerror=()=>reject(new Error("Um dos vídeos não pôde ser decodificado."));});
-          const start=Math.max(0,clip.start); const end=Math.min(video.duration,clip.end>start?clip.end:video.duration);
-          if (audioContext && audioDestination) {
-            const source=audioContext.createMediaElementSource(video); const gain=audioContext.createGain(); gain.gain.value=volume;
-            source.connect(gain); gain.connect(audioDestination);
-          }
-          video.playbackRate=speed;
-          if(start>0) await new Promise<void>((resolve,reject)=>{video.onseeked=()=>resolve();video.onerror=()=>reject(new Error("Falha ao posicionar um vídeo na linha do tempo."));video.currentTime=start;});
-          await video.play();
-          while (!video.ended && video.currentTime < end) {
-            drawFrame(video);
-            setExportProgress(Math.min(99,Math.round(((index+(video.currentTime-start)/Math.max(.1,end-start))/clips.length)*100)));
-            await nextFrame();
-          }
-          video.pause(); video.removeAttribute("src"); video.load();
-        }
-      }
-      if (soundtrack) soundtrack.pause();
-      if (recorder.state !== "inactive") recorder.stop();
-      const blob=await recordingDone;
-      if (!blob.size) throw new Error("A renderização terminou sem gerar um arquivo.");
-      const url=URL.createObjectURL(blob);
-      const anchor=document.createElement("a"); anchor.href=url; anchor.download=`nexora-${format.toLowerCase()}-editado.${blob.type.includes("mp4")?"mp4":"webm"}`; anchor.click();
-      window.setTimeout(()=>URL.revokeObjectURL(url),60000);
-      setExportProgress(100); setNotice("Vídeo renderizado e baixado com filtros, texto, sequência e áudio disponível no navegador.");
-    } catch (error) {
-      if (recorder && recorder.state !== "inactive") recorder.stop();
-      const message=error instanceof Error?error.message:"Não foi possível renderizar este projeto.";
-      setNotice(message);
-    } finally {
-      if (soundtrack) { soundtrack.pause(); soundtrack.src=""; }
-      canvasStream.getTracks().forEach(track=>track.stop());
-      if (audioContext) await audioContext.close().catch(()=>undefined);
-      setExporting(false);
-    }
-  }
   const selectedIsVideo=Boolean(selected?.file.type.startsWith("video/"));
   return <div className="cs-real-editor">
     <div className="cs-real-editor-head"><div><span className="cs-kicker">EDITOR COMPARTILHADO</span><h3>{format==="POST"?"Editar publicação":"Editar Reel"}</h3><p>Um único conjunto de ferramentas para os dois formatos.</p></div><div className="cs-speed-options"><button className={format==="POST"?"active":""} onClick={()=>setFormat("POST")}>POST</button><button className={format==="REELS"?"active":""} onClick={()=>setFormat("REELS")}>REELS</button></div></div>
@@ -446,9 +736,7 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
         <div className="cs-tool-group"><label>Volume <strong>{Math.round(volume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={volume} onChange={event=>{const value=Number(event.target.value);setVolume(value);if(videoRef.current)videoRef.current.volume=value;}}/></div>
         <div className="cs-tool-group"><label>Velocidade <strong>{speed.toFixed(2)}×</strong></label><input type="range" min=".25" max="2" step=".25" value={speed} onChange={event=>{const value=Number(event.target.value);setSpeed(value);if(videoRef.current)videoRef.current.playbackRate=value;}}/></div>
         <label className="cs-audio-picker">＋ Adicionar faixa de áudio<input type="file" accept="audio/*" onChange={event=>{const file=event.target.files?.[0]??null;setAudioFile(file);setAudioUrl(file?createLocalUrl(file):"");}}/></label>{audioFile&&<div className="cs-audio-file"><b>Áudio selecionado:</b> {audioFile.name}<audio controls src={audioUrl}/></div>}
-        <div className="cs-tool-group"><label>Volume da faixa de áudio <strong>{Math.round(audioVolume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={audioVolume} onChange={event=>setAudioVolume(Number(event.target.value))} disabled={!audioFile}/></div>
-        <button className="cs-export-original" disabled={!clips.length||exporting} onClick={exportEditedVideo}>{exporting?(`Renderizando… ${exportProgress}%`):"Renderizar e baixar vídeo final"}</button>
-        <button className="cs-export-original cs-download-source" disabled={!selected||exporting} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A renderização acontece neste dispositivo. A publicação na conta e a sincronização entre dispositivos ainda dependem do servidor Nexora.</small></section>
+        <button className="cs-export-original" disabled={!selected} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A edição e a prévia são locais. Renderização final, salvamento e publicação exigem integração de mídia e servidor.</small></section>
     </div></div>;
 }
 function MiniChart({ title, value, kind = "line" }: { title: string; value: string; kind?: "line" | "bars" }) {
@@ -465,47 +753,7 @@ function InsightsStudio() {
   </div>;
 }
 
-type ScheduledDraft = { id: string; date: string; time: string; format: string; caption: string; mediaName: string; mediaId?: string };
-function openCalendarMediaDb(): Promise<IDBDatabase> {
-  return new Promise((resolve,reject) => {
-    if (!("indexedDB" in window)) { reject(new Error("Armazenamento de mídia não disponível.")); return; }
-    const request=window.indexedDB.open("nexora-creator-studio",1);
-    request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains("calendar-media"))db.createObjectStore("calendar-media");};
-    request.onsuccess=()=>resolve(request.result);
-    request.onerror=()=>reject(request.error??new Error("Falha ao abrir o armazenamento local."));
-  });
-}
-async function saveCalendarMedia(id:string,file:File):Promise<void> {
-  const db=await openCalendarMediaDb();
-  await new Promise<void>((resolve,reject)=>{
-    const tx=db.transaction("calendar-media","readwrite");
-    tx.objectStore("calendar-media").put(file,id);
-    tx.oncomplete=()=>{db.close();resolve();};
-    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao salvar a mídia do rascunho."));};
-    tx.onabort=()=>{db.close();reject(tx.error??new Error("Salvamento da mídia cancelado."));};
-  });
-}
-async function readCalendarMedia(id:string):Promise<Blob|null> {
-  const db=await openCalendarMediaDb();
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction("calendar-media","readonly");
-    const request=tx.objectStore("calendar-media").get(id);
-    request.onsuccess=()=>{const value=request.result;resolve(value instanceof Blob?value:null);};
-    request.onerror=()=>reject(request.error??new Error("Falha ao recuperar a mídia."));
-    tx.oncomplete=()=>db.close();
-    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao ler a mídia."));};
-  });
-}
-async function deleteCalendarMedia(id:string):Promise<void> {
-  const db=await openCalendarMediaDb();
-  await new Promise<void>((resolve,reject)=>{
-    const tx=db.transaction("calendar-media","readwrite");
-    tx.objectStore("calendar-media").delete(id);
-    tx.oncomplete=()=>{db.close();resolve();};
-    tx.onerror=()=>{db.close();reject(tx.error??new Error("Falha ao remover a mídia."));};
-    tx.onabort=()=>{db.close();reject(tx.error??new Error("Remoção da mídia cancelada."));};
-  });
-}
+type ScheduledDraft = { id: string; date: string; time: string; format: string; caption: string; mediaName: string };
 function CalendarStudio() {
   const today = new Date();
   const toDateKey = (date: Date) => [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
@@ -517,7 +765,7 @@ function CalendarStudio() {
   const [media, setMedia] = useState<File | null>(null);
   const [drafts, setDrafts] = useState<ScheduledDraft[]>([]);
   const [draftsHydrated, setDraftsHydrated] = useState(false);
-  const [notice, setNotice] = useState("Rascunhos e arquivos ficam salvos neste navegador; não serão publicados automaticamente.");
+  const [notice, setNotice] = useState("Os agendamentos ficam nesta sessão do navegador; não serão publicados automaticamente.");
   const [showAll, setShowAll] = useState(false);
   const [mediaPreview, setMediaPreview] = useState("");
   const [mediaPreviewType, setMediaPreviewType] = useState("");
@@ -561,16 +809,12 @@ function CalendarStudio() {
     const nextDate=toDateKey(new Date(next.getFullYear(),next.getMonth(),1));
     setSelectedDate(nextDate);
   }
-  async function addDraft(event:FormEvent<HTMLFormElement>) {
+  function addDraft(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(!caption.trim()&&!media){setNotice("Adicione uma legenda ou selecione um arquivo de mídia antes de salvar.");return;}
     if(!selectedDate||!time){setNotice("Escolha uma data e um horário válidos.");return;}
-    const id=crypto.randomUUID();
-    let mediaId:string|undefined;
-    let mediaSaveFailed=false;
-    if(media){try{await saveCalendarMedia(id,media);mediaId=id;}catch{mediaSaveFailed=true;}}
-    setDrafts(current=>[...current,{id,date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??"",mediaId}]);
-    setNotice(mediaSaveFailed?"Rascunho salvo, mas o navegador não conseguiu guardar o arquivo de mídia.":mediaId?"Rascunho e arquivo de mídia salvos neste navegador. Nenhuma publicação foi enviada.":"Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
+    setDrafts(current=>[...current,{id:crypto.randomUUID(),date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??""}]);
+    setNotice("Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
     setCaption("");
     setMedia(null);
     if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
@@ -579,20 +823,9 @@ function CalendarStudio() {
     setMediaPreviewType("");
     setMediaInputKey(value=>value+1);
   }
-  async function downloadDraftMedia(item:ScheduledDraft) {
-    if(!item.mediaId){setNotice("Este rascunho não possui arquivo de mídia salvo.");return;}
-    try{
-      const blob=await readCalendarMedia(item.mediaId);
-      if(!blob){setNotice("O arquivo não foi encontrado no armazenamento deste navegador.");return;}
-      const url=URL.createObjectURL(blob);const anchor=document.createElement("a");anchor.href=url;anchor.download=item.mediaName||"nexora-rascunho";anchor.click();
-      window.setTimeout(()=>URL.revokeObjectURL(url),60000);
-    }catch{setNotice("Não foi possível recuperar o arquivo deste rascunho.");}
-  }
-  async function removeDraft(id:string) {
-    const item=drafts.find(draft=>draft.id===id);
-    if(item?.mediaId){try{await deleteCalendarMedia(item.mediaId);}catch{setNotice("O rascunho será removido, mas o arquivo local pode permanecer armazenado.");}}
+  function removeDraft(id:string) {
     setDrafts(current=>current.filter(item=>item.id!==id));
-    setNotice("Rascunho removido do calendário local.");
+    setNotice("Agendamento removido do calendário local.");
   }
   function selectDay(day:number) {
     const date=new Date(yearText,monthText-1,day);
@@ -608,7 +841,7 @@ function CalendarStudio() {
       <div className="cs-calendar-days">{["D","S","T","Q","Q","S","S"].map((x,i)=><span key={i}>{x}</span>)}{calendarCells.map((day,index)=>day===0?<i key={"blank-"+index}/>:<button type="button" key={day} className={selectedDate===toDateKey(new Date(yearText,monthText-1,day))?"selected":""} onClick={()=>selectDay(day)}>{day}{drafts.some(item=>item.date===toDateKey(new Date(yearText,monthText-1,day)))&&<i/>}</button>)}</div>
       <div className="cs-schedule-list">
         <div className="cs-schedule-list-head"><b>{new Date(selectedDate+"T12:00:00").toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"})}</b><button type="button" onClick={()=>setShowAll(value=>!value)}>{showAll?"Ver dia":"Ver todos"}</button></div>
-        {visibleDrafts.length===0?<p className="cs-empty-schedule">Nenhum rascunho neste período.</p>:visibleDrafts.map(item=><div className="cs-scheduled-item" key={item.id}><div><b>{item.time} · {item.format}</b><p>{item.caption||item.mediaName||"Publicação sem legenda"}</p>{item.mediaName&&<><small>Arquivo: {item.mediaName}</small>{item.mediaId&&<button type="button" className="cs-draft-media-download" onClick={()=>downloadDraftMedia(item)}>Baixar mídia salva</button>}</>}{showAll&&<small>{new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR")}</small>}</div><button type="button" onClick={()=>removeDraft(item.id)} aria-label="Excluir agendamento">×</button></div>)}
+        {visibleDrafts.length===0?<p className="cs-empty-schedule">Nenhum rascunho neste período.</p>:visibleDrafts.map(item=><div className="cs-scheduled-item" key={item.id}><div><b>{item.time} · {item.format}</b><p>{item.caption||item.mediaName||"Publicação sem legenda"}</p>{item.mediaName&&<small>Arquivo: {item.mediaName}</small>}{showAll&&<small>{new Date(item.date+"T12:00:00").toLocaleDateString("pt-BR")}</small>}</div><button type="button" onClick={()=>removeDraft(item.id)} aria-label="Excluir agendamento">×</button></div>)}
       </div>
     </div>
     <form className="cs-compose-panel" onSubmit={addDraft}>
@@ -630,23 +863,6 @@ function CommentsStudio() {
   const [replyTo,setReplyTo]=useState("");
   const [liked,setLiked]=useState<string[]>([]);
   const [items,setItems]=useState(["True fashion begins with the confidence to wear your vision.","When you wear love unapologetically, you’re already winning at style.","Sharp, sleek, and just the right shade of iconic."]);
-  const [hydrated,setHydrated]=useState(false);
-  useEffect(() => {
-    try {
-      const savedItems=window.localStorage.getItem("nexora-creator-comments-v1");
-      const savedLikes=window.localStorage.getItem("nexora-creator-comment-likes-v1");
-      if(savedItems){const parsed=JSON.parse(savedItems);if(Array.isArray(parsed)&&parsed.every(item=>typeof item==="string"))setItems(parsed);}
-      if(savedLikes){const parsed=JSON.parse(savedLikes);if(Array.isArray(parsed)&&parsed.every(item=>typeof item==="string"))setLiked(parsed);}
-    } catch { /* Mantém a demonstração em memória se o armazenamento estiver indisponível. */ }
-    setHydrated(true);
-  },[]);
-  useEffect(() => {
-    if(!hydrated)return;
-    try {
-      window.localStorage.setItem("nexora-creator-comments-v1",JSON.stringify(items));
-      window.localStorage.setItem("nexora-creator-comment-likes-v1",JSON.stringify(liked));
-    } catch { /* As interações continuam disponíveis durante esta sessão. */ }
-  },[items,liked,hydrated]);
   function submitComment(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if(!comment.trim())return; const text=(replyTo?"↳ Resposta para "+replyTo+": ":"")+comment.trim(); setItems(current=>[...current,text]); setComment(""); setReplyTo(""); }
   return <div className="cs-comments-layout"><div className="cs-comment-content"><div className="cs-comment-art">N<span>CONTEÚDO</span></div></div><div className="cs-comments-sheet"><div className="cs-sheet-handle"/><h3>Comentários <small>{items.length}</small></h3><div className="cs-comment-list">{items.map((x,i)=>{const id=String(i);const author=["Ava Monroe","John Brooks","Zoey Hart","Mia Cruz"][i%4];const isLiked=liked.includes(id);return <div className="cs-comment" key={id}><div className="cs-avatar">{["A","J","Z","N"][i%4]}</div><div><b>{author}</b><p>{x}</p><small><button type="button" onClick={()=>{setReplyTo(author);setComment("@"+author+" ");}}>Responder</button>　<button type="button" className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"Curtido":"Curtir"}</button></small></div><button type="button" aria-label={isLiked?"Remover curtida":"Curtir comentário"} className={isLiked?"liked":""} onClick={()=>setLiked(current=>isLiked?current.filter(value=>value!==id):[...current,id])}>{isLiked?"♥":"♡"}</button></div>;})}</div><form onSubmit={submitComment}><span>↗</span><input value={comment} onChange={e=>setComment(e.target.value)} placeholder={replyTo?"Responder a "+replyTo:"Adicione um comentário..."} aria-label="Novo comentário ou resposta"/><button type="submit" disabled={!comment.trim()}>➤</button></form><small className="cs-comment-local-note">Interações demonstrativas nesta sessão; ainda não sincronizadas com a conta.</small></div></div>;
 }
@@ -658,7 +874,7 @@ export default function CreatorStudioPage() {
     if (requested && allowed.includes(requested as StudioSection)) setActive(requested as StudioSection);
   }, []);
   const title = useMemo(() => sections.find(s=>s.id===active)?.label ?? "Creator Studio",[active]);
-  return <main className="cs-app">
+  return <main className={"cs-app" + (active === "story" ? " cs-app-story" : "")}>
     <header className="cs-header"><a className="cs-brand" href="/"><span>N</span>NEXORA <i>CREATOR</i></a><div className="cs-header-actions"><span className="cs-status"><i/> Ambiente independente</span><button className="cs-profile">L</button></div></header>
     <div className="cs-shell"><aside className="cs-sidebar"><div className="cs-side-label">ESTÚDIO</div>{sections.map(s=><button key={s.id} className={active===s.id?"active":""} onClick={()=>setActive(s.id)}><span>{s.icon}</span>{s.label}</button>)}<div className="cs-side-foot"><span>WORKSPACE</span><b>Nexora Creator</b><small>Prévia independente</small></div></aside><section className="cs-main"><div className="cs-page-heading"><div><span className="cs-kicker">NEXORA / CREATOR STUDIO</span><h1>{title}</h1></div><span className="cs-demo-badge">AMBIENTE DE PRÉVIA</span></div>{active==="story"&&<StoryStudio onOpenEditor={format => setActive(format === "POST" ? "post" : "reels")} />}{active==="post"&&<MediaEditor initialFormat="POST"/>}{active==="reels"&&<MediaEditor initialFormat="REELS"/>}{active==="insights"&&<InsightsStudio/>}{active==="calendar"&&<CalendarStudio/>}{active==="comments"&&<CommentsStudio/>}</section></div>
   </main>;
