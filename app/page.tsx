@@ -185,45 +185,6 @@ export default function Home() {
     activeBubble?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [activeStory, activeStoryIndex]);
 
-  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
-  const [storyPreview, setStoryPreview] = useState("");
-  const [storyFile, setStoryFile] = useState<File | null>(null);
-  const [storyCaption, setStoryCaption] = useState("");
-  const [storyEffect, setStoryEffect] = useState<"none" | "glow" | "warm" | "mono" | "dream">("none");
-  const storyCameraInputRef = useRef<HTMLInputElement>(null);
-  const storyInputRef = useRef<HTMLInputElement>(null);
-  const storyLiveVideoRef = useRef<HTMLVideoElement>(null);
-  const storyLiveStreamRef = useRef<MediaStream | null>(null);
-  const storyRecorderRef = useRef<MediaRecorder | null>(null);
-  const storyRecordingChunksRef = useRef<Blob[]>([]);
-  const [storyCameraActive, setStoryCameraActive] = useState(false);
-  const [storyRecording, setStoryRecording] = useState(false);
-  const [storyFacingMode, setStoryFacingMode] = useState<"user" | "environment">("user");
-  const [storyLens, setStoryLens] = useState<"none" | "dog" | "bunny" | "coffee" | "glow" | "mono" | "warm" | "dream" | "neon" | "blur" | "aurora" | "vintage" | "rose" | "cool" | "cinema" | "soft" | "sunset" | "invert">("none");
-  const [storyToolPanel, setStoryToolPanel] = useState<"none" | "stickers" | "gifs" | "questions" | "poll" | "quiz" | "interactive" | "boomerang" | "text" | "music" | "download" | "adjust" | "duration">("none");
-  const [storyInteractiveMode, setStoryInteractiveMode] = useState<"gifs" | "questions" | "poll" | "quiz">("gifs");
-  const [storyRecordingDuration, setStoryRecordingDuration] = useState<15 | 30 | 45 | 60>(60);
-  const [storyLivePhotoMode, setStoryLivePhotoMode] = useState(false);
-  const storyRecorderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [storyBoomerangMode, setStoryBoomerangMode] = useState<"classic" | "slow" | "echo" | "portrait">("classic");
-  const [storyInteractiveText, setStoryInteractiveText] = useState("");
-  const [storyPollOptions, setStoryPollOptions] = useState(["Sim", "Não"]);
-  const [storyQuizAnswer, setStoryQuizAnswer] = useState("A");
-  const [storySticker, setStorySticker] = useState("");
-  const [storyOverlayText, setStoryOverlayText] = useState("");
-  const [storyTextColor, setStoryTextColor] = useState("#ffffff");
-  const [storyTextAlign, setStoryTextAlign] = useState<"left" | "center" | "right">("center");
-  const [storyBrightness, setStoryBrightness] = useState(100);
-  const [storyContrast, setStoryContrast] = useState(100);
-  const [storySaturation, setStorySaturation] = useState(100);
-  const [storyZoom, setStoryZoom] = useState(1);
-  const [storyFaceEffect, setStoryFaceEffect] = useState("none");
-  const [storyMusicSearch, setStoryMusicSearch] = useState("");
-  const [storyFavoriteStickers, setStoryFavoriteStickers] = useState<string[]>(["✨","🫶","💖","😂"]);
-  const storyShutterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const storyShutterStartRef = useRef<{x:number;y:number}>({x:0,y:0});
-  const storyLongPressTriggeredRef = useRef(false);
-  const [storyLocation, setStoryLocation] = useState("");
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
@@ -267,14 +228,8 @@ export default function Home() {
     const link = params.get("link") || window.location.origin;
     const caption = [title, description, link].filter(Boolean).join("\n");
     if (shareMode === "story") {
-      const escapeSvg = (value: string) => value.replace(/[&<>"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as Record<string, string>)[char] || char);
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071321"/><stop offset=".55" stop-color="#17204a"/><stop offset="1" stop-color="#35143f"/></linearGradient><radialGradient id="glow"><stop stop-color="#35dfff" stop-opacity=".45"/><stop offset="1" stop-color="#35dfff" stop-opacity="0"/></radialGradient></defs><rect width="1080" height="1920" fill="url(#bg)"/><circle cx="850" cy="350" r="520" fill="url(#glow)"/><circle cx="170" cy="1500" r="500" fill="#9a4cff" opacity=".13"/><rect x="76" y="270" width="928" height="1380" rx="58" fill="#0b1223" stroke="#66ddff" stroke-opacity=".5" stroke-width="3"/><text x="130" y="410" fill="#75eaff" font-family="Arial,sans-serif" font-size="42" font-weight="700" letter-spacing="12">NEXORA · VITRINE</text><text x="130" y="700" fill="#ffffff" font-family="Arial,sans-serif" font-size="72" font-weight="800">${escapeSvg(title.slice(0,28))}</text><foreignObject x="130" y="790" width="820" height="420"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Arial,sans-serif;color:#d8e5f6;font-size:42px;line-height:1.45;overflow-wrap:anywhere">${escapeSvg(description.slice(0,120))}</div></foreignObject><text x="130" y="1450" fill="#75eaff" font-family="Arial,sans-serif" font-size="32">DESCUBRA · CONECTE · COMPARTILHE</text><text x="130" y="1530" fill="#b7c7dc" font-family="Arial,sans-serif" font-size="26">${escapeSvg(link.slice(0,65))}</text><text x="130" y="1600" fill="#ffffff" font-family="Arial,sans-serif" font-size="34" font-weight="700">NEXORA</text></svg>`;
-      const file = new File([new Blob([svg], { type: "image/svg+xml" })], "nexora-compartilhamento.svg", { type: "image/svg+xml" });
-      setStoryFile(file);
-      setStoryPreview(URL.createObjectURL(file));
-      setStoryCaption(caption.slice(0,180));
-      setStoryComposerOpen(true);
-      setNotice("Arte de compartilhamento preparada. Revise e publique seu Story quando quiser.");
+      const params = new URLSearchParams({ section: "story", shareTitle: title, shareDescription: description, shareLink: link });
+      router.push(`/creator-studio?${params.toString()}`);
     } else if (shareMode === "reel" || shareMode === "post") {
       setCreateFile(null);
       setCreatePreview("");
@@ -868,17 +823,7 @@ export default function Home() {
     setDrafts(current => ({ ...current, [id]: "" }));
   }
 
-  useEffect(() => {
-    const video = storyLiveVideoRef.current;
-    const stream = storyLiveStreamRef.current;
-    if (!storyCameraActive || !video || !stream) return;
-    video.srcObject = stream;
-    video.muted = true;
-    video.playsInline = true;
-    void video.play().catch(() => {
-      setNotice("A câmera foi autorizada, mas a prévia não iniciou. Toque em Abrir câmera novamente.");
-    });
-    return () => {
+  return () => {
       if (video.srcObject === stream) video.srcObject = null;
     };
   }, [storyCameraActive]);
