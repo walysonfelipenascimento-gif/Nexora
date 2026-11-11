@@ -65,6 +65,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const audioInputRef = useRef<HTMLInputElement>(null);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
+  const cameraRequestRef = useRef(0);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordHoldTimerRef = useRef<number | null>(null);
   const loopCaptureTimerRef = useRef<number | null>(null);
@@ -95,9 +96,20 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   }, []);
 
   function stopCamera() {
+    cameraRequestRef.current += 1;
+    if (recordHoldTimerRef.current !== null) window.clearTimeout(recordHoldTimerRef.current);
+    if (loopCaptureTimerRef.current !== null) window.clearTimeout(loopCaptureTimerRef.current);
+    recordHoldTimerRef.current = null;
+    loopCaptureTimerRef.current = null;
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      try { recorder.stop(); } catch { /* A gravação pode já estar encerrando. */ }
+    }
     cameraStreamRef.current?.getTracks().forEach(track => track.stop());
     cameraStreamRef.current = null;
     if (cameraVideoRef.current) cameraVideoRef.current.srcObject = null;
+    setRecording(false);
+    setTorchEnabled(false);
     setCameraActive(false);
   }
   function setLocalMedia(file: File) {
@@ -118,22 +130,25 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       return;
     }
     stopCamera();
+    const requestId = ++cameraRequestRef.current;
     try {
       let stream: MediaStream;
+      let microphoneUnavailable = false;
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: true });
       } catch {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: false });
-        setCameraError("Microfone indisponível: a câmera funcionará sem áudio.");
+        microphoneUnavailable = true;
       }
-      if (!mountedRef.current) {
+      if (!mountedRef.current || requestId !== cameraRequestRef.current) {
         stream.getTracks().forEach(track => track.stop());
         return;
       }
       cameraStreamRef.current = stream;
+      if (microphoneUnavailable) setCameraError("Microfone indisponível: a câmera funcionará sem áudio.");
       setCameraActive(true);
     } catch (error) {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || requestId !== cameraRequestRef.current) return;
       const name = error instanceof DOMException ? error.name : "";
       setCameraError(name === "NotAllowedError" ? "A permissão da câmera foi negada. Autorize o acesso nas configurações do navegador ou escolha uma mídia da galeria." : name === "NotFoundError" ? "Nenhuma câmera foi encontrada neste dispositivo." : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente.");
     }
@@ -600,10 +615,17 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      cameraRequestRef.current += 1;
       if (recordHoldTimerRef.current !== null) window.clearTimeout(recordHoldTimerRef.current);
       if (loopCaptureTimerRef.current !== null) window.clearTimeout(loopCaptureTimerRef.current);
+      recordHoldTimerRef.current = null;
+      loopCaptureTimerRef.current = null;
+      if (recorderRef.current && recorderRef.current.state !== "inactive") {
+        try { recorderRef.current.stop(); } catch { /* O navegador pode já ter encerrado a gravação. */ }
+      }
       cameraStreamRef.current?.getTracks().forEach(track => track.stop());
       cameraStreamRef.current = null;
+      if (cameraVideoRef.current) cameraVideoRef.current.srcObject = null;
       if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
     };
   }, []);
