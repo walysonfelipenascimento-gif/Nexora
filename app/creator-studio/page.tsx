@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type FormEvent } from "react";
 import "./creator-studio.css";
 
 type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
@@ -29,70 +29,150 @@ function IconButton({ children, label }: { children: ReactNode; label: string })
 function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS") => void }) {
   const [mode, setMode] = useState("STORY");
   const [stage, setStage] = useState<"camera" | "preview">("camera");
-  const [flash, setFlash] = useState(false);
   const [effect, setEffect] = useState("Original");
   const [caption, setCaption] = useState("");
   const [audience, setAudience] = useState("Seu Story");
   const [selected, setSelected] = useState("Câmera");
-  const [storyMediaUrl, setStoryMediaUrl] = useState("");
-  const [storyMediaType, setStoryMediaType] = useState("");
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaType, setMediaType] = useState("");
+  const [cameraError, setCameraError] = useState("");
+  const [cameraActive, setCameraActive] = useState(false);
+  const [busy, setBusy] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const mediaUrlRef = useRef("");
+  const filter = effect === "P&B" ? "grayscale(1)" : effect === "Quente" ? "sepia(.35) saturate(1.25)" : effect === "Frio" ? "hue-rotate(12deg) saturate(.85)" : effect === "Contraste" ? "contrast(1.25)" : "none";
+
+  function stopCamera() {
+    cameraStreamRef.current?.getTracks().forEach(track => track.stop());
+    cameraStreamRef.current = null;
+    if (cameraVideoRef.current) cameraVideoRef.current.srcObject = null;
+    setCameraActive(false);
+  }
+  function setLocalMedia(file: File) {
+    if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
+    const url = URL.createObjectURL(file);
+    mediaUrlRef.current = url;
+    setMediaUrl(url);
+    setMediaType(file.type);
+    setSelected("Galeria");
+    stopCamera();
+    setStage("preview");
+  }
+  async function startCamera() {
+    setCameraError("");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("Este navegador ou contexto não oferece acesso à câmera. Use a galeria para importar uma mídia.");
+      return;
+    }
+    stopCamera();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      cameraStreamRef.current = stream;
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream;
+        await cameraVideoRef.current.play();
+      }
+      setCameraActive(true);
+      setSelected("Câmera");
+    } catch (error) {
+      const name = error instanceof DOMException ? error.name : "";
+      setCameraError(name === "NotAllowedError" ? "A permissão da câmera foi negada. Autorize o acesso nas configurações do navegador ou escolha uma mídia da galeria." : name === "NotFoundError" ? "Nenhuma câmera foi encontrada neste dispositivo." : "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente.");
+    }
+  }
+  async function capturePhoto() {
+    const video = cameraVideoRef.current;
+    if (!video || !video.videoWidth || !video.videoHeight) {
+      setCameraError("A câmera ainda está iniciando. Aguarde a imagem aparecer e tente novamente.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) { setCameraError("Não foi possível preparar a captura neste navegador."); return; }
+    context.filter = filter;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    setBusy(true);
+    canvas.toBlob(blob => {
+      setBusy(false);
+      if (!blob) { setCameraError("A captura não pôde ser convertida em imagem."); return; }
+      setLocalMedia(new File([blob], "nexora-story.jpg", { type: "image/jpeg" }));
+    }, "image/jpeg", .94);
+  }
+  function downloadStory() {
+    if (!mediaUrl) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
+    const anchor = document.createElement("a");
+    anchor.href = mediaUrl;
+    anchor.download = "nexora-story" + (mediaType.startsWith("video/") ? ".mp4" : ".jpg");
+    anchor.click();
+    setCameraError("Arquivo preparado para salvar no dispositivo. A publicação na conta ainda não está conectada.");
+  }
+  useEffect(() => () => {
+    cameraStreamRef.current?.getTracks().forEach(track => track.stop());
+    if (mediaUrlRef.current) URL.revokeObjectURL(mediaUrlRef.current);
+  }, []);
+
   return (
     <div className="cs-story-layout">
       <div className="cs-phone cs-camera-phone">
         <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
         {stage === "camera" ? <>
           <div className="cs-camera-top">
-            <IconButton label="Fechar">×</IconButton>
+            <button className="cs-icon-button" aria-label="Fechar câmera" onClick={stopCamera}>×</button>
             <div className="cs-camera-top-actions">
-              <IconButton label="Flash" ><span onClick={() => setFlash(!flash)}>{flash ? "ϟ" : "♢"}</span></IconButton>
-              <IconButton label="Efeitos">✦</IconButton>
-              <IconButton label="Configurações">⚙</IconButton>
+              <button className="cs-icon-button" aria-label="Alternar efeito P&B" onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>◐</button>
+              <button className="cs-icon-button" aria-label="Alternar efeito quente" onClick={() => setEffect(effect === "Quente" ? "Original" : "Quente")}>✦</button>
+              <button className="cs-icon-button" aria-label="Iniciar câmera" onClick={startCamera}>◎</button>
             </div>
           </div>
           <div className="cs-camera-view">
-            <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>
+            {cameraActive ? <video ref={cameraVideoRef} className="cs-story-selected-media" autoPlay muted playsInline style={{ filter }} /> : <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>}
             <div className="cs-camera-tools">
-              <button onClick={() => setEffect("Texto")}>Aa</button>
-              <button onClick={() => setEffect("Boomerang")}>∞</button>
-              <button onClick={() => setEffect("Layout")}>▦</button>
-              <button onClick={() => setEffect("Mais")}>⌄</button>
+              {["Original", "P&B", "Quente", "Frio", "Contraste"].map(item => <button key={item} className={effect === item ? "active" : ""} onClick={() => setEffect(item)}>{item}</button>)}
             </div>
-            <span className="cs-effect-label">{effect}</span>
+            <span className="cs-effect-label">{cameraActive ? "Câmera ativa" : "Prévia ilustrativa"} · {effect}</span>
           </div>
+          {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
           <div className="cs-capture-row">
             <button className="cs-gallery-thumb" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria">▧</button>
-            <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event=>{const file=event.target.files?.[0];if(file){setStoryMediaUrl(URL.createObjectURL(file));setStoryMediaType(file.type);setSelected("Galeria");setStage("preview");}}}/>
-            <button className="cs-shutter" onClick={() => setStage("preview")} aria-label="Capturar" />
-            <button className="cs-creative-effect" onClick={() => setEffect("Efeito inteligente")}>✧</button>
+            <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} />
+            <button className="cs-shutter" onClick={cameraActive ? capturePhoto : startCamera} disabled={busy} aria-label={cameraActive ? "Capturar foto" : "Ativar câmera"} />
+            <button className="cs-creative-effect" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Alternar contraste">✧</button>
           </div>
-          <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { setMode(item); if (item === "POST" || item === "REEL") onOpenEditor(item === "POST" ? "POST" : "REELS"); }}>{item}</button>)}</div>
+          <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { setMode(item); if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); } }}>{item}</button>)}</div>
         </> : <>
-          <div className="cs-preview-top"><button onClick={() => setStage("camera")}>‹</button><div><button>Aa</button><button>▧</button><button>✦</button><button>♫</button><button>•••</button></div></div>
+          <div className="cs-preview-top"><button onClick={() => { setStage("camera"); setCameraError(""); }}>‹</button><div><button onClick={() => setCaption(value => value + " ✦")}>Aa</button><button onClick={() => galleryInputRef.current?.click()}>▧</button><button onClick={() => setEffect(effect === "P&B" ? "Original" : "P&B")}>◐</button><button onClick={() => setCaption(value => value + " ♫")}>♫</button><button onClick={() => setCaption("")}>Limpar</button></div></div>
           <div className="cs-story-preview">
-            <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>
+            {mediaUrl ? (mediaType.startsWith("video/") ? <video className="cs-story-selected-media" src={mediaUrl} controls playsInline style={{ filter }} /> : <img className="cs-story-selected-media" src={mediaUrl} alt="Prévia do Story" style={{ filter }} />) : <div className="cs-night-scene"><div className="cs-moon" /><div className="cs-camp-tent" /><div className="cs-camp-fire" /></div>}
             <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Adicionar texto..." aria-label="Texto do Story" />
           </div>
           <div className="cs-publish-row">
             <button className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}>◉ Seu Story</button>
             <button className={audience === "Amigos Próximos" ? "selected" : ""} onClick={() => setAudience("Amigos Próximos")}>✦ Amigos Próximos</button>
-            <button className="cs-next" onClick={() => setStage("camera")}>➜</button>
+            <button className="cs-next" onClick={downloadStory}>Salvar</button>
           </div>
+          <p className="cs-story-local-note">Prévia local · público selecionado não é aplicado até a integração de publicação.</p>
         </>}
         <div className="cs-home-indicator" />
       </div>
       <div className="cs-story-side">
         <span className="cs-kicker">CAPTURA E PUBLICAÇÃO</span>
         <h3>{stage === "camera" ? "Registre o momento." : "Sua história, do seu jeito."}</h3>
-        <p>{stage === "camera" ? "Câmera em tela cheia, modos de captura, galeria e ferramentas de acesso rápido." : "Revise a mídia, adicione elementos e escolha o público antes de compartilhar."}</p>
+        <p>{stage === "camera" ? "Ative a câmera com permissão do navegador ou escolha uma foto ou vídeo da galeria." : "Revise a mídia, aplique um filtro de prévia, escreva uma legenda e salve o arquivo."}</p>
         <div className="cs-option-list">
-          {["Câmera", "Galeria", "Texto", "Boomerang", "Layout"].map(item => <button key={item} className={selected === item ? "selected" : ""} onClick={() => { setSelected(item); if (item === "Galeria") galleryInputRef.current?.click(); else setEffect(item); }}>{item}<span>›</span></button>)}
+          <button className={selected === "Câmera" ? "selected" : ""} onClick={startCamera}>Câmera<span>›</span></button>
+          <button className={selected === "Galeria" ? "selected" : ""} onClick={() => galleryInputRef.current?.click()}>Galeria<span>›</span></button>
+          <button onClick={() => setCaption(value => value + " Texto")}>Texto<span>›</span></button>
+          <button onClick={() => setCameraError("Boomerang ainda não foi implementado; não será simulado.")}>Boomerang<span>›</span></button>
+          <button onClick={() => setCameraError("Layout de múltiplas capturas ainda não foi implementado.")}>Layout<span>›</span></button>
         </div>
+        {cameraError && <p className="cs-story-error" role="status">{cameraError}</p>}
       </div>
     </div>
   );
 }
-
 function Timeline({ compact = false }: { compact?: boolean }) {
   return <div className={compact ? "cs-timeline compact" : "cs-timeline"}>
     <div className="cs-time-ruler"><span>00:00</span><span>00:05</span><span>00:10</span><span>00:15</span><span>00:20</span><span>00:25</span></div>
