@@ -47,7 +47,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const [effect, setEffect] = useState("Original");
   const [caption, setCaption] = useState("");
   const [audience, setAudience] = useState("Seu Story");
-  const [selected, setSelected] = useState("Câmera");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaType, setMediaType] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
@@ -80,7 +79,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     setMediaUrl(url);
     setMediaType(file.type);
     setMediaFile(file);
-    setSelected("Galeria");
     stopCamera();
     setStage("preview");
     setEditorTool(null);
@@ -106,7 +104,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       }
       cameraStreamRef.current = stream;
       setCameraActive(true);
-      setSelected("Câmera");
     } catch (error) {
       if (!mountedRef.current) return;
       const name = error instanceof DOMException ? error.name : "";
@@ -407,7 +404,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
           <div className="cs-story-capture-controls">
             <button type="button" className="cs-story-gallery" onClick={() => galleryInputRef.current?.click()} aria-label="Abrir galeria"><span>▧</span></button>
-            <button type="button" className={"cs-story-shutter" + (recording ? " is-recording" : "")} onClick={handleShutterClick} onPointerDown={beginRecordHold} onPointerUp={endRecordHold} onPointerLeave={endRecordHold} onPointerCancel={endRecordHold} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recordMode ? (recording ? "Parar gravação" : "Iniciar gravação") : "Capturar foto"}><i /></button>
+            <button type="button" className={"cs-story-shutter" + (recording ? " is-recording" : "")} onClick={handleShutterClick} onPointerDown={beginRecordHold} onPointerUp={endRecordHold} onPointerLeave={endRecordHold} onPointerCancel={endRecordHold} disabled={busy} aria-label={!cameraActive ? "Ativar câmera" : recording ? "Parar gravação" : "Capturar foto"}><i /></button>
             <button type="button" className="cs-story-effects" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Efeitos"><span>✧</span></button>
           </div>
           <div className="cs-story-mode-picker">
