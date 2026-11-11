@@ -109,23 +109,23 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   return <div className="cs-editor-grid">
     <div className="cs-editor-phone">
       <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
-      <div className="cs-editor-top"><button>↶</button><button>↷</button><button>⇧</button></div>
+      <div className="cs-editor-top"><button aria-label="Desfazer" onClick={() => setTool("Desfazer")}>↶</button><button aria-label="Refazer" onClick={() => setTool("Refazer")}>↷</button><button aria-label="Exportar" onClick={() => setTool("Exportar")}>⇧</button></div>
       <div className="cs-video-preview"><div className="cs-video-person">N</div><span>PRÉVIA {format}</span></div>
       <div className="cs-play-controls"><span>00:08 / 00:23</span><button onClick={() => setPlaying(!playing)}>{playing ? "Ⅱ" : "▶"}</button><span>⌄</span></div>
       <Timeline />
-      <div className="cs-tool-row">{["Substituir", "Excluir", "Dividir"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "active" : ""}>{x}</button>)}</div>
+      <div className="cs-tool-row">{["Cortar", "Dividir", "Texto", "Áudio", "Filtros", "Ajustes"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "active" : ""}>{x}</button>)}</div>
       <div className="cs-home-indicator" />
     </div>
     <div className="cs-editor-phone">
       <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
-      <div className="cs-editor-top"><button>⌂</button><button>↶</button><button>↷</button><button>⇧</button></div>
+      <div className="cs-editor-top"><button aria-label="Voltar">‹</button><button aria-label="Desfazer" onClick={() => setTool("Desfazer")}>↶</button><button aria-label="Refazer" onClick={() => setTool("Refazer")}>↷</button><button aria-label="Exportar" onClick={() => setTool("Exportar")}>⇧</button></div>
       <div className="cs-video-preview cs-video-preview-alt"><div className="cs-video-person">N</div><span>EDIÇÃO MULTIFAIXA</span></div>
       <div className="cs-play-controls"><span>00:15 / 00:32</span><button onClick={() => setPlaying(!playing)}>{playing ? "Ⅱ" : "▶"}</button><span>⌄</span></div>
       <Timeline compact />
       <div className="cs-tool-row">{["Duplicar", "Camada", "Dividir", "Como clipe", "Substituir"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "active" : ""}>{x}</button>)}</div>
       <div className="cs-home-indicator" />
     </div>
-    <div className="cs-editor-details"><span className="cs-kicker">EDITOR MULTIFAIXA</span><h3>Controle cada camada.</h3><p>Vídeo, textos, stickers, trilha sonora e narração em faixas independentes.</p><div className="cs-option-list">{["Camada", "Dividir", "Duplicar", "Substituir", "Excluir"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "selected" : ""}>{x}<span>›</span></button>)}</div></div>
+    <div className="cs-editor-details"><span className="cs-kicker">EDITOR ÚNICO · POST + REELS</span><h3>Uma edição, vários formatos.</h3><p>POST e REELS compartilham a mesma base de ferramentas: cortes, texto, áudio, filtros, ajustes e camadas.</p><div className="cs-speed-options"><button className={format === "POST" ? "active" : ""} onClick={() => setFormat("POST")}>POST</button><button className={format === "REELS" ? "active" : ""} onClick={() => setFormat("REELS")}>REELS</button></div><label className="cs-media-picker">Adicionar fotos ou vídeos<input type="file" accept="image/*,video/*" multiple onChange={e => setMediaName(Array.from(e.target.files ?? []).map(file => file.name).join(", "))}/></label>{mediaName && <small className="cs-demo-note">Selecionado: {mediaName}</small>}<div className="cs-option-list">{["Cortar", "Dividir", "Duplicar", "Texto", "Áudio", "Filtros", "Ajustes", "Camadas", "Substituir", "Excluir"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "selected" : ""}>{x}<span>›</span></button>)}</div></div>
   </div>;
 }
 
