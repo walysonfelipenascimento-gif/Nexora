@@ -148,7 +148,10 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     canvas.height = video.videoHeight;
     const context = canvas.getContext("2d");
     if (!context) { setCameraError("Não foi possível preparar a captura neste navegador."); return; }
+    context.save();
+    context.filter = filter;
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    context.restore();
     setBusy(true);
     canvas.toBlob(blob => {
       setBusy(false);
@@ -345,7 +348,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           <div className="cs-publish-row">
             <button className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}>◉ Seu Story</button>
             <button className={audience === "Amigos Próximos" ? "selected" : ""} onClick={() => setAudience("Amigos Próximos")}>✦ Amigos Próximos</button>
-            <button className="cs-next" onClick={downloadStory}>Salvar</button>
+            <button className="cs-next" onClick={downloadStory} disabled={busy}>{busy ? "Aplicando efeito…" : "Salvar"}</button>
           </div>
           <p className="cs-story-local-note">Prévia local · público selecionado não é aplicado até a integração de publicação.</p>
         </>}
