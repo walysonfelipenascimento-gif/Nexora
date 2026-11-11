@@ -485,7 +485,7 @@ function CalendarStudio() {
   const [media, setMedia] = useState<File | null>(null);
   const [drafts, setDrafts] = useState<ScheduledDraft[]>([]);
   const [draftsHydrated, setDraftsHydrated] = useState(false);
-  const [notice, setNotice] = useState("Os agendamentos ficam nesta sessão do navegador; não serão publicados automaticamente.");
+  const [notice, setNotice] = useState("Rascunhos e arquivos ficam salvos neste navegador; não serão publicados automaticamente.");
   const [showAll, setShowAll] = useState(false);
   const [mediaPreview, setMediaPreview] = useState("");
   const [mediaPreviewType, setMediaPreviewType] = useState("");
@@ -535,9 +535,10 @@ function CalendarStudio() {
     if(!selectedDate||!time){setNotice("Escolha uma data e um horário válidos.");return;}
     const id=crypto.randomUUID();
     let mediaId:string|undefined;
-    if(media){try{await saveCalendarMedia(id,media);mediaId=id;}catch{setNotice("O rascunho será salvo, mas o navegador não conseguiu guardar o arquivo de mídia.");}}
+    let mediaSaveFailed=false;
+    if(media){try{await saveCalendarMedia(id,media);mediaId=id;}catch{mediaSaveFailed=true;}}
     setDrafts(current=>[...current,{id,date:selectedDate,time,format,caption:caption.trim(),mediaName:media?.name??"",mediaId}]);
-    setNotice(mediaId?"Rascunho e arquivo de mídia salvos neste navegador. Nenhuma publicação foi enviada.":"Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
+    setNotice(mediaSaveFailed?"Rascunho salvo, mas o navegador não conseguiu guardar o arquivo de mídia.":mediaId?"Rascunho e arquivo de mídia salvos neste navegador. Nenhuma publicação foi enviada.":"Rascunho adicionado ao calendário local. Nenhuma publicação foi enviada.");
     setCaption("");
     setMedia(null);
     if (mediaPreviewRef.current) URL.revokeObjectURL(mediaPreviewRef.current);
