@@ -26,7 +26,7 @@ function IconButton({ children, label }: { children: ReactNode; label: string })
   return <button className="cs-icon-button" aria-label={label} title={label}>{children}</button>;
 }
 
-function StoryStudio() {
+function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS") => void }) {
   const [mode, setMode] = useState("STORY");
   const [stage, setStage] = useState<"camera" | "preview">("camera");
   const [flash, setFlash] = useState(false);
@@ -62,7 +62,7 @@ function StoryStudio() {
             <button className="cs-shutter" onClick={() => setStage("preview")} aria-label="Capturar" />
             <button className="cs-ai-effect" onClick={() => setEffect("Efeito inteligente")}>✧</button>
           </div>
-          <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => setMode(item)}>{item}</button>)}</div>
+          <div className="cs-mode-switch">{["POST", "STORY", "REEL", "LIVE"].map(item => <button key={item} className={mode === item ? "active" : ""} onClick={() => { setMode(item); if (item === "POST" || item === "REEL") onOpenEditor(item === "POST" ? "POST" : "REELS"); }}>{item}</button>)}</div>
         </> : <>
           <div className="cs-preview-top"><button onClick={() => setStage("camera")}>‹</button><div><button>Aa</button><button>▧</button><button>✦</button><button>♫</button><button>•••</button></div></div>
           <div className="cs-story-preview">
@@ -164,6 +164,6 @@ export default function CreatorStudioPage() {
   const title = useMemo(() => sections.find(s=>s.id===active)?.label ?? "Creator Studio",[active]);
   return <main className="cs-app">
     <header className="cs-header"><a className="cs-brand" href="/"><span>N</span>NEXORA <i>CREATOR</i></a><div className="cs-header-actions"><span className="cs-status"><i/> Ambiente independente</span><button className="cs-profile">L</button></div></header>
-    <div className="cs-shell"><aside className="cs-sidebar"><div className="cs-side-label">ESTÚDIO</div>{sections.map(s=><button key={s.id} className={active===s.id?"active":""} onClick={()=>setActive(s.id)}><span>{s.icon}</span>{s.label}</button>)}<div className="cs-side-foot"><span>WORKSPACE</span><b>Nexora Creator</b><small>Prévia independente</small></div></aside><section className="cs-main"><div className="cs-page-heading"><div><span className="cs-kicker">NEXORA / CREATOR STUDIO</span><h1>{title}</h1></div><span className="cs-demo-badge">AMBIENTE DE PRÉVIA</span></div>{active==="story"&&<StoryStudio/>}{active==="post"&&<MediaEditor initialFormat="POST"/>}{active==="reels"&&<MediaEditor initialFormat="REELS"/>}{active==="insights"&&<InsightsStudio/>}{active==="calendar"&&<CalendarStudio/>}{active==="comments"&&<CommentsStudio/>}</section></div>
+    <div className="cs-shell"><aside className="cs-sidebar"><div className="cs-side-label">ESTÚDIO</div>{sections.map(s=><button key={s.id} className={active===s.id?"active":""} onClick={()=>setActive(s.id)}><span>{s.icon}</span>{s.label}</button>)}<div className="cs-side-foot"><span>WORKSPACE</span><b>Nexora Creator</b><small>Prévia independente</small></div></aside><section className="cs-main"><div className="cs-page-heading"><div><span className="cs-kicker">NEXORA / CREATOR STUDIO</span><h1>{title}</h1></div><span className="cs-demo-badge">AMBIENTE DE PRÉVIA</span></div>{active==="story"&&<StoryStudio onOpenEditor={format => setActive(format === "POST" ? "post" : "reels")}/ >}{active==="post"&&<MediaEditor initialFormat="POST"/>}{active==="reels"&&<MediaEditor initialFormat="REELS"/>}{active==="insights"&&<InsightsStudio/>}{active==="calendar"&&<CalendarStudio/>}{active==="comments"&&<CommentsStudio/>}</section></div>
   </main>;
 }
