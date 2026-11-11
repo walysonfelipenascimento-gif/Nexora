@@ -246,13 +246,77 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
         canvas.height = image.naturalHeight;
         const context = canvas.getContext("2d");
         if (!context) throw new Error("Não foi possível preparar a imagem para aplicar o efeito.");
-        context.save();
-        context.filter = filter;
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        context.restore();
-        drawStoryOverlays(context, canvas.width, canvas.height);
-        output = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar a imagem com o efeito.")), "image/png"));
-        filename = baseName + "-com-efeito.png";
+        if (audioUrl) {
+          if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream || !window.AudioContext) {
+            throw new Error("Este navegador não oferece exportação de Story com música. Remova o áudio ou use outro navegador compatível.");
+          }
+          const music = new Audio(audioUrl);
+          music.loop = true;
+          music.volume = 0.85;
+          await new Promise<void>(resolve => {
+            if (music.readyState >= HTMLMediaElement.HAVE_METADATA) resolve();
+            else { music.onloadedmetadata = () => resolve(); music.onerror = () => resolve(); }
+          });
+          if (music.error) throw new Error("Não foi possível carregar o áudio selecionado.");
+          const audioContext = new AudioContext();
+          const destination = audioContext.createMediaStreamDestination();
+          const musicNode = audioContext.createMediaElementSource(music);
+          musicNode.connect(destination);
+          const canvasStream = canvas.captureStream(30);
+          const stream = new MediaStream([...canvasStream.getVideoTracks(), ...destination.stream.getAudioTracks()]);
+          const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
+          const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+          const chunks: Blob[] = [];
+          const duration = Number.isFinite(music.duration) && music.duration > 0 ? Math.min(music.duration, 15) : 15;
+          output = await new Promise<Blob>(async (resolve, reject) => {
+            let frame = 0;
+            let timer = 0;
+            const cleanup = () => {
+              if (frame) cancelAnimationFrame(frame);
+              if (timer) window.clearTimeout(timer);
+              canvasStream.getTracks().forEach(track => track.stop());
+              destination.stream.getTracks().forEach(track => track.stop());
+              music.pause();
+              musicNode.disconnect();
+              if (audioContext.state !== "closed") void audioContext.close();
+            };
+            recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+            recorder.onerror = () => { cleanup(); reject(new Error("O navegador encontrou um erro ao criar o Story com música.")); };
+            recorder.onstop = () => {
+              cleanup();
+              const result = new Blob(chunks, { type: recorder.mimeType || mimeType || "video/webm" });
+              if (result.size) resolve(result);
+              else reject(new Error("A exportação do Story com música ficou vazia."));
+            };
+            const draw = () => {
+              context.save();
+              context.filter = filter;
+              context.drawImage(image, 0, 0, canvas.width, canvas.height);
+              context.restore();
+              drawStoryOverlays(context, canvas.width, canvas.height);
+              frame = requestAnimationFrame(draw);
+            };
+            try {
+              await audioContext.resume();
+              await music.play();
+              recorder.start(250);
+              draw();
+              timer = window.setTimeout(() => { if (recorder.state !== "inactive") recorder.stop(); }, duration * 1000);
+            } catch {
+              cleanup();
+              reject(new Error("Não foi possível iniciar a música para exportar o Story."));
+            }
+          });
+          filename = baseName + "-com-musica." + (output.type.includes("mp4") ? "mp4" : "webm");
+        } else {
+          context.save();
+          context.filter = filter;
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          context.restore();
+          drawStoryOverlays(context, canvas.width, canvas.height);
+          output = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar a imagem com o efeito.")), "image/png"));
+          filename = baseName + "-com-efeito.png";
+        }
       } else if (mediaType.startsWith("video/")) {
         if (typeof MediaRecorder === "undefined" || !HTMLCanvasElement.prototype.captureStream) {
           throw new Error("Este navegador não oferece exportação de vídeo com filtros. Tente salvar uma foto ou use outro navegador compatível.");
