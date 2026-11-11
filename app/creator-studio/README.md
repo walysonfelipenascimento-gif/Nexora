@@ -24,6 +24,7 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Adjust video preview volume and playback speed.
 - Import and preview a separate audio file.
 - Download the selected original source file.
+- Like and unlike demo comments, compose a local reply, and append a local comment.
 
 ## Known limitations — do not describe as completed
 
@@ -32,6 +33,7 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - The audio file is previewed separately and is not yet mixed/synchronized into the video output.
 - Download exports the original selected source file, not the edited composition.
 - No persistent project saving, cloud media upload, publication, or server-side rendering is connected.
+- Comment likes and replies are local demonstration state and are not synchronized to a user account.
 - Object URLs are local to the browser session.
 - Story camera capture, gallery import/real publication, calendar persistence/scheduling, and complete comment actions still need implementation.
 - Insights remain illustrative demo metrics, clearly labeled as such.
