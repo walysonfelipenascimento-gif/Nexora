@@ -206,19 +206,29 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
   const [audioUrl, setAudioUrl] = useState("");
   const [notice, setNotice] = useState("Importe fotos ou vídeos para começar.");
   const videoRef = useRef<HTMLVideoElement>(null);
+  const objectUrlsRef = useRef<Set<string>>(new Set());
+  function createLocalUrl(file: File) {
+    const url = URL.createObjectURL(file);
+    objectUrlsRef.current.add(url);
+    return url;
+  }
+  useEffect(() => () => {
+    objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    objectUrlsRef.current.clear();
+  }, []);
   const selected = clips.find(clip => clip.id === selectedId) ?? clips[0];
   const filterStyle = filter === "P&B" ? "grayscale(1)" : filter === "Quente" ? "sepia(.35) saturate(1.25)" : filter === "Frio" ? "hue-rotate(12deg) saturate(.85)" : filter === "Contraste" ? "contrast(1.3) saturate(1.1)" : "none";
   function importMedia(files: FileList | null) {
     if (!files?.length) return;
     const accepted = Array.from(files).filter(file => file.type.startsWith("image/") || file.type.startsWith("video/"));
     if (!accepted.length) { setNotice("Formato não suportado. Escolha imagens ou vídeos."); return; }
-    const added = accepted.map(file => ({ id: crypto.randomUUID(), file, url: URL.createObjectURL(file), start: 0, end: 0 }));
+    const added = accepted.map(file => ({ id: crypto.randomUUID(), file, url: createLocalUrl(file), start: 0, end: 0 }));
     setClips(current => [...current, ...added]); setSelectedId(added[0].id); setPlayhead(0);
     setNotice(accepted.length + " arquivo(s) importado(s) localmente. Ainda não foram enviados para a Nexora.");
   }
   function updateClip(id: string, patch: Partial<EditorClip>) { setClips(current => current.map(clip => clip.id === id ? { ...clip, ...patch } : clip)); }
   function removeSelected() { if (!selected) return; const remaining=clips.filter(clip=>clip.id!==selected.id); setClips(remaining); setSelectedId(remaining[0]?.id??""); setPlayhead(0); setPlaying(false); setNotice("Clipe removido da sequência."); }
-  function duplicateSelected() { if (!selected) return; const copy={...selected,id:crypto.randomUUID(),url:URL.createObjectURL(selected.file)}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index+1),copy,...current.slice(index+1)]); setNotice("Clipe duplicado na sequência."); }
+  function duplicateSelected() { if (!selected) return; const copy={...selected,id:crypto.randomUUID(),url:createLocalUrl(selected.file)}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index+1),copy,...current.slice(index+1)]); setNotice("Clipe duplicado na sequência."); }
   function splitSelected() { if (!selected || selected.file.type.startsWith("image/")) { setNotice("A divisão está disponível para vídeos."); return; } const point=Math.max(selected.start+.2,Math.min(playhead,selected.end-.2)); if(point<=selected.start||point>=selected.end){setNotice("Posicione a reprodução no interior do clipe para dividi-lo.");return;} const left={...selected,id:crypto.randomUUID(),end:point}; const right={...selected,id:crypto.randomUUID(),start:point}; const index=clips.findIndex(clip=>clip.id===selected.id); setClips(current=>[...current.slice(0,index),left,right,...current.slice(index+1)]); setSelectedId(right.id); setNotice("Clipe dividido em dois segmentos."); }
   function moveSelected(direction: -1 | 1) { if(!selected)return; const index=clips.findIndex(clip=>clip.id===selected.id), target=index+direction; if(target<0||target>=clips.length)return; const next=[...clips]; [next[index],next[target]]=[next[target],next[index]]; setClips(next); }
   function downloadOriginal() { if(!selected)return; const anchor=document.createElement("a"); anchor.href=selected.url; anchor.download=selected.file.name; anchor.click(); setNotice("Download do arquivo original iniciado. As edições ainda não são renderizadas."); }
@@ -237,7 +247,7 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
         <div className="cs-tool-group"><b>Filtros de prévia</b><div className="cs-tool-buttons">{(["Nenhum","P&B","Quente","Frio","Contraste"] as EditorFilter[]).map(item=><button key={item} className={filter===item?"active":""} onClick={()=>setFilter(item)}>{item}</button>)}</div></div>
         <div className="cs-tool-group"><label>Volume <strong>{Math.round(volume*100)}%</strong></label><input type="range" min="0" max="1" step=".05" value={volume} onChange={event=>{const value=Number(event.target.value);setVolume(value);if(videoRef.current)videoRef.current.volume=value;}}/></div>
         <div className="cs-tool-group"><label>Velocidade <strong>{speed.toFixed(2)}×</strong></label><input type="range" min=".25" max="2" step=".25" value={speed} onChange={event=>{const value=Number(event.target.value);setSpeed(value);if(videoRef.current)videoRef.current.playbackRate=value;}}/></div>
-        <label className="cs-audio-picker">＋ Adicionar faixa de áudio<input type="file" accept="audio/*" onChange={event=>{const file=event.target.files?.[0]??null;setAudioFile(file);setAudioUrl(file?URL.createObjectURL(file):"");}}/></label>{audioFile&&<div className="cs-audio-file"><b>Áudio selecionado:</b> {audioFile.name}<audio controls src={audioUrl}/></div>}
+        <label className="cs-audio-picker">＋ Adicionar faixa de áudio<input type="file" accept="audio/*" onChange={event=>{const file=event.target.files?.[0]??null;setAudioFile(file);setAudioUrl(file?createLocalUrl(file):"");}}/></label>{audioFile&&<div className="cs-audio-file"><b>Áudio selecionado:</b> {audioFile.name}<audio controls src={audioUrl}/></div>}
         <button className="cs-export-original" disabled={!selected} onClick={downloadOriginal}>Baixar arquivo original selecionado</button><p className="cs-editor-notice" role="status">{notice}</p><small className="cs-editor-disclaimer">A edição e a prévia são locais. Renderização final, salvamento e publicação exigem integração de mídia e servidor.</small></section>
     </div></div>;
 }
