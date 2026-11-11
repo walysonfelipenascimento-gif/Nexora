@@ -318,7 +318,7 @@ function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "RE
         const fontSize = Math.round(width * 0.055);
         ctx.save(); ctx.font = `800 ${fontSize}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.lineWidth = Math.max(3, fontSize * 0.12); ctx.strokeStyle = "rgba(0,0,0,.72)"; ctx.fillStyle = "#fff";
-        const words = overlayText.trim().split(/\\s+/); const lines: string[] = []; let line = "";
+        const words = overlayText.trim().split(/\s+/); const lines: string[] = []; let line = "";
         for (const word of words) { const test = line ? line + " " + word : word; if (ctx.measureText(test).width > width * .82 && line) { lines.push(line); line = word; } else line = test; }
         if (line) lines.push(line);
         const lineHeight = fontSize * 1.18; const startY = height * .5 - ((lines.length-1)*lineHeight)/2;
