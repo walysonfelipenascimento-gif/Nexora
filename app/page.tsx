@@ -845,9 +845,9 @@ export default function Home() {
 
       <section ref={storyRailRef} className="stories-rail" aria-label={t("stories")}>
         {stories.map((story) => (
-          <button className="story" key={story.name} onClick={() => { if (story.own) router.push("/creator-studio?section=story"); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
+          <button className="story" key={story.name} onClick={() => { if (story.own && !story.image) router.push("/creator-studio?section=story"); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
             <span className={`story-ring ${story.own ? "story-own" : ""}`}>
-              {story.own ? <span className="story-plus">＋</span> : <img src={story.image} alt="" />}
+              {story.own && !story.image ? <span className="story-plus">＋</span> : <img src={story.image} alt="" />}
             </span>
             <span className="story-name">{story.name}{story.verified && <Verified />}</span>
           </button>
