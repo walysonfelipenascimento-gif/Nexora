@@ -2,7 +2,7 @@
 
 ## Confirmed product decisions
 
-This module is developed in parallel on `feat/nexora-creator-studio-isolated`. The five user-provided reference images define the visual and interaction direction.
+This module is developed on an isolated preview branch. The five user-provided reference images define the visual and interaction direction.
 
 1. Story capture and preview with browser camera permission, photo capture, gallery import, preview filters, audience selection and local file saving.
 2. POST and REELS share one editing core; format selection changes the composition preset.
@@ -15,11 +15,13 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 ## Story — implemented browser capabilities
 
 - Request camera permission through `getUserMedia`, prefer the rear camera where available, display the live camera preview and stop camera tracks when leaving/unmounting.
-- Capture a still photo from the camera preview.
+- Capture a still photo from the camera preview with the selected filter baked into the saved image.
 - Record video with the browser MediaRecorder API, including microphone audio when permission is available; fall back to silent video if microphone access is unavailable.
 - Import an image or video from the device gallery and preview it.
-- Apply browser preview filters and add editable caption text.
-- Choose an intended audience for the draft and save the selected original media file locally.
+- Import an image or video from the device gallery and preview it.
+- Apply the selected browser filter to gallery media and bake it into locally exported images and videos; source audio is retained when the browser exposes capture tracks.
+- Add editable caption text to the preview.
+- Choose an intended audience for the draft and save the processed media file locally.
 - Explain permission failures and unsupported camera contexts without pretending the camera is active.
 
 ## Shared POST / REELS editor — current local capabilities
@@ -44,7 +46,7 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 ## Known limitations — do not describe as completed
 
 - No server upload, cross-device sync, public posting, automated publishing, or account-level scheduling is connected.
-- Calendar media files are not persisted with the draft; only their filenames and draft metadata persist locally.
+
 - The Story audience selector is a draft preference only and is not enforced by a publishing service.
 - Story Boomerang and multi-frame Layout modes are not implemented; the UI reports this instead of simulating them.
 - The editor maintains a local editing sequence only; it does not encode a final combined media file.
@@ -54,6 +56,8 @@ This module is developed in parallel on `feat/nexora-creator-studio-isolated`. T
 - Video splitting currently creates logical timeline segments; it does not physically encode a new video file.
 - Comment likes and replies are local demonstration state and are not synchronized to a user account.
 - Insights remain illustrative sample metrics and must not be interpreted as real audience performance.
+- Story video recording currently records the camera stream without baking the selected filter into the recording.
+- Story caption text remains a preview overlay and is not burned into exported media.
 - Object URLs are local to the browser session.
 
 ## Technical boundaries
