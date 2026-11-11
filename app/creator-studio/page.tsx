@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import "./creator-studio.css";
+import { isIndexedProfileMedia, resolveProfileMedia, saveProfileMedia } from "../../lib/profileMedia";
 
 type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
 type Metric = { label: string; value: string; change: string };
@@ -301,7 +302,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     }
   }
 
-  async function downloadStory() {
+  async function downloadStory(publishToFeed = false) {
     if (!mediaUrl || !mediaFile) { setCameraError("Capture uma foto ou escolha uma mídia antes de continuar."); return; }
     if (busy) return;
     setBusy(true);
@@ -522,13 +523,40 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       } else {
         throw new Error("Este formato de mídia não é compatível com a exportação de efeitos.");
       }
-      const url = URL.createObjectURL(output);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = filename;
-      anchor.click();
-      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
-      setCameraError("Arquivo com o efeito aplicado preparado para salvar. A publicação na conta ainda não está conectada.");
+      if (publishToFeed) {
+        const exportedFile = new File([output], filename, { type: output.type || mediaType });
+        const mediaRef = await saveProfileMedia(exportedFile);
+        const resolvedMedia = await resolveProfileMedia(mediaRef);
+        if (!resolvedMedia) throw new Error("O Story foi preparado, mas a mídia local não pôde ser recuperada.");
+        const createdAt = Date.now();
+        const storyCaption = [caption.trim(), sticker].filter(Boolean).join(" · ").slice(0, 180);
+        const localStory = {
+          name: "Licinhosz.bb",
+          own: true,
+          image: resolvedMedia,
+          mediaType: output.type.startsWith("video/") ? "video" as const : "image" as const,
+          caption: storyCaption,
+          id: "local-" + createdAt,
+          createdAt,
+          audience,
+        };
+        const stored = JSON.parse(localStorage.getItem("nexora-local-stories-v1") || "[]");
+        const activeExisting = Array.isArray(stored) ? stored.filter((item: { image?: string; createdAt?: number }) =>
+          item && typeof item.image === "string" && isIndexedProfileMedia(item.image) &&
+          typeof item.createdAt === "number" && Date.now() - item.createdAt < 24 * 60 * 60 * 1000
+        ) : [];
+        localStorage.setItem("nexora-local-stories-v1", JSON.stringify([{ ...localStory, image: mediaRef }, ...activeExisting].slice(0, 20)));
+        setCameraError("Story publicado no Feed deste dispositivo por 24 horas. A distribuição entre contas e a privacidade por público serão ativadas na integração final.");
+        window.setTimeout(() => window.location.assign("/"), 900);
+      } else {
+        const url = URL.createObjectURL(output);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+        setCameraError("Arquivo com o efeito aplicado preparado para salvar.");
+      }
     } catch (error) {
       setCameraError(error instanceof Error ? error.message : "Não foi possível salvar a mídia com o efeito aplicado.");
     } finally {
@@ -641,8 +669,8 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           </div>
           <div className="cs-story-audience-screen"><b>Quem pode ver?</b><button type="button" className={audience === "Seu Story" ? "selected" : ""} onClick={() => setAudience("Seu Story")}><span>◉</span><span><strong>Seu Story</strong><small>Compartilhar com seus seguidores</small></span><i>{audience === "Seu Story" ? "✓" : ""}</i></button><button type="button" className={audience === "Amigos Próximos" ? "selected close-friends" : ""} onClick={() => setAudience("Amigos Próximos")}><span>✦</span><span><strong>Amigos Próximos</strong><small>Compartilhar apenas com sua lista</small></span><i>{audience === "Amigos Próximos" ? "✓" : ""}</i></button></div>
           {cameraError && <p className="cs-story-feedback" role="status">{cameraError}</p>}
-          <div className="cs-story-final-actions"><button type="button" onClick={() => setStage("preview")}>Voltar à edição</button><button type="button" onClick={downloadStory} disabled={busy}>{busy ? "Preparando..." : "Salvar mídia"}</button></div>
-          <p className="cs-story-local-note">A publicação na conta Nexora ainda não está conectada. Salvar mídia exporta o arquivo para o dispositivo.</p>
+          <div className="cs-story-final-actions"><button type="button" onClick={() => setStage("preview")}>Voltar à edição</button><button type="button" onClick={() => void downloadStory(false)} disabled={busy}>{busy ? "Preparando..." : "Salvar mídia"}</button><button type="button" onClick={() => void downloadStory(true)} disabled={busy}>{busy ? "Publicando..." : "Publicar Story"}</button></div>
+          <p className="cs-story-local-note">O botão Publicar Story salva o conteúdo no Feed local deste dispositivo por 24 horas. A publicação entre contas e o controle real de audiência entram na integração final.</p>
         </>}
         <div className="cs-story-home-indicator" />
       </div>
