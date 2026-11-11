@@ -3,16 +3,15 @@
 import { useMemo, useState, type ReactNode } from "react";
 import "./creator-studio.css";
 
-type StudioSection = "story" | "reels" | "insights" | "calendar" | "editing" | "ai" | "comments";
+type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
 type Metric = { label: string; value: string; change: string };
 
 const sections: { id: StudioSection; label: string; icon: string }[] = [
   { id: "story", label: "Story", icon: "◉" },
-  { id: "reels", label: "Reels", icon: "▣" },
+  { id: "post", label: "POST", icon: "▧" },
+  { id: "reels", label: "REELS", icon: "▣" },
   { id: "insights", label: "Insights", icon: "⌁" },
   { id: "calendar", label: "Calendário", icon: "▦" },
-  { id: "editing", label: "Edição", icon: "✳" },
-  { id: "ai", label: "AI Creator", icon: "✧" },
   { id: "comments", label: "Comentários", icon: "▤" },
 ];
 
@@ -102,14 +101,16 @@ function Timeline({ compact = false }: { compact?: boolean }) {
   </div>;
 }
 
-function ReelsStudio() {
+function MediaEditor({ initialFormat = "REELS" }: { initialFormat?: "POST" | "REELS" }) {
   const [tool, setTool] = useState("Camada");
   const [playing, setPlaying] = useState(false);
+  const [format, setFormat] = useState<"POST" | "REELS">(initialFormat);
+  const [mediaName, setMediaName] = useState("");
   return <div className="cs-editor-grid">
     <div className="cs-editor-phone">
       <div className="cs-phone-status"><span>9:41</span><span>● ◔ ▰</span></div>
       <div className="cs-editor-top"><button>↶</button><button>↷</button><button>⇧</button></div>
-      <div className="cs-video-preview"><div className="cs-video-person">N</div><span>PRÉVIA DO REELS</span></div>
+      <div className="cs-video-preview"><div className="cs-video-person">N</div><span>PRÉVIA {format}</span></div>
       <div className="cs-play-controls"><span>00:08 / 00:23</span><button onClick={() => setPlaying(!playing)}>{playing ? "Ⅱ" : "▶"}</button><span>⌄</span></div>
       <Timeline />
       <div className="cs-tool-row">{["Substituir", "Excluir", "Dividir"].map(x => <button key={x} onClick={() => setTool(x)} className={tool === x ? "active" : ""}>{x}</button>)}</div>
@@ -152,18 +153,6 @@ function CalendarStudio() {
   </div>;
 }
 
-function EditingStudio() {
-  const [volume,setVolume]=useState(75);
-  const [speed,setSpeed]=useState("1×");
-  return <div className="cs-editing-layout"><div className="cs-editing-preview"><div className="cs-video-preview cs-video-preview-alt"><div className="cs-video-person">N</div></div><div className="cs-editing-controls"><button>↶</button><button>▶</button><button>↷</button></div><Timeline compact /></div><div className="cs-editing-tools"><span className="cs-kicker">AJUSTES DO CLIPE</span><h3>Controles de edição</h3><label>Volume <b>{volume}%</b></label><input type="range" min="0" max="100" value={volume} onChange={e=>setVolume(Number(e.target.value))}/><label>Velocidade</label><div className="cs-speed-options">{["0.5×","1×","1.5×","2×"].map(x=><button key={x} className={speed===x?"active":""} onClick={()=>setSpeed(x)}>{x}</button>)}</div><div className="cs-option-list">{["Substituir clipe","Dividir clipe","Ajustar cor","Transição","Camadas"].map(x=><button key={x}>{x}<span>›</span></button>)}</div></div></div>;
-}
-
-function AIStudio() {
-  const [prompt,setPrompt]=useState("");
-  const [tab,setTab]=useState("Destaques");
-  return <div className="cs-ai-layout"><div className="cs-ai-welcome"><span className="cs-ai-orb">✧</span><span className="cs-kicker">NEXORA AI CREATOR</span><h3>Crie além do esperado.</h3><p>Transforme ideias em conceitos visuais e projetos de vídeo.</p><button onClick={()=>document.getElementById("cs-ai-prompt")?.focus()}>Começar <span>→</span></button></div><div className="cs-ai-workspace"><div className="cs-ai-tabs">{["Destaques","Recentes","Salvos"].map(x=><button key={x} className={tab===x?"active":""} onClick={()=>setTab(x)}>{x}</button>)}</div><div className="cs-ai-prompt"><label htmlFor="cs-ai-prompt">Prompt criativo</label><textarea id="cs-ai-prompt" value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Descreva a cena que você imagina..." /><small>Escreva uma ideia, atmosfera, movimento ou estilo visual.</small></div><div className="cs-ai-examples"><div>Retrato cinematográfico</div><div>Movimento em câmera lenta</div><div>Atmosfera neon</div></div><button className="cs-primary-action" disabled={!prompt.trim()}>Preparar conceito</button><p className="cs-demo-note">Prévia de interface — geração de mídia requer integração própria.</p></div></div>;
-}
-
 function CommentsStudio() {
   const [comment,setComment]=useState("");
   const [items,setItems]=useState(["True fashion begins with the confidence to wear your vision.","When you wear love unapologetically, you’re already winning at style.","Sharp, sleek, and just the right shade of iconic."]);
@@ -175,6 +164,6 @@ export default function CreatorStudioPage() {
   const title = useMemo(() => sections.find(s=>s.id===active)?.label ?? "Creator Studio",[active]);
   return <main className="cs-app">
     <header className="cs-header"><a className="cs-brand" href="/"><span>N</span>NEXORA <i>CREATOR</i></a><div className="cs-header-actions"><span className="cs-status"><i/> Ambiente independente</span><button className="cs-profile">L</button></div></header>
-    <div className="cs-shell"><aside className="cs-sidebar"><div className="cs-side-label">ESTÚDIO</div>{sections.map(s=><button key={s.id} className={active===s.id?"active":""} onClick={()=>setActive(s.id)}><span>{s.icon}</span>{s.label}</button>)}<div className="cs-side-foot"><span>WORKSPACE</span><b>Nexora Creator</b><small>Prévia independente</small></div></aside><section className="cs-main"><div className="cs-page-heading"><div><span className="cs-kicker">NEXORA / CREATOR STUDIO</span><h1>{title}</h1></div><span className="cs-demo-badge">AMBIENTE DE PRÉVIA</span></div>{active==="story"&&<StoryStudio/>}{active==="reels"&&<ReelsStudio/>}{active==="insights"&&<InsightsStudio/>}{active==="calendar"&&<CalendarStudio/>}{active==="editing"&&<EditingStudio/>}{active==="ai"&&<AIStudio/>}{active==="comments"&&<CommentsStudio/>}</section></div>
+    <div className="cs-shell"><aside className="cs-sidebar"><div className="cs-side-label">ESTÚDIO</div>{sections.map(s=><button key={s.id} className={active===s.id?"active":""} onClick={()=>setActive(s.id)}><span>{s.icon}</span>{s.label}</button>)}<div className="cs-side-foot"><span>WORKSPACE</span><b>Nexora Creator</b><small>Prévia independente</small></div></aside><section className="cs-main"><div className="cs-page-heading"><div><span className="cs-kicker">NEXORA / CREATOR STUDIO</span><h1>{title}</h1></div><span className="cs-demo-badge">AMBIENTE DE PRÉVIA</span></div>{active==="story"&&<StoryStudio/>}{active==="post"&&<MediaEditor initialFormat="POST"/>}{active==="reels"&&<MediaEditor initialFormat="REELS"/>}{active==="insights"&&<InsightsStudio/>}{active==="calendar"&&<CalendarStudio/>}{active==="comments"&&<CommentsStudio/>}</section></div>
   </main>;
 }
