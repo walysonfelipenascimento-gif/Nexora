@@ -619,7 +619,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             <button type="button" className="cs-story-effects" onClick={() => setEffect(effect === "Contraste" ? "Original" : "Contraste")} aria-label="Efeitos"><span>✧</span></button>
           </div>
           <div className="cs-story-mode-picker">
-            {["STORY"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
+            {["POST", "STORY", "REEL", "LIVE"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
               if (item === "LIVE") { setCameraError("A criação de LIVE será disponibilizada em uma etapa própria."); return; }
               setMode(item); setCameraError("");
               if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); }
