@@ -1109,7 +1109,7 @@ export default function Home() {
 
       <section ref={storyRailRef} className="stories-rail" aria-label={t("stories")}>
         {stories.map((story) => (
-          <button className="story" key={story.name} onClick={() => { if (story.own) setStoryComposerOpen(true); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
+          <button className="story" key={story.name} onClick={() => { if (story.own) router.push("/creator-studio"); else { setActiveStoryIndex(stories.indexOf(story)); setActiveStory(story); } }}>
             <span className={`story-ring ${story.own ? "story-own" : ""}`}>
               {story.own ? <span className="story-plus">＋</span> : <img src={story.image} alt="" />}
             </span>
