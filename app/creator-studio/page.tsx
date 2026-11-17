@@ -604,7 +604,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
 
   return (
     <div className="cs-story-stage">
-      <div className="cs-story-device">
+      <div className={"cs-story-device cs-story-device-" + stage}>
         <input ref={galleryInputRef} className="cs-hidden-file-input" type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) setLocalMedia(file); event.currentTarget.value = ""; }} /><input ref={layoutInputRef} className="cs-hidden-file-input" type="file" accept="image/*" multiple onChange={event => { void createStoryLayout(event.target.files); event.currentTarget.value = ""; }} />
         {stage === "camera" ? <>
           <div className="cs-story-camera-top">
