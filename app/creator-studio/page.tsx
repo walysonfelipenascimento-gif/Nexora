@@ -67,6 +67,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   const recordedChunksRef = useRef<Blob[]>([]);
   const mediaUrlRef = useRef("");
   const mountedRef = useRef(true);
+  const autoCameraRequestedRef = useRef(false);
   const filter = effect === "P&B" ? "grayscale(1)" : effect === "Quente" ? "sepia(.35) saturate(1.25)" : effect === "Frio" ? "hue-rotate(12deg) saturate(.85)" : effect === "Contraste" ? "contrast(1.25)" : "none";
 
   function stopCamera() {
@@ -561,7 +562,13 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
   useEffect(() => {
     try {
       const raw = window.sessionStorage.getItem("nexora-story-share-draft-v1");
-      if (!raw) return;
+      if (!raw) {
+        if (!autoCameraRequestedRef.current) {
+          autoCameraRequestedRef.current = true;
+          void startCamera();
+        }
+        return;
+      }
       window.sessionStorage.removeItem("nexora-story-share-draft-v1");
       const payload = JSON.parse(raw) as { title?: string; description?: string; link?: string };
       const escapeXml = (value: string) => value.replace(/[&<>"']/g, character => ({
