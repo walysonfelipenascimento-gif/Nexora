@@ -76,7 +76,7 @@ export default function CreateReelsPage() {
   const [playhead, setPlayhead] = useState(0);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(0);\n  const [exportedUrl, setExportedUrl] = useState("");\n  const [exportedName, setExportedName] = useState("");
   const [restored, setRestored] = useState(false);
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -249,13 +249,9 @@ export default function CreateReelsPage() {
       });
       const url = URL.createObjectURL(result.blob);
       urlsRef.current.add(url);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "nexora-reels-" + new Date().toISOString().replace(/[:.]/g, "-") + "." + result.extension;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      setNotice("Exportação concluída. O arquivo foi gerado no formato " + result.extension.toUpperCase() + ".");
+      setExportedUrl(url);
+      setExportedName("nexora-reels-" + new Date().toISOString().replace(/[:.]/g, "-") + "." + result.extension);
+      setNotice("Exportação concluída. Seu arquivo está pronto para baixar.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Não foi possível exportar neste navegador.");
     } finally {
@@ -394,7 +390,7 @@ export default function CreateReelsPage() {
                 <label className="nr-setting-row"><span><b>◉</b><span>Quem pode ver este Reels?</span></span><select value={audience} onChange={(event) => setAudience(event.target.value)}><option>Todos</option><option>Seguidores</option><option>Somente eu</option></select></label>
                 <label className="nr-setting-row"><span><b>♡</b><span>Permitir comentários</span></span><input type="checkbox" checked={comments} onChange={(event) => setComments(event.target.checked)} /></label>
                 <label className="nr-setting-row"><span><b>▣</b><span>Compartilhar nos Stories</span></span><input type="checkbox" checked={shareStory} onChange={(event) => setShareStory(event.target.checked)} /></label>
-                <div className="nr-export-box"><div><b>Exportação do vídeo</b><span>Formato vertical 9:16 · {totalDuration.toFixed(1)}s</span></div><button className="nr-secondary" disabled={!exportReady || busy} onClick={exportVideo}>{busy ? "Exportando..." : "Exportar vídeo"}</button>{busy && <div className="nr-export-progress"><span style={{ width: progress + "%" }} /></div>}</div>
+                <div className="nr-export-box"><div><b>Exportação do vídeo</b><span>Formato vertical 9:16 · {totalDuration.toFixed(1)}s</span></div><button className="nr-secondary" disabled={!exportReady || busy} onClick={exportVideo}>{busy ? "Exportando..." : "Exportar vídeo"}</button>{busy && <div className="nr-export-progress"><span style={{ width: progress + "%" }} /></div>}</div>{exportedUrl && <a className="nr-download-export" href={exportedUrl} download={exportedName}>↓ Baixar vídeo exportado ({exportedName.endsWith(".mp4") ? "MP4" : "WebM"})</a>}
                 <div className="nr-panel-bottom nr-publish-actions"><button className="nr-secondary" onClick={saveDraft}>Salvar rascunho</button><button className="nr-primary" disabled={!exportReady || busy} onClick={exportVideo}>Exportar Reels <span>→</span></button></div>
                 <p className="nr-publish-disclaimer">A exportação gera um arquivo neste dispositivo. A publicação na conta e o compartilhamento com seguidores dependem da integração de servidor, ainda não ativada.</p>
               </>}
