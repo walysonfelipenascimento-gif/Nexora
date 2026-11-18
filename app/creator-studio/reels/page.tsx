@@ -79,7 +79,7 @@ export default function CreateReelsPage() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [exportedUrl, setExportedUrl] = useState("");
-  const [exportedName, setExportedName] = useState("");
+  const [exportedName, setExportedName] = useState("");\n  const [exportedFingerprint, setExportedFingerprint] = useState("");
   const [restored, setRestored] = useState(false);
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -90,7 +90,7 @@ export default function CreateReelsPage() {
 
   const selected = clips.find((clip) => clip.id === selectedId) ?? clips[0] ?? null;
   const totalDuration = useMemo(() => clips.reduce((sum, clip) => sum + (clip.kind === "image" ? clip.duration : Math.max(0, (clip.end || clip.duration) - clip.start) / speed), 0), [clips, speed]);
-  const selectedStyle = useMemo(() => ({ filter: filter.css, objectFit: "cover" as const }), [filter]);
+  const selectedStyle = useMemo(() => ({ filter: filter.css, objectFit: "cover" as const }), [filter]);\n  const projectFingerprint = JSON.stringify({ clips: clips.map((clip) => [clip.id, clip.start, clip.end, clip.duration]), caption, overlayText, sticker, subtitle, filter: filter.name, speed, originalVolume, soundtrackVolume, soundtrack: soundtrack ? [soundtrack.name, soundtrack.size, soundtrack.lastModified] : null, overlay: overlayFile ? [overlayFile.name, overlayFile.size, overlayFile.lastModified] : null, transition });
 
   const makeUrl = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
@@ -134,10 +134,6 @@ export default function CreateReelsPage() {
     videoRef.current.playbackRate = speed;
     videoRef.current.volume = originalVolume;
   }, [speed, originalVolume, selectedId]);
-
-  useEffect(() => {
-    if (exportedUrl) setExportedUrl("");
-  }, [clips, caption, overlayText, sticker, subtitle, filter, speed, originalVolume, soundtrackVolume, soundtrack, overlayFile, transition]);
 
   useEffect(() => () => {
     urlsRef.current.forEach((url) => URL.revokeObjectURL(url));
@@ -402,7 +398,7 @@ export default function CreateReelsPage() {
                 <label className="nr-setting-row"><span><b>◉</b><span>Quem pode ver este Reels?</span></span><select value={audience} onChange={(event) => setAudience(event.target.value)}><option>Todos</option><option>Seguidores</option><option>Somente eu</option></select></label>
                 <label className="nr-setting-row"><span><b>♡</b><span>Permitir comentários</span></span><input type="checkbox" checked={comments} onChange={(event) => setComments(event.target.checked)} /></label>
                 <label className="nr-setting-row"><span><b>▣</b><span>Compartilhar nos Stories</span></span><input type="checkbox" checked={shareStory} onChange={(event) => setShareStory(event.target.checked)} /></label>
-                <div className="nr-export-box"><div><b>Exportação do vídeo</b><span>Formato vertical 9:16 · {totalDuration.toFixed(1)}s</span></div><button className="nr-secondary" disabled={!exportReady || busy} onClick={exportVideo}>{busy ? "Exportando..." : "Exportar vídeo"}</button>{busy && <div className="nr-export-progress"><span style={{ width: progress + "%" }} /></div>}</div>{exportedUrl && <a className="nr-download-export" href={exportedUrl} download={exportedName}>↓ Baixar vídeo exportado ({exportedName.endsWith(".mp4") ? "MP4" : "WebM"})</a>}
+                <div className="nr-export-box"><div><b>Exportação do vídeo</b><span>Formato vertical 9:16 · {totalDuration.toFixed(1)}s</span></div><button className="nr-secondary" disabled={!exportReady || busy} onClick={exportVideo}>{busy ? "Exportando..." : "Exportar vídeo"}</button>{busy && <div className="nr-export-progress"><span style={{ width: progress + "%" }} /></div>}</div>{exportedUrl && exportedFingerprint === projectFingerprint && <a className="nr-download-export" href={exportedUrl} download={exportedName}>↓ Baixar vídeo exportado ({exportedName.endsWith(".mp4") ? "MP4" : "WebM"})</a>}
                 <div className="nr-panel-bottom nr-publish-actions"><button className="nr-secondary" onClick={saveDraft}>Salvar rascunho</button><button className="nr-primary" disabled={!exportReady || busy} onClick={exportVideo}>Exportar Reels <span>→</span></button></div>
                 <p className="nr-publish-disclaimer">A exportação gera um arquivo neste dispositivo. A publicação na conta e o compartilhamento com seguidores dependem da integração de servidor, ainda não ativada.</p>
               </>}
