@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { getNexoraCameraStream, getNexoraRecorderOptions } from "../lib/nexora/camera";
 import { useRouter } from "next/navigation";
 import PrimaryNav from "./components/PrimaryNav";
 import PulseGlobalFloat from "./components/PulseGlobalFloat";
@@ -891,10 +892,7 @@ export default function Home() {
       storyLiveStreamRef.current?.getTracks().forEach(track => track.stop());
 
       // A câmera não deve falhar só porque o microfone foi recusado.
-      const videoStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: storyFacingMode, width: { ideal: 1080 }, height: { ideal: 1920 } },
-        audio: false
-      });
+      const videoStream = await getNexoraCameraStream({ facingMode: storyFacingMode, audio: false });
       let stream = videoStream;
       try {
         const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -946,7 +944,7 @@ export default function Home() {
     if (storyLens === "coffee") { context.font = `${Math.round(canvas.width*.12)}px sans-serif`; context.textAlign = "center"; context.fillText("☕✨",canvas.width/2,canvas.height*.28); }
     if (storySticker) { context.font = `${Math.round(canvas.width*.1)}px sans-serif`; context.textAlign = "center"; context.fillText(storySticker,canvas.width/2,canvas.height*.82); }
     if (storyOverlayText.trim()) { context.font = `bold ${Math.round(canvas.width*.06)}px sans-serif`; context.textAlign = storyTextAlign; context.lineWidth = Math.max(3,canvas.width*.006); context.strokeStyle = "#000"; context.fillStyle = storyTextColor; context.strokeText(storyOverlayText.trim(),canvas.width/2,canvas.height*.55,canvas.width*.85); context.fillText(storyOverlayText.trim(),canvas.width/2,canvas.height*.55,canvas.width*.85); }
-    canvas.toBlob(blob => { if(!blob)return; const file = new File([blob],`nexora-story-${Date.now()}.jpg`,{type:"image/jpeg"}); if(storyPreview.startsWith("blob:"))URL.revokeObjectURL(storyPreview);setStoryFile(file);setStoryPreview(URL.createObjectURL(file));storyLiveStreamRef.current?.getTracks().forEach(track=>track.stop());storyLiveStreamRef.current=null;setStoryCameraActive(false);setNotice("Foto capturada. Confira a prévia antes de compartilhar."); }, "image/jpeg", .92);
+    canvas.toBlob(blob => { if(!blob)return; const file = new File([blob],`nexora-story-${Date.now()}.jpg`,{type:"image/jpeg"}); if(storyPreview.startsWith("blob:"))URL.revokeObjectURL(storyPreview);setStoryFile(file);setStoryPreview(URL.createObjectURL(file));storyLiveStreamRef.current?.getTracks().forEach(track=>track.stop());storyLiveStreamRef.current=null;setStoryCameraActive(false);setNotice("Foto capturada. Confira a prévia antes de compartilhar."); }, "image/jpeg", .98);
   };
 
   const startStoryRecording = () => {
@@ -954,7 +952,7 @@ export default function Home() {
     if (!stream || typeof MediaRecorder === "undefined") { setNotice("A gravação de vídeo não é compatível com este navegador."); return; }
     try {
       const mimeType = ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(type=>MediaRecorder.isTypeSupported(type));
-      const recorder = new MediaRecorder(stream,mimeType?{mimeType}:undefined);
+      const recorder = new MediaRecorder(stream,getNexoraRecorderOptions(stream,["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"]));
       storyRecordingChunksRef.current = [];
       recorder.ondataavailable = event => { if(event.data.size) storyRecordingChunksRef.current.push(event.data); };
       recorder.onstop = () => {
