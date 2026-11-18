@@ -45,13 +45,13 @@ export async function getNexoraCameraStream({
       };
       const advanced: MediaTrackConstraintSet[] = [];
       if (capabilities.focusMode?.includes("continuous")) {
-        advanced.push({ focusMode: "continuous" } as MediaTrackConstraintSet);
+        advanced.push({ focusMode: "continuous" } as unknown as MediaTrackConstraintSet);
       }
       if (capabilities.exposureMode?.includes("continuous")) {
-        advanced.push({ exposureMode: "continuous" } as MediaTrackConstraintSet);
+        advanced.push({ exposureMode: "continuous" } as unknown as MediaTrackConstraintSet);
       }
       if (capabilities.whiteBalanceMode?.includes("continuous")) {
-        advanced.push({ whiteBalanceMode: "continuous" } as MediaTrackConstraintSet);
+        advanced.push({ whiteBalanceMode: "continuous" } as unknown as MediaTrackConstraintSet);
       }
       if (advanced.length) await track.applyConstraints({ advanced });
     } catch {
