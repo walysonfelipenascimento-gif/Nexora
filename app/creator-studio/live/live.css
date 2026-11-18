@@ -14,12 +14,16 @@
 .nl-viewer-count{padding:9px 15px;border:1px solid #ffffff26;border-radius:24px;background:#59656a70;backdrop-filter:blur(12px);font-size:14px;color:#f2f4f5}
 .nl-viewer-count span{margin-right:6px}
 .nl-close-live{margin-left:auto;width:48px;height:48px;border-radius:50%;border:1px solid #ffffff55;background:#5d666a50;color:#fff;font-size:32px;font-weight:300;line-height:1;backdrop-filter:blur(10px)}
-.nl-live-side{position:absolute;right:18px;bottom:25%;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2}
+.nl-live-side{position:absolute;right:18px;bottom:25%;display:flex;flex-direction:column;align-items:center;gap:7px;z-index:2}
 .nl-guest-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ef8aab,#7d58b7);border:2px solid #ffffff88;display:grid;place-items:center;font-size:16px;font-weight:800;position:relative}
 .nl-guest-avatar span{position:absolute;right:-4px;bottom:-3px;border-radius:50%;background:#a8d9d3;color:#173a40;width:19px;height:19px;text-align:center;font-size:15px;line-height:19px;border:1px solid #fff}
-.nl-heart-action{border:0;border-radius:50%;width:54px;height:54px;background:#ffffff38;color:white;font-size:35px;line-height:1;backdrop-filter:blur(10px)}
+.nl-live-control{width:42px;height:42px;padding:5px;display:grid;place-items:center;border:0;background:transparent;color:#fff;filter:drop-shadow(0 2px 5px #0009);cursor:pointer}
+.nl-live-control svg{width:29px;height:29px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nl-live-control:first-of-type svg{fill:transparent}
+.nl-live-control:active{transform:scale(.92)}
 .nl-like-count,.nl-side-count{font-size:13px;text-shadow:0 1px 4px #0008}
-.nl-round-action{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#b68a3aab;color:#fff;font-size:23px;backdrop-filter:blur(12px)}
+.nl-gift-control{display:flex;align-items:center;gap:5px;border:0;background:transparent;color:#fff;padding:4px 2px;font-size:11px;text-shadow:0 1px 4px #0009}
+.nl-gift-control svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nl-live-comments{position:absolute;left:20px;right:84px;bottom:105px;display:flex;flex-direction:column;gap:13px;max-height:42%;overflow:hidden;mask-image:linear-gradient(transparent 0%,#000 13%)}
 .nl-live-comment{display:flex;align-items:center;gap:9px;text-shadow:0 1px 4px #0008}
 .nl-comment-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(140deg,#e8b29a,#6e87a3);border:1px solid #ffffff55;font-size:12px;font-weight:800}
@@ -32,8 +36,8 @@
 .nl-live-input{position:absolute;left:16px;right:16px;bottom:24px;height:48px;border-radius:28px;background:#9a7a4bba;border:1px solid #ffffff30;display:flex;align-items:center;padding:0 8px 0 16px;backdrop-filter:blur(14px);gap:8px}
 .nl-live-input input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font-size:12px}
 .nl-live-input input::placeholder{color:#ffffffb0}
-.nl-live-input button{border:0;background:transparent;color:#fff;font-size:21px;padding:6px}
-.nl-gift{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#d44b58;color:#fff;font-size:18px}
+.nl-live-input button[type="submit"]{border:0;background:transparent;color:#fff;font-size:21px;padding:6px}
+.nl-gift-control{flex:0 0 auto}
 .nl-camera-error{position:absolute;left:18px;right:18px;bottom:78px;background:#190d13dd;border:1px solid #ff788366;color:#ffe3e7;padding:9px 12px;border-radius:10px;font-size:11px}
 .nl-home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:95px;height:4px;border-radius:9px;background:#fff}
 .nl-implementation-note{font-size:10px;color:#8e96a8;margin:8px 0 0;text-align:center}
@@ -73,4 +77,4 @@
 .nl-breakdown-track{height:5px;background:#34343d;border-radius:9px;margin-top:9px;overflow:hidden}
 .nl-breakdown-track i{display:block;height:100%;background:#c99af8}
 .nl-demo-note{text-align:center;color:#777985;font-size:10px;line-height:1.5;margin:18px auto 0;max-width:600px}
-@media(max-width:650px){.nl-live-page{padding:0;background:#050608}.nl-live-video{width:100%;height:100svh;min-height:0;border-radius:0;box-shadow:none}.nl-live-top{top:max(18px,env(safe-area-inset-top));left:18px;right:18px}.nl-live-side{right:14px;bottom:24%}.nl-live-comments{left:14px;right:78px;bottom:100px}.nl-live-input{bottom:max(22px,env(safe-area-inset-bottom));left:12px;right:12px}.nl-implementation-note{position:absolute;bottom:2px;opacity:.01}.nl-summary-page{padding:0 12px 28px}.nl-analytics-header{height:54px}.nl-back{top:66px;left:10px}.nl-summary-heading{padding:11px 0 16px}.nl-summary-heading h2{font-size:20px}.nl-metric-grid,.nl-chart-grid,.nl-breakdown-grid{gap:10px}.nl-metric-card{min-height:126px;padding:14px 12px}.nl-metric-card h3{font-size:13px}.nl-metric-card p{font-size:10px;margin-bottom:15px}.nl-metric-card strong{font-size:25px}.nl-chart-card{padding:13px 10px}.nl-chart-card h3{font-size:14px}.nl-chart-card p{font-size:10px;min-height:28px}.nl-chart{height:170px;gap:4px}.nl-chart-column small{font-size:7px}.nl-breakdown-card{padding:14px 12px}.nl-breakdown-card h3{font-size:14px}}
+@media(max-width:650px){.nl-live-page{padding:0;background:#050608}.nl-live-video{width:100%;height:100svh;min-height:0;border-radius:0;box-shadow:none}.nl-live-top{top:max(18px,env(safe-area-inset-top));left:18px;right:18px}.nl-live-side{right:14px;bottom:24%}.nl-live-comments{left:14px;right:78px;bottom:100px}.nl-live-input{bottom:max(22px,env(safe-area-inset-bottom));left:12px;right:12px}.nl-implementation-note{position:absolute;bottom:2px;opacity:.01}.nl-summary-page{padding:0 12px 28px}.nl-analytics-header{height:54px}.nl-back{top:66px;left:10px}.nl-summary-heading{padding:11px 0 16px}.nl-analytics-sections{justify-content:flex-start}.nl-analytics-sections button{font-size:10px;padding:7px 10px}.nl-analytics-pager{margin-top:16px}.nl-summary-heading h2{font-size:20px}.nl-metric-grid,.nl-chart-grid,.nl-breakdown-grid{gap:10px}.nl-metric-card{min-height:126px;padding:14px 12px}.nl-metric-card h3{font-size:13px}.nl-metric-card p{font-size:10px;margin-bottom:15px}.nl-metric-card strong{font-size:25px}.nl-chart-card{padding:13px 10px}.nl-chart-card h3{font-size:14px}.nl-chart-card p{font-size:10px;min-height:28px}.nl-chart{height:170px;gap:4px}.nl-chart-column small{font-size:7px}.nl-breakdown-card{padding:14px 12px}.nl-breakdown-card h3{font-size:14px}}
