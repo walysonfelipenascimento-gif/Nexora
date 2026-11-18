@@ -354,7 +354,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             recorder.onerror = () => { cleanup(); reject(new Error("O navegador encontrou um erro ao criar o Story com música.")); };
             recorder.onstop = () => {
               cleanup();
-              const result = new Blob(chunks, { type: recorder.mimeType || mimeType || "video/webm" });
+              const result = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
               if (result.size) resolve(result);
               else reject(new Error("A exportação do Story com música ficou vazia."));
             };
