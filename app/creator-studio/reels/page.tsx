@@ -135,6 +135,10 @@ export default function CreateReelsPage() {
     videoRef.current.volume = originalVolume;
   }, [speed, originalVolume, selectedId]);
 
+  useEffect(() => {
+    if (exportedUrl) setExportedUrl("");
+  }, [clips, caption, overlayText, sticker, subtitle, filter, speed, originalVolume, soundtrackVolume, soundtrack, overlayFile, transition]);
+
   useEffect(() => () => {
     urlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     urlsRef.current.clear();
