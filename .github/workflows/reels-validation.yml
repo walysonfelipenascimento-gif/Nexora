@@ -1,0 +1,26 @@
+name: Validate Nexora Reels
+on:
+  push:
+    branches:
+      - feat/nexora-reels-editor-final
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-package-lock
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: ESLint Reels files
+        run: npx eslint app/creator-studio/reels/page.tsx app/creator-studio/reels/reels-engine.ts
+      - name: Production build
+        run: npm run build
