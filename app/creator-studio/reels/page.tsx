@@ -86,7 +86,7 @@ export default function CreateReelsPage() {
   const urlsRef = useRef(new Set<string>());
 
   const selected = clips.find((clip) => clip.id === selectedId) ?? clips[0] ?? null;
-  const totalDuration = useMemo(() => clips.reduce((sum, clip) => sum + (clip.kind === "image" ? clip.duration : Math.max(0, (clip.end || clip.duration) - clip.start)), 0), [clips]);
+  const totalDuration = useMemo(() => clips.reduce((sum, clip) => sum + (clip.kind === "image" ? clip.duration : Math.max(0, (clip.end || clip.duration) - clip.start) / speed), 0), [clips, speed]);
   const selectedStyle = useMemo(() => ({ filter: filter.css, objectFit: "cover" as const }), [filter]);
 
   const makeUrl = useCallback((file: File) => {
@@ -265,8 +265,8 @@ export default function CreateReelsPage() {
             <h1>Crie Reels que<br /><em>conectam.</em></h1>
             <p>Transforme seus momentos em histórias. Grave agora ou escolha vídeos e fotos da sua galeria.</p>
             <div className="nr-start-actions">
-              <button className="nr-primary" onClick={() => cameraRef.current?.click()}>▣ <span>Gravar vídeo</span></button>
-              <button className="nr-secondary" onClick={() => galleryRef.current?.click()}>▧ <span>Importar da galeria</span></button>
+              <button className="nr-primary" disabled={!restored} onClick={() => cameraRef.current?.click()}>▣ <span>Gravar vídeo</span></button>
+              <button className="nr-secondary" disabled={!restored} onClick={() => galleryRef.current?.click()}>▧ <span>Importar da galeria</span></button>
             </div>
             <div className="nr-start-tip"><span>✦</span> Combine vários vídeos e fotos em um único Reels.</div>
           </div>
