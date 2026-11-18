@@ -96,3 +96,5 @@
 
 .nr-download-export{display:flex;align-items:center;justify-content:center;min-height:44px;margin-top:12px;border:1px solid #26cfff88;border-radius:24px;background:linear-gradient(100deg,#0a4965,#2a245f 58%,#55206c);color:#fff;text-decoration:none;font-size:11px;font-weight:800}
 .nr-download-export:hover{filter:brightness(1.15)}
+
+.nr-preview-sticker{position:absolute;top:20%;left:50%;transform:translateX(-50%);z-index:3;font-size:42px;line-height:1.1;filter:drop-shadow(0 4px 8px #000b);pointer-events:none}
