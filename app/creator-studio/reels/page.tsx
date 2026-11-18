@@ -77,7 +77,8 @@ export default function CreateReelsPage() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [exportedUrl, setExportedUrl] = useState("");\n  const [exportedName, setExportedName] = useState("");
+  const [exportedUrl, setExportedUrl] = useState("");
+  const [exportedName, setExportedName] = useState("");
   const [restored, setRestored] = useState(false);
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
