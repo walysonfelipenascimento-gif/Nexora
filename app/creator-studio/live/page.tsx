@@ -47,6 +47,10 @@ export default function NexoraLivePage() {
   const [message, setMessage] = useState("");
   const [comments, setComments] = useState(initialComments);
   const [likes, setLikes] = useState(25600);
+  const [gifts, setGifts] = useState(415);
+  const [analyticsPage, setAnalyticsPage] = useState(0);
+  const [reportIndex, setReportIndex] = useState(0);
+  const reports = [{ date: "Tue, Jun 17, 2025", time: "2:21 PM - 3:08 PM", label: "17 Jun 2025" }];
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -174,7 +178,7 @@ export default function NexoraLivePage() {
         <form className="nl-live-input" onSubmit={sendComment}>
           <input value={message} onChange={event => setMessage(event.target.value)} placeholder="Say something nice..." aria-label="Escreva um comentário"/>
           <button type="submit" aria-label="Enviar comentário">➤</button>
-          <span className="nl-gift">♙</span>
+          <button type="button" className="nl-gift-control" onClick={() => setGifts(value => value + 1)} aria-label="Enviar presente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 7v14M12 7H7.5a2.5 2.5 0 1 1 2.5-2.5C10 6 12 7 12 7Zm0 0h4.5A2.5 2.5 0 1 0 14 4.5C14 6 12 7 12 7Z"/></svg><span>{gifts}</span></button>
         </form>
         {cameraError && <p className="nl-camera-error" role="status">{cameraError}</p>}
         <div className="nl-home-indicator"/>
