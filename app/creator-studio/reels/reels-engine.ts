@@ -164,11 +164,11 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
     for (let index = 0; index < options.clips.length; index += 1) {
       const clip = options.clips[index];
       const durationMs = durations[index] * 1000;
-      const startAt = performance.now();
       if (clip.kind === "image") {
         const image = new Image();
         image.src = clip.url;
         await image.decode();
+        const startAt = performance.now();
         await new Promise<void>((resolve) => {
           const frame = (now: number) => {
             const elapsed = now - startAt;
@@ -183,16 +183,24 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
       } else {
         video.pause();
         video.src = clip.url;
-        video.currentTime = clip.start;
         await new Promise<void>((resolve, reject) => {
           const ready = () => { video.removeEventListener("loadeddata", ready); resolve(); };
           video.addEventListener("loadeddata", ready, { once: true });
           video.addEventListener("error", () => reject(new Error("Um dos vídeos não pôde ser decodificado.")), { once: true });
           video.load();
         });
+        if (clip.start > 0) {
+          const seeked = new Promise<void>((resolve, reject) => {
+            video.addEventListener("seeked", () => resolve(), { once: true });
+            video.addEventListener("error", () => reject(new Error("Não foi possível posicionar o corte do vídeo.")), { once: true });
+          });
+          video.currentTime = clip.start;
+          await seeked;
+        }
         video.playbackRate = Math.max(.25, Math.min(2, options.speed));
-        video.volume = Math.max(0, Math.min(1, options.originalVolume));
+        video.volume = 1;
         await video.play();
+        const startAt = performance.now();
         await new Promise<void>((resolve) => {
           const frame = (now: number) => {
             const elapsed = now - startAt;
