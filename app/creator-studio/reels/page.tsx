@@ -290,6 +290,9 @@ export default function CreateReelsPage() {
               <button className="nr-secondary" disabled={!restored} onClick={() => galleryRef.current?.click()}>▧ <span>Importar da galeria</span></button>
             </div>
             <div className="nr-start-tip"><span>✦</span> Combine vários vídeos e fotos em um único Reels.</div>
+            <nav className="nr-bottom-nav" aria-label="Navegação Nexora">
+              <Link href="/"><span>⌂</span>Início</Link><Link href="/creator-studio/reels" className="active"><span>▣</span>Reels</Link><Link href="/creator-studio"><span>＋</span>Criar</Link><Link href="/messages"><span>▤</span>Mensagens</Link><Link href="/profile"><span>◉</span>Perfil</Link>
+            </nav>
           </div>
           <div className="nr-start-art"><div className="nr-orbit nr-orbit-one" /><div className="nr-orbit nr-orbit-two" /><div className="nr-reel-symbol"><span>▶</span></div><div className="nr-art-caption"><b>Seu próximo<br />momento começa aqui.</b><small>9:16 · VÍDEO VERTICAL</small></div></div>
           <input ref={cameraRef} hidden type="file" accept="video/*" capture="environment" onChange={(event) => { addFiles(event.target.files); event.currentTarget.value = ""; }} />
@@ -299,7 +302,7 @@ export default function CreateReelsPage() {
         <section className="nr-workspace">
           <div className="nr-workspace-heading">
             <div><span className="nr-eyebrow">NEXORA · REELS</span><h1>{stage === "publish" ? "Preparar publicação" : stage === "tools" ? "Ferramentas" : "Editar Reels"}</h1></div>
-            <div className="nr-stepper">{steps.map((step, index) => <button key={step.id} className={stage === step.id ? "active" : ""} onClick={() => setStage(step.id)}><span>{index + 1}</span>{step.label}</button>)}</div>
+            <div className="nr-heading-actions"><div className="nr-stepper">{steps.map((step, index) => <button key={step.id} className={stage === step.id ? "active" : ""} onClick={() => setStage(step.id)}><span>{index + 1}</span>{step.label}</button>)}</div><button className="nr-export-top" onClick={() => setStage("publish")}>Exportar</button></div>
           </div>
 
           <div className="nr-editor-layout">
