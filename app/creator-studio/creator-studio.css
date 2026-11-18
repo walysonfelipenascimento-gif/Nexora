@@ -174,3 +174,75 @@
 .cs-story-camera-settings b{font-size:11px;color:#fff;margin-bottom:3px}
 .cs-story-camera-settings button{padding:9px 10px;border:1px solid #ffffff17;border-radius:9px;background:#ffffff0a;color:#e8ebf5;text-align:left;font-size:10px}
 .cs-story-camera-top>div button[aria-pressed="true"]{color:#ffd66b}
+
+
+/* Mobile Story experience: full-bleed camera and editor, matching the approved two-screen plan */
+@media(max-width:720px){
+  .cs-app-story .cs-story-device{position:relative;isolation:isolate;overflow:hidden;padding:0;background:#000}
+  .cs-app-story .cs-story-device-camera .cs-story-camera-top,
+  .cs-app-story .cs-story-device-preview .cs-story-edit-top{
+    position:absolute;top:calc(env(safe-area-inset-top) + 8px);left:12px;right:12px;height:48px;flex:none;padding:0 4px;z-index:6
+  }
+  .cs-app-story .cs-story-device-camera .cs-story-camera-top>button,
+  .cs-app-story .cs-story-device-camera .cs-story-camera-top>div button{
+    width:40px;height:40px;border-radius:50%;background:#ffffff18;color:#fff
+  }
+  .cs-app-story .cs-story-device-camera .cs-story-camera-top>div button{background:transparent}
+  .cs-app-story .cs-story-device-camera .cs-story-camera-view{
+    position:absolute;inset:0;min-height:0;width:100%;height:100%;border-radius:0;background:#030305
+  }
+  .cs-app-story .cs-story-device-camera .cs-story-camera-start{
+    background:#030305;color:#fff
+  }
+  .cs-app-story .cs-story-device-camera .cs-story-camera-start>span{font-size:0}
+  .cs-app-story .cs-story-device-camera .cs-story-camera-start b{font-size:13px}
+  .cs-app-story .cs-story-device-camera .cs-story-camera-start small{font-size:10px}
+  .cs-app-story .cs-story-device-camera .cs-story-vertical-tools{top:calc(env(safe-area-inset-top) + 108px);left:14px;gap:13px}
+  .cs-app-story .cs-story-device-camera .cs-story-vertical-tools button{
+    width:34px;height:34px;font-size:22px;background:#08090b35;border-radius:8px
+  }
+  .cs-app-story .cs-story-device-camera .cs-story-camera-hint{display:none}
+  .cs-app-story .cs-story-device-camera .cs-story-capture-controls{
+    position:absolute;z-index:5;left:0;right:0;bottom:calc(38px + env(safe-area-inset-bottom));height:76px;flex:none;padding:0 22px
+  }
+  .cs-app-story .cs-story-device-camera .cs-story-gallery{width:38px;height:38px;border-radius:8px}
+  .cs-app-story .cs-story-device-camera .cs-story-shutter{width:64px;height:64px;background:#ffffff12}
+  .cs-app-story .cs-story-device-camera .cs-story-shutter i{width:52px;height:52px}
+  .cs-app-story .cs-story-device-camera .cs-story-effects{width:40px;height:40px}
+  .cs-app-story .cs-story-device-camera .cs-story-mode-picker{
+    position:absolute;z-index:5;left:0;right:0;bottom:calc(5px + env(safe-area-inset-bottom));height:30px;flex:none;gap:17px
+  }
+  .cs-app-story .cs-story-device-camera .cs-story-mode-picker button{font-size:10px;letter-spacing:.8px}
+  .cs-app-story .cs-story-device-camera .cs-story-feedback{
+    position:absolute;z-index:7;left:10px;right:10px;bottom:calc(150px + env(safe-area-inset-bottom));margin:0
+  }
+  .cs-app-story .cs-story-device-preview .cs-story-edit-top{
+    justify-content:space-between;padding:0 8px
+  }
+  .cs-app-story .cs-story-device-preview .cs-story-edit-top>button{
+    width:38px;height:38px;border-radius:50%;background:#ffffff18;font-size:27px
+  }
+  .cs-app-story .cs-story-device-preview .cs-story-edit-top>div{gap:11px}
+  .cs-app-story .cs-story-device-preview .cs-story-edit-top>div button{
+    width:30px;height:38px;font-size:19px;text-shadow:0 1px 8px #000
+  }
+  .cs-app-story .cs-story-device-preview .cs-story-edit-canvas{
+    position:absolute;inset:0;width:100%;height:100%;min-height:0;border-radius:0;background:#030305
+  }
+  .cs-app-story .cs-story-device-preview .cs-story-edit-media{object-fit:cover}
+  .cs-app-story .cs-story-device-preview .cs-story-caption-overlay{z-index:3}
+  .cs-app-story .cs-story-device-preview .cs-story-share-controls{
+    position:absolute;z-index:6;left:10px;right:10px;bottom:calc(22px + env(safe-area-inset-bottom));height:48px;flex:none;padding:0;gap:6px
+  }
+  .cs-app-story .cs-story-device-preview .cs-story-share-controls>button{height:40px;font-size:10px}
+  .cs-app-story .cs-story-device-preview .cs-story-share-controls .cs-story-share-next{flex:0 0 40px;width:40px}
+  .cs-app-story .cs-story-device-preview .cs-story-local-note{display:none}
+  .cs-app-story .cs-story-device-preview .cs-story-feedback{
+    position:absolute;z-index:9;left:10px;right:10px;bottom:calc(80px + env(safe-area-inset-bottom));margin:0
+  }
+  .cs-app-story .cs-story-tool-sheet{bottom:calc(82px + env(safe-area-inset-bottom));max-height:58%;z-index:10}
+  .cs-app-story .cs-story-home-indicator{z-index:8;bottom:5px;opacity:.9}
+  .cs-app-story .cs-story-device-share{padding:calc(env(safe-area-inset-top) + 12px) 14px 26px;overflow-y:auto}
+  .cs-app-story .cs-story-device-share .cs-story-edit-top{position:relative;inset:auto;height:48px;flex:0 0 48px}
+  .cs-app-story .cs-story-device-share .cs-story-home-indicator{display:none}
+}
