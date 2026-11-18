@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import "./creator-studio.css";
 import { isIndexedProfileMedia, resolveProfileMedia, saveProfileMedia } from "../../lib/profileMedia";
+import { captureNexoraPhoto, getNexoraCameraStream, getNexoraRecorderOptions } from "../../lib/nexora/camera";
 
 type StudioSection = "story" | "post" | "reels" | "insights" | "calendar" | "comments";
 type Metric = { label: string; value: string; change: string };
@@ -97,9 +98,9 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     try {
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: true });
+        stream = await getNexoraCameraStream({ facingMode: requestedFacing, audio: true });
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: requestedFacing } }, audio: false });
+        stream = await getNexoraCameraStream({ facingMode: requestedFacing, audio: false });
         setCameraError("Microfone indisponível: a câmera funcionará sem áudio.");
       }
       if (!mountedRef.current) {
@@ -190,7 +191,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     if (typeof MediaRecorder === "undefined") { setCameraError("Este navegador não oferece gravação de vídeo. Você ainda pode capturar fotos ou importar um vídeo."); return; }
     try {
       const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const recorder = new MediaRecorder(stream, getNexoraRecorderOptions(stream, ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]));
       recordedChunksRef.current = [];
       recorder.ondataavailable = event => { if (event.data.size > 0) recordedChunksRef.current.push(event.data); };
       recorder.onstop = () => {
@@ -246,18 +247,15 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
       setCameraError("A câmera ainda está iniciando. Aguarde a imagem aparecer e tente novamente.");
       return;
     }
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext("2d");
-    if (!context) { setCameraError("Não foi possível preparar a captura neste navegador."); return; }
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
     setBusy(true);
-    canvas.toBlob(blob => {
+    try {
+      const blob = await captureNexoraPhoto(video, cameraStreamRef.current!);
+      setLocalMedia(new File([blob], "nexora-story.jpg", { type: blob.type || "image/jpeg" }));
+    } catch (error) {
+      setCameraError(error instanceof Error ? error.message : "A captura não pôde ser concluída.");
+    } finally {
       setBusy(false);
-      if (!blob) { setCameraError("A captura não pôde ser convertida em imagem."); return; }
-      setLocalMedia(new File([blob], "nexora-story.jpg", { type: "image/jpeg" }));
-    }, "image/jpeg", .94);
+    }
   }
   function drawStoryOverlays(context: CanvasRenderingContext2D, width: number, height: number) {
     if (caption.trim()) {
