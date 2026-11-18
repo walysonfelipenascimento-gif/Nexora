@@ -231,8 +231,13 @@ export default function CreateReelsPage() {
     }
   };
 
+  const exportReady = clips.length > 0 && clips.every((clip) => clip.kind === "image" || clip.duration > 0);
+
   const exportVideo = async () => {
-    if (!clips.length || busy) return;
+    if (!exportReady || busy) {
+      if (!exportReady) setNotice("Aguarde a leitura da duração de todos os vídeos antes de exportar.");
+      return;
+    }
     setBusy(true);
     setProgress(0);
     setNotice("Preparando seu Reels. Não feche esta tela durante a exportação.");
@@ -387,7 +392,7 @@ export default function CreateReelsPage() {
                 <label className="nr-setting-row"><span><b>♡</b><span>Permitir comentários</span></span><input type="checkbox" checked={comments} onChange={(event) => setComments(event.target.checked)} /></label>
                 <label className="nr-setting-row"><span><b>▣</b><span>Compartilhar nos Stories</span></span><input type="checkbox" checked={shareStory} onChange={(event) => setShareStory(event.target.checked)} /></label>
                 <div className="nr-export-box"><div><b>Exportação do vídeo</b><span>Formato vertical 9:16 · {totalDuration.toFixed(1)}s</span></div><button className="nr-secondary" disabled={!exportReady || busy} onClick={exportVideo}>{busy ? "Exportando..." : "Exportar vídeo"}</button>{busy && <div className="nr-export-progress"><span style={{ width: progress + "%" }} /></div>}</div>
-                <div className="nr-panel-bottom nr-publish-actions"><button className="nr-secondary" onClick={saveDraft}>Salvar rascunho</button><button className="nr-primary" disabled={!clips.length || busy} onClick={exportVideo}>Exportar Reels <span>→</span></button></div>
+                <div className="nr-panel-bottom nr-publish-actions"><button className="nr-secondary" onClick={saveDraft}>Salvar rascunho</button><button className="nr-primary" disabled={!exportReady || busy} onClick={exportVideo}>Exportar Reels <span>→</span></button></div>
                 <p className="nr-publish-disclaimer">A exportação gera um arquivo neste dispositivo. A publicação na conta e o compartilhamento com seguidores dependem da integração de servidor, ainda não ativada.</p>
               </>}
               {notice && <p className="nr-notice" role="status">{notice}</p>}
