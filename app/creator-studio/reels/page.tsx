@@ -291,7 +291,7 @@ export default function CreateReelsPage() {
             </div>
             <div className="nr-start-tip"><span>✦</span> Combine vários vídeos e fotos em um único Reels.</div>
             <nav className="nr-bottom-nav" aria-label="Navegação Nexora">
-              <Link href="/"><span>⌂</span>Início</Link><Link href="/creator-studio/reels" className="active"><span>▣</span>Reels</Link><Link href="/creator-studio"><span>＋</span>Criar</Link><Link href="/messages"><span>▤</span>Mensagens</Link><Link href="/profile"><span>◉</span>Perfil</Link>
+              <Link href="/"><span>⌂</span>Início</Link><Link href="/creator-studio/reels" className="active"><span>▣</span>Reels</Link><Link href="/creator-studio"><span>＋</span>Criar</Link><Link href="/mensagens"><span>▤</span>Mensagens</Link><Link href="/perfil"><span>◉</span>Perfil</Link>
             </nav>
           </div>
           <div className="nr-start-art"><div className="nr-orbit nr-orbit-one" /><div className="nr-orbit nr-orbit-two" /><div className="nr-reel-symbol"><span>▶</span></div><div className="nr-art-caption"><b>Seu próximo<br />momento começa aqui.</b><small>9:16 · VÍDEO VERTICAL</small></div></div>
