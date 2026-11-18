@@ -28,7 +28,7 @@ export default function NexoraReelsCreationPage() {
     return true;
   }), [items, tab]);
 
-  useEffect(() => () => items.forEach(item => URL.revokeObjectURL(item.url)), [items]);
+  const itemsRef = useRef(items);\n  useEffect(() => { itemsRef.current = items; }, [items]);\n  useEffect(() => () => itemsRef.current.forEach(item => URL.revokeObjectURL(item.url)), []);
 
   function addFiles(fileList: FileList | null) {
     if (!fileList?.length) return;
