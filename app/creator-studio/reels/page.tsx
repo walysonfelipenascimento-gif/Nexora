@@ -125,6 +125,12 @@ export default function CreateReelsPage() {
     return () => { alive = false; };
   }, [makeUrl]);
 
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.playbackRate = speed;
+    videoRef.current.volume = originalVolume;
+  }, [speed, originalVolume, selectedId]);
+
   useEffect(() => () => {
     urlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     urlsRef.current.clear();
