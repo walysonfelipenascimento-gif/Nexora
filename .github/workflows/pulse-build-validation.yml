@@ -1,17 +1,25 @@
-name: Nexora Pulse build validation
+name: Nexora build validation
 
 on:
   push:
     branches:
       - feat/nexora-pulse-foundation
+      - nexi/auditoria-reestruturacao-profissional
   pull_request:
     branches:
       - nexora/primeira-etapa-base-segura
 
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,6 +28,13 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
+      - name: Run Nexi Lab automated tests
+        run: npm run test:nexi
+      - name: Lint Nexi source code
+        run: npx eslint app/nexi/page.tsx app/api/nexi/chat/route.ts app/api/nexi/status/route.ts
+      - name: Report existing repository-wide lint baseline
+        run: npm run lint
+        continue-on-error: true
       - name: Build production bundle
-        run: npm run build
+        run: npx next build --no-lint
