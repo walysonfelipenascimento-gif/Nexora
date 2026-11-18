@@ -951,7 +951,6 @@ export default function Home() {
     const stream = storyLiveStreamRef.current;
     if (!stream || typeof MediaRecorder === "undefined") { setNotice("A gravação de vídeo não é compatível com este navegador."); return; }
     try {
-      const mimeType = ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(type=>MediaRecorder.isTypeSupported(type));
       const recorder = new MediaRecorder(stream,getNexoraRecorderOptions(stream,["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"]));
       storyRecordingChunksRef.current = [];
       recorder.ondataavailable = event => { if(event.data.size) storyRecordingChunksRef.current.push(event.data); };
