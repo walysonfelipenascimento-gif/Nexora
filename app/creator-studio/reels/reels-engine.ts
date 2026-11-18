@@ -13,6 +13,7 @@ export type ReelsRenderOptions = {
   soundtrack?: File | null;
   overlayImage?: File | null;
   text: string;
+  sticker: string;
   subtitle: string;
   filter: string;
   originalVolume: number;
