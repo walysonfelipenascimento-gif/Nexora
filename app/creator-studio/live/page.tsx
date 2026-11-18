@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getNexoraCameraStream } from "../../../lib/nexora/camera";
 import "./live.css";
 
 type CommentItem = { name: string; message: string; tag?: string; avatar: string };
@@ -64,7 +65,13 @@ export default function NexoraLivePage() {
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+      let stream: MediaStream;
+      try {
+        stream = await getNexoraCameraStream({ facingMode: "user", audio: true });
+      } catch {
+        stream = await getNexoraCameraStream({ facingMode: "user", audio: false });
+        setCameraError("Microfone indisponível: a prévia da câmera continua funcionando sem áudio.");
+      }
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraReady(true);
