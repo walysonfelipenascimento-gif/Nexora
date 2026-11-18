@@ -256,6 +256,7 @@ export default function CreateReelsPage() {
       const url = URL.createObjectURL(result.blob);
       urlsRef.current.add(url);
       setExportedUrl(url);
+      setExportedFingerprint(projectFingerprint);
       setExportedName("nexora-reels-" + new Date().toISOString().replace(/[:.]/g, "-") + "." + result.extension);
       setNotice("Exportação concluída. Seu arquivo está pronto para baixar.");
     } catch (error) {
