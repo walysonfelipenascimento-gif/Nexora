@@ -6,18 +6,12 @@ import "./reels-studio.css";
 
 type Media = { id: string; file: File; url: string; kind: "Vídeo" | "Foto"; favorite: boolean };
 
-const models = [
-  { name: "Cinemático", detail: "Luz e movimento", style: "cinema" },
-  { name: "Lifestyle", detail: "Momentos naturais", style: "life" },
-  { name: "Minimal", detail: "Visual clean", style: "minimal" },
-  { name: "Neon", detail: "Energia e cor", style: "neon" },
-];
 
 export default function NexoraReelsStartPage() {
   const [filter, setFilter] = useState<"Tudo" | "Vídeos" | "Fotos" | "Favoritos">("Tudo");
   const [media, setMedia] = useState<Media[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
-  const [activeModel, setActiveModel] = useState("Cinemático");
+  const [activeSource, setActiveSource] = useState<"Story" | "Destaque" | "Post">("Story");
   const [message, setMessage] = useState("");
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
@@ -171,10 +165,10 @@ export default function NexoraReelsStartPage() {
 
       <section className="nrs-source" aria-label="Origem da mídia">
         <button type="button" className="nrs-source-card camera" onClick={() => { setCameraOpen(true); void startCamera(); }}>
-          <span className="nrs-source-icon">◎</span><b>Câmera</b><small>Capture novos momentos</small><span className="nrs-source-ghost">◉</span>
+          <span className="nrs-source-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h3l1.5-2h7l1.5 2h3A1.5 1.5 0 0 1 21.5 9v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"/><circle cx="12" cy="13.5" r="4"/></svg></span><b>Câmera</b><small>Capture novos momentos</small>
         </button>
-        <button type="button" className="nrs-source-card gallery is-active" onClick={() => galleryInput.current?.click()} aria-pressed="true">
-          <span className="nrs-source-icon">▧</span><b>Galeria</b><small>Escolha fotos e vídeos</small><span className="nrs-source-ghost">▧</span><span className="nrs-source-active">ATIVA</span>
+        <button type="button" className="nrs-source-card gallery" onClick={() => galleryInput.current?.click()}>
+          <span className="nrs-source-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span><b>Galeria</b><small>Escolha fotos e vídeos</small>
         </button>
         <input ref={galleryInput} className="nrs-hidden" type="file" accept="image/*,video/*" multiple onChange={event => { importFiles(event.currentTarget.files); event.currentTarget.value = ""; }}/>
       </section>
@@ -208,12 +202,21 @@ export default function NexoraReelsStartPage() {
         </div>
       </section>
 
-      <section className="nrs-models">
-        <div className="nrs-models-head"><h2>Modelos</h2><button type="button" onClick={()=>setMessage("Biblioteca de modelos em preparação.")}>Ver todos ↗</button></div>
-        <div className="nrs-model-grid">
-          {models.map(model=><button type="button" key={model.name} className={"nrs-model "+model.style+(activeModel===model.name?" active":"")} onClick={()=>setActiveModel(model.name)}>
-            <span className="nrs-model-art"><i/><i/><i/></span><b>{model.name}</b><small>{model.detail}</small>
-          </button>)}
+      <section className="nrs-models nrs-origin-picker" aria-label="Conteúdo Nexora para transformar em Reels">
+        <div className="nrs-models-head"><div><h2>Transformar em Reels</h2><small className="nrs-library-subtitle">Escolha de onde vem o seu conteúdo</small></div></div>
+        <div className="nrs-origin-tabs" role="tablist" aria-label="Tipo de conteúdo">
+          {(["Story", "Destaque", "Post"] as const).map(source => (
+            <button key={source} type="button" role="tab" aria-selected={activeSource === source} className={activeSource === source ? "active" : ""} onClick={() => setActiveSource(source)}>
+              <span className="nrs-origin-symbol" aria-hidden="true">{source === "Story" ? "◉" : source === "Destaque" ? "✧" : "▧"}</span>
+              <b>{source}</b>
+              <small>{source === "Story" ? "Seus Stories" : source === "Destaque" ? "Seus Destaques" : "Suas publicações"}</small>
+            </button>
+          ))}
+        </div>
+        <div className="nrs-origin-content" role="tabpanel">
+          <div className="nrs-origin-content-icon">{activeSource === "Story" ? "◉" : activeSource === "Destaque" ? "✧" : "▧"}</div>
+          <div><b>{activeSource === "Story" ? "Escolha um Story" : activeSource === "Destaque" ? "Escolha um Destaque" : "Escolha um Post"}</b>
+          <p>{activeSource === "Story" ? "Os seus Stories disponíveis aparecerão aqui para selecionar e transformar em Reels." : activeSource === "Destaque" ? "Os Destaques do seu perfil aparecerão aqui para selecionar e transformar em Reels." : "As publicações do seu perfil aparecerão aqui para selecionar e transformar em Reels."}</p></div>
         </div>
       </section>
 
