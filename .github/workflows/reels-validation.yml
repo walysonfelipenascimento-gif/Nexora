@@ -1,0 +1,24 @@
+name: Validate Nexora Reels
+on:
+  push:
+    branches:
+      - feat/nexora-reels-on-production-base
+  pull_request:
+    branches:
+      - nexora/primeira-etapa-base-segura
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-package-lock
+      - name: Production build
+        run: npm run build
