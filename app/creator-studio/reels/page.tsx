@@ -79,7 +79,8 @@ export default function CreateReelsPage() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [exportedUrl, setExportedUrl] = useState("");
-  const [exportedName, setExportedName] = useState("");\n  const [exportedFingerprint, setExportedFingerprint] = useState("");
+  const [exportedName, setExportedName] = useState("");
+  const [exportedFingerprint, setExportedFingerprint] = useState("");
   const [restored, setRestored] = useState(false);
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -90,7 +91,8 @@ export default function CreateReelsPage() {
 
   const selected = clips.find((clip) => clip.id === selectedId) ?? clips[0] ?? null;
   const totalDuration = useMemo(() => clips.reduce((sum, clip) => sum + (clip.kind === "image" ? clip.duration : Math.max(0, (clip.end || clip.duration) - clip.start) / speed), 0), [clips, speed]);
-  const selectedStyle = useMemo(() => ({ filter: filter.css, objectFit: "cover" as const }), [filter]);\n  const projectFingerprint = JSON.stringify({ clips: clips.map((clip) => [clip.id, clip.start, clip.end, clip.duration]), caption, overlayText, sticker, subtitle, filter: filter.name, speed, originalVolume, soundtrackVolume, soundtrack: soundtrack ? [soundtrack.name, soundtrack.size, soundtrack.lastModified] : null, overlay: overlayFile ? [overlayFile.name, overlayFile.size, overlayFile.lastModified] : null, transition });
+  const selectedStyle = useMemo(() => ({ filter: filter.css, objectFit: "cover" as const }), [filter]);
+  const projectFingerprint = JSON.stringify({ clips: clips.map((clip) => [clip.id, clip.start, clip.end, clip.duration]), caption, overlayText, sticker, subtitle, filter: filter.name, speed, originalVolume, soundtrackVolume, soundtrack: soundtrack ? [soundtrack.name, soundtrack.size, soundtrack.lastModified] : null, overlay: overlayFile ? [overlayFile.name, overlayFile.size, overlayFile.lastModified] : null, transition });
 
   const makeUrl = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
