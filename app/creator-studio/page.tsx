@@ -473,7 +473,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
             if (settled) return;
             settled = true;
             if (failure) { reject(failure); return; }
-            const result = new Blob(chunks, { type: recorder.mimeType || mimeType || "video/webm" });
+            const result = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
             if (result.size) resolve(result);
             else reject(new Error("A renderização terminou sem gerar um vídeo."));
           };
