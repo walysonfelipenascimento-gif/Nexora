@@ -58,7 +58,7 @@ export default function CreateReelsPage() {
   const [clips, setClips] = useState<Clip[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [caption, setCaption] = useState("");
-  const [overlayText, setOverlayText] = useState("");
+  const [overlayText, setOverlayText] = useState("");\n  const [sticker, setSticker] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [filter, setFilter] = useState<FilterOption>(FILTERS[0]);
   const [speed, setSpeed] = useState(1);
@@ -105,7 +105,7 @@ export default function CreateReelsPage() {
       setClips(restoredClips);
       setSelectedId(draft.selectedId || restoredClips[0]?.id || "");
       setCaption(draft.caption || "");
-      setOverlayText(draft.overlayText || "");
+      setOverlayText(draft.overlayText || "");\n      setSticker(draft.sticker || "");
       setSubtitle(draft.subtitle || "");
       setFilter(FILTERS.find((item) => item.name === draft.filter) || FILTERS[0]);
       setSpeed(draft.speed || 1);
@@ -222,7 +222,7 @@ export default function CreateReelsPage() {
     try {
       await persistDraft({
         clips: clips.map(({ id, file, kind, start, end, duration }) => ({ id, file, kind, start, end, duration })),
-        selectedId, caption, overlayText, subtitle, filter: filter.name, speed,
+        selectedId, caption, overlayText, sticker, subtitle, filter: filter.name, speed,
         originalVolume, soundtrackVolume, soundtrack, overlayFile, transition,
         audience, comments, shareStory, coverId,
         updatedAt: new Date().toISOString(),
@@ -316,7 +316,7 @@ export default function CreateReelsPage() {
                     event.currentTarget.volume = originalVolume;
                   }} onTimeUpdate={(event) => { setPlayhead(event.currentTarget.currentTime); if (selected.end && event.currentTarget.currentTime >= selected.end) event.currentTarget.pause(); }} /> : <img src={selected.url} alt={selected.file.name} style={selectedStyle} /> : <div className="nr-empty-preview"><span>＋</span><b>Prévia do seu Reels</b><small>Importe uma mídia para começar</small></div>}
                   {overlayUrl && <img className="nr-preview-overlay-image" src={overlayUrl} alt="Sobreposição" />}
-                  {overlayText && selected && <div className="nr-overlay-text">{overlayText}</div>}
+                  {sticker && selected && <div className="nr-preview-sticker">{sticker}</div>}\n                  {overlayText && selected && <div className="nr-overlay-text">{overlayText}</div>}
                   {subtitle && selected && <div className="nr-preview-subtitle">{subtitle}</div>}
                   <span className="nr-ratio">9:16</span>
                 </div>
@@ -360,14 +360,14 @@ export default function CreateReelsPage() {
                   <button onClick={() => audioRef.current?.click()}><strong className="nr-tool-purple">♫</strong><span>Áudio</span></button>
                   <button onClick={() => setFilter(FILTERS[(FILTERS.findIndex((item) => item.name === filter.name) + 1) % FILTERS.length])}><strong className="nr-tool-blue">◉</strong><span>Filtros</span></button>
                   <button onClick={() => setSpeed((value) => value >= 2 ? .5 : Math.round((value + .25) * 100) / 100)}><strong className="nr-tool-purple">◴</strong><span>Velocidade</span></button>
-                  <button onClick={() => document.getElementById("nr-subtitle")?.focus()}><strong className="nr-tool-blue">CC</strong><span>Legendas</span></button>
+                  <button onClick={() => document.getElementById("nr-subtitle")?.focus()}><strong className="nr-tool-blue">CC</strong><span>Legendas</span></button>\n                  <button onClick={() => document.getElementById("nr-sticker")?.focus()}><strong className="nr-tool-purple">✦</strong><span>Figuras</span></button>
                   <button onClick={() => setTransition((value) => value === "cut" ? "fade" : "cut")}><strong className="nr-tool-purple">✂</strong><span>Transições</span></button>
                   <button onClick={() => overlayRef.current?.click()}><strong className="nr-tool-blue">▱</strong><span>Sobreposição</span></button>
                   <button onClick={() => setStage("timeline")}><strong className="nr-tool-purple">▤</strong><span>Ajustar</span></button>
                 </div>
                 <label className="nr-field-label" htmlFor="nr-overlay">Texto sobre o vídeo</label>
                 <input id="nr-overlay" className="nr-text-input" value={overlayText} onChange={(event) => setOverlayText(event.target.value)} maxLength={180} placeholder="Escreva algo para aparecer no Reels..." />
-                <label className="nr-field-label" htmlFor="nr-subtitle">Legendas / texto inferior</label>
+                <label className="nr-field-label" htmlFor="nr-sticker">Figuras / adesivo</label>\n                <input id="nr-sticker" className="nr-text-input" value={sticker} onChange={(event) => setSticker(event.target.value)} maxLength={12} placeholder="Ex.: ✨ ⭐ ❤️" />\n                <label className="nr-field-label" htmlFor="nr-subtitle">Legendas / texto inferior</label>
                 <textarea id="nr-subtitle" className="nr-text-input" rows={2} maxLength={240} value={subtitle} onChange={(event) => setSubtitle(event.target.value)} placeholder="Adicione uma legenda..." />
                 <div className="nr-filter-row"><b>Efeitos em destaque</b><span>{filter.name}</span></div>
                 <div className="nr-filter-swatches">{FILTERS.map((item) => <button type="button" key={item.name} className={filter.name === item.name ? "active" : ""} onClick={() => setFilter(item)}>{item.name}</button>)}</div>
