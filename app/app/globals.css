@@ -60,3 +60,132 @@ h3 { margin: 22px 0 8px; font-size: 17px; }
   .footer { padding: 22px 0; align-items: start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: .01ms !important; } }
+
+
+/* NEXORA FEED — experiência imersiva e descoberta entre publicações */
+.nx-feed-v2 {
+  --nx-bg: #080a12;
+  --nx-panel: #111521;
+  --nx-panel-2: #171d2b;
+  --nx-text: #f6f7ff;
+  --nx-muted: #a1a9bd;
+  --nx-line: rgba(190, 199, 255, .14);
+  --nx-cyan: #55dcff;
+  --nx-blue: #526dff;
+  --nx-violet: #9b65ff;
+  --nx-pink: #df64e9;
+  min-height: 100dvh;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  color: var(--nx-text);
+  background: radial-gradient(ellipse at 50% -15%, rgba(89, 76, 190, .18), transparent 48%), var(--nx-bg);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.nx-feed-v2 button, .nx-feed-v2 input { font: inherit; }
+.nx-feed-v2 .topbar {
+  position: sticky; top: 0; z-index: 30; height: 62px;
+  padding: 0 max(16px, calc((100vw - 700px) / 2));
+  background: rgba(8, 10, 18, .88); border-bottom: 1px solid var(--nx-line);
+  backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+}
+.nx-feed-v2 .brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-size: 18px; font-weight: 800; letter-spacing: -.5px; }
+.nx-feed-v2 .brand-symbol { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 12px; color: #080a12; font-size: 22px; font-weight: 950; font-style: italic; background: linear-gradient(135deg, var(--nx-cyan), #8177ff 58%, var(--nx-pink)); box-shadow: 0 0 24px rgba(113, 104, 255, .3); }
+.nx-feed-v2 .topbar-actions { display: flex; align-items: center; gap: 9px; }
+.nx-feed-v2 .icon-button, .nx-feed-v2 .more-button { display: grid; place-items: center; border: 1px solid var(--nx-line); color: #f2f3ff; background: rgba(255,255,255,.06); cursor: pointer; }
+.nx-feed-v2 .icon-button { width: 36px; height: 36px; border-radius: 12px; font-size: 22px; }
+.nx-feed-v2 .feed-container { width: min(100%, 700px); margin: 0 auto; padding: 12px 14px 30px; }
+.nx-feed-v2 .stories-section { padding: 5px 0 15px; border-bottom: 1px solid var(--nx-line); }
+.nx-feed-v2 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 12px; }
+.nx-feed-v2 .section-heading h2 { margin: 0; color: #fff; font-size: 14px; letter-spacing: 0; }
+.nx-feed-v2 .section-heading > span { color: var(--nx-muted); font-size: 10px; }
+.nx-feed-v2 .stories-list { display: flex; gap: 13px; overflow-x: auto; padding: 2px 1px 5px; scrollbar-width: none; }
+.nx-feed-v2 .stories-list::-webkit-scrollbar { display: none; }
+.nx-feed-v2 .story { flex: 0 0 57px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: #e5e8f4; cursor: pointer; }
+.nx-feed-v2 .story > span { width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 10px; }
+.nx-feed-v2 .story-ring { width: 55px; height: 55px; padding: 2.5px; border-radius: 50%; background: linear-gradient(135deg, var(--nx-cyan), var(--nx-violet), var(--nx-pink)); }
+.nx-feed-v2 .story-ring img { display: block; width: 100%; height: 100%; border: 2px solid var(--nx-bg); border-radius: 50%; object-fit: cover; }
+.nx-feed-v2 .story-ring.own-story { display: grid; place-items: center; background: #161b2a; border: 1px dashed rgba(120, 143, 255, .8); }
+.nx-feed-v2 .own-story-inner { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; color: var(--nx-cyan); font-size: 28px; }
+.nx-feed-v2 .feed-heading { display: flex; align-items: end; justify-content: space-between; gap: 8px; padding: 18px 1px 12px; }
+.nx-feed-v2 .eyebrow { margin: 0 0 4px; color: #9b91ff; font-size: 9px; letter-spacing: 1.8px; }
+.nx-feed-v2 .feed-heading h1 { margin: 0; color: #fff; font-size: 24px; line-height: 1.1; letter-spacing: -.8px; }
+.nx-feed-v2 .live-indicator { display: inline-flex; align-items: center; gap: 6px; color: var(--nx-muted); font-size: 9px; white-space: nowrap; }
+.nx-feed-v2 .live-indicator > span { width: 6px; height: 6px; border-radius: 50%; background: #59e5c1; box-shadow: 0 0 9px #59e5c180; }
+.nx-feed-v2 .posts-list { display: grid; gap: 18px; }
+.nx-feed-v2 .feed-sequence { min-width: 0; }
+.nx-feed-v2 .nx-immersive-post {
+  position: relative; min-height: min(760px, calc(100svh - 185px)); height: min(760px, calc(100svh - 185px));
+  overflow: hidden; isolation: isolate; border: 1px solid rgba(190,199,255,.16); border-radius: 20px;
+  background: #111522; box-shadow: 0 16px 44px rgba(0,0,0,.3);
+}
+.nx-feed-v2 .post-image { position: absolute; inset: 0; z-index: -2; display: block; width: 100%; height: 100%; object-fit: cover; background: #171d2b; }
+.nx-feed-v2 .post-image-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(5,7,14,.62) 0%, transparent 25%, transparent 47%, rgba(5,7,14,.18) 62%, rgba(5,7,14,.86) 100%); }
+.nx-feed-v2 .nx-overlay-header { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 9px; min-height: 68px; padding: 12px 12px; }
+.nx-feed-v2 .avatar { flex: 0 0 38px; width: 38px; height: 38px; border: 2px solid rgba(255,255,255,.86); border-radius: 50%; object-fit: cover; }
+.nx-feed-v2 .post-author { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 4px; text-shadow: 0 1px 8px #000; }
+.nx-feed-v2 .post-author strong { overflow: hidden; color: white; font-size: 12px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.nx-feed-v2 .post-author span { overflow: hidden; color: rgba(255,255,255,.8); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.nx-feed-v2 .nx-verified { display: inline-grid; place-items: center; width: 13px; height: 13px; border-radius: 50%; color: #fff; background: linear-gradient(135deg, var(--nx-cyan), var(--nx-violet)); font-size: 8px; }
+.nx-feed-v2 .follow-creator { padding: 7px 12px; border: 1px solid rgba(255,255,255,.72); border-radius: 11px; color: #fff; background: rgba(255,255,255,.1); font-size: 10px; font-weight: 750; backdrop-filter: blur(10px); }
+.nx-feed-v2 .more-button { width: 32px; height: 32px; border-radius: 10px; color: white; font-size: 22px; background: rgba(10,12,22,.3); }
+.nx-feed-v2 .nx-post-overlay { position: absolute; right: 13px; bottom: 17px; left: 15px; display: flex; align-items: end; gap: 12px; }
+.nx-feed-v2 .nx-post-copy { min-width: 0; flex: 1; color: white; text-shadow: 0 1px 8px rgba(0,0,0,.75); }
+.nx-feed-v2 .nx-content-tag { display: inline-block; margin-bottom: 8px; color: #b8eaff; font-size: 8px; font-weight: 850; letter-spacing: 1.4px; }
+.nx-feed-v2 .nx-post-copy p { margin: 0; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+.nx-feed-v2 .nx-post-copy strong { margin-right: 4px; color: #fff; }
+.nx-feed-v2 .nx-post-actions { display: flex; flex: 0 0 43px; flex-direction: column; align-items: center; gap: 13px; }
+.nx-feed-v2 .nx-round-action { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; border: 0; color: white; background: transparent; cursor: pointer; text-shadow: 0 1px 8px #000; }
+.nx-feed-v2 .nx-round-action > span { font-size: 25px; line-height: 1; }
+.nx-feed-v2 .nx-round-action small { font-size: 8px; font-weight: 700; }
+.nx-feed-v2 .nx-round-action.is-liked { color: #ff72b5; }
+.nx-feed-v2 .nx-round-action.is-saved { color: #8edfff; }
+.nx-feed-v2 .nx-comments-panel { position: absolute; right: 0; bottom: 0; left: 0; z-index: 5; max-height: 62%; overflow: auto; padding: 15px; border: 1px solid rgba(190,199,255,.2); border-bottom: 0; border-radius: 19px 19px 0 0; color: #f7f8ff; background: rgba(13,17,29,.97); box-shadow: 0 -18px 50px rgba(0,0,0,.35); backdrop-filter: blur(22px); }
+.nx-feed-v2 .nx-comments-heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--nx-line); font-size: 14px; }
+.nx-feed-v2 .nx-comments-heading button { border: 0; color: white; background: transparent; font-size: 24px; }
+.nx-feed-v2 .nx-comments-list { padding: 12px 0 2px; }
+.nx-feed-v2 .comment { margin: 0 0 9px; color: #e0e5f4; font-size: 12px; line-height: 1.5; }
+.nx-feed-v2 .comment-form { display: flex; gap: 8px; margin-top: 10px; }
+.nx-feed-v2 .comment-form input { min-width: 0; flex: 1; padding: 11px 12px; border: 1px solid var(--nx-line); border-radius: 12px; outline: none; color: white; background: rgba(255,255,255,.06); font-size: 12px; }
+.nx-feed-v2 .comment-form input:focus { border-color: rgba(85,220,255,.7); }
+.nx-feed-v2 .comment-form button { padding: 0 14px; border: 0; border-radius: 11px; color: #080a12; background: linear-gradient(110deg, var(--nx-cyan), #a88aff); font-size: 11px; font-weight: 850; }
+.nx-feed-v2 .nx-discovery-block { margin: 18px 0 4px; padding: 17px 14px 15px; overflow: hidden; border: 1px solid rgba(147,133,255,.22); border-radius: 19px; background: radial-gradient(ellipse at 100% 0%, rgba(108,87,255,.17), transparent 50%), linear-gradient(145deg, #121827, #0d111c); }
+.nx-feed-v2 .nx-discovery-heading { display: flex; align-items: start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.nx-feed-v2 .nx-discovery-kicker { color: #8edfff; font-size: 8px; font-weight: 850; letter-spacing: 1.5px; }
+.nx-feed-v2 .nx-discovery-heading h2 { margin: 5px 0 3px; color: #fff; font-size: 17px; letter-spacing: -.4px; }
+.nx-feed-v2 .nx-discovery-heading p { margin: 0; color: var(--nx-muted); font-size: 10px; }
+.nx-feed-v2 .nx-discovery-heading > button { flex: 0 0 auto; padding: 5px 0; border: 0; color: #9c9cff; background: transparent; font-size: 10px; font-weight: 800; }
+.nx-feed-v2 .nx-suggestion-track { display: flex; gap: 11px; overflow-x: auto; padding: 1px 1px 4px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.nx-feed-v2 .nx-suggestion-track::-webkit-scrollbar { display: none; }
+.nx-feed-v2 .nx-person-card { position: relative; flex: 0 0 158px; display: flex; min-height: 222px; flex-direction: column; align-items: center; padding: 15px 11px 11px; border: 1px solid rgba(185,194,255,.15); border-radius: 17px; background: linear-gradient(155deg, rgba(255,255,255,.065), rgba(255,255,255,.025)); scroll-snap-align: start; }
+.nx-feed-v2 .nx-person-card > img { width: 82px; height: 82px; margin: 3px 0 9px; border: 2px solid rgba(141,132,255,.65); border-radius: 50%; object-fit: cover; box-shadow: 0 0 20px rgba(105,103,255,.16); }
+.nx-feed-v2 .nx-person-card > strong { max-width: 100%; overflow: hidden; color: white; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.nx-feed-v2 .nx-person-handle { margin-top: 3px; color: #a9b1c6; font-size: 9px; }
+.nx-feed-v2 .nx-mutual { margin: 8px 0 10px; color: #b6c5e8; font-size: 8px; }
+.nx-feed-v2 .nx-dismiss-person { position: absolute; top: 7px; right: 8px; width: 22px; height: 22px; border: 0; border-radius: 50%; color: #cbd2e7; background: rgba(255,255,255,.08); font-size: 17px; line-height: 1; }
+.nx-feed-v2 .nx-follow-button { width: 100%; min-height: 32px; margin-top: auto; border: 0; border-radius: 10px; color: #090b15; background: linear-gradient(105deg, var(--nx-cyan), #9b83ff 65%, var(--nx-pink)); font-size: 10px; font-weight: 850; }
+.nx-feed-v2 .nx-follow-button.following { border: 1px solid rgba(255,255,255,.12); color: #e8ebf8; background: #303747; }
+.nx-feed-v2 .demo-notice { margin: 18px 4px 0; color: #777f94; font-size: 9px; line-height: 1.6; text-align: center; }
+.nx-feed-v2 .bottom-nav { position: fixed; z-index: 40; right: 0; bottom: 0; left: 0; display: flex; align-items: stretch; justify-content: space-around; min-height: calc(66px + env(safe-area-inset-bottom)); padding: 6px max(8px, calc((100vw - 700px) / 2)) calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid var(--nx-line); background: rgba(8,10,18,.94); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+.nx-feed-v2 .nav-item { display: flex; flex: 1; min-width: 0; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; border-radius: 12px; color: #8e96ad; background: transparent; cursor: pointer; }
+.nx-feed-v2 .nav-icon { font-size: 21px; line-height: 1.1; }
+.nx-feed-v2 .nav-label { font-size: 8px; font-weight: 650; }
+.nx-feed-v2 .nav-item.active { color: #8de7ff; background: linear-gradient(115deg, rgba(70,174,255,.16), rgba(143,102,255,.16)); }
+.nx-feed-v2 .empty-section { display: flex; min-height: 55vh; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.nx-feed-v2 .empty-icon { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 18px; border: 1px solid var(--nx-line); border-radius: 20px; color: var(--nx-cyan); background: var(--nx-panel); font-size: 30px; }
+.nx-feed-v2 .empty-section h1 { margin: 5px 0 12px; color: white; font-size: 26px; letter-spacing: -.8px; }
+.nx-feed-v2 .empty-section > p:not(.eyebrow) { max-width: 310px; color: var(--nx-muted); font-size: 13px; line-height: 1.7; }
+.nx-feed-v2 .empty-section .primary-button { margin-top: 14px; border: 0; cursor: pointer; }
+@media (min-width: 900px) {
+  .nx-feed-v2 .feed-container { width: min(100%, 700px); padding-top: 20px; }
+  .nx-feed-v2 .nx-immersive-post { min-height: 760px; height: min(820px, calc(100vh - 210px)); }
+  .nx-feed-v2 .bottom-nav { right: auto; bottom: 18px; left: 50%; width: min(580px, calc(100vw - 48px)); min-height: 62px; padding: 6px 12px; border: 1px solid var(--nx-line); border-radius: 18px; transform: translateX(-50%); box-shadow: 0 12px 45px rgba(0,0,0,.35); }
+  .nx-feed-v2 { padding-bottom: 100px; }
+}
+@media (max-width: 380px) {
+  .nx-feed-v2 .feed-container { padding-right: 10px; padding-left: 10px; }
+  .nx-feed-v2 .nx-immersive-post { min-height: calc(100svh - 170px); height: calc(100svh - 170px); border-radius: 16px; }
+  .nx-feed-v2 .nx-person-card { flex-basis: 146px; }
+  .nx-feed-v2 .nx-post-overlay { right: 9px; left: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-feed-v2 *, .nx-feed-v2 *::before, .nx-feed-v2 *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
