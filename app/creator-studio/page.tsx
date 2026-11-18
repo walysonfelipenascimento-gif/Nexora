@@ -190,7 +190,6 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
     if (!stream) { setCameraError("Ative a câmera antes de iniciar a gravação."); return; }
     if (typeof MediaRecorder === "undefined") { setCameraError("Este navegador não oferece gravação de vídeo. Você ainda pode capturar fotos ou importar um vídeo."); return; }
     try {
-      const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
       const recorder = new MediaRecorder(stream, getNexoraRecorderOptions(stream, ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]));
       recordedChunksRef.current = [];
       recorder.ondataavailable = event => { if (event.data.size > 0) recordedChunksRef.current.push(event.data); };
@@ -335,8 +334,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           musicNode.connect(destination);
           const canvasStream = canvas.captureStream(30);
           const stream = new MediaStream([...canvasStream.getVideoTracks(), ...destination.stream.getAudioTracks()]);
-          const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
-          const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+            const recorder = new MediaRecorder(stream, getNexoraRecorderOptions(stream, ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]));
           const chunks: Blob[] = [];
           const duration = Number.isFinite(music.duration) && music.duration > 0 ? Math.min(music.duration, 15) : 15;
           output = await new Promise<Blob>(async (resolve, reject) => {
@@ -434,8 +432,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           ...canvasStream.getVideoTracks(),
           ...(audioDestination?.stream.getAudioTracks() ?? sourceStream?.getAudioTracks() ?? []),
         ]);
-        const mimeType = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(type => MediaRecorder.isTypeSupported(type));
-        const recorder = new MediaRecorder(outputStream, mimeType ? { mimeType } : undefined);
+        const recorder = new MediaRecorder(outputStream, getNexoraRecorderOptions(outputStream, ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]));
         const chunks: Blob[] = [];
         output = await new Promise<Blob>((resolve, reject) => {
           let stopped = false;
