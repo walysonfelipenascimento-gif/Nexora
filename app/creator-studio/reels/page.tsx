@@ -118,7 +118,7 @@ export default function CreateReelsPage() {
       setComments(draft.comments ?? true);
       setShareStory(draft.shareStory ?? true);
       setCoverId(draft.coverId || restoredClips[0]?.id || "");
-      if (restoredClips.length) setNotice("Rascunho anterior recuperado deste dispositivo.");
+      if (restoredClips.length) { setStage("edit"); setNotice("Rascunho anterior recuperado deste dispositivo."); }
     }).catch(() => {
       if (alive) setNotice("Não foi possível recuperar um rascunho anterior.");
     }).finally(() => { if (alive) setRestored(true); });
