@@ -22,8 +22,6 @@ export type ReelsRenderOptions = {
   onProgress?: (progress: number) => void;
 };
 
-const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
-
 function drawCover(context: CanvasRenderingContext2D, source: CanvasImageSource, width: number, height: number) {
   const dimensions = source instanceof HTMLVideoElement
     ? { width: source.videoWidth, height: source.videoHeight }
@@ -73,8 +71,9 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
   if (!context) throw new Error("Não foi possível preparar a renderização.");
   const canvasStream = canvas.captureStream(30);
   const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  const audioContext = AudioContextClass ? new AudioContextClass() : null;
-  const destination = audioContext?.createMediaStreamDestination();
+  if (!AudioContextClass) throw new Error("Este navegador não oferece suporte à mixagem de áudio necessária para exportar o Reels.");
+  const audioContext = new AudioContextClass();
+  const destination = audioContext.createMediaStreamDestination();
   if (destination) destination.stream.getAudioTracks().forEach((track) => canvasStream.addTrack(track));
 
   const video = document.createElement("video");
@@ -232,6 +231,5 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
     if (overlayUrl) URL.revokeObjectURL(overlayUrl);
     canvasStream.getTracks().forEach((track) => track.stop());
     if (audioContext && audioContext.state !== "closed") await audioContext.close();
-    await wait(0);
   }
 }
