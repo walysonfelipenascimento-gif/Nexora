@@ -197,7 +197,7 @@ export default function NexoraReelsStartPage() {
         <div className="nrs-selected-head"><h2>Selecionados <span>{selected.length}</span></h2><button type="button" onClick={()=>setSelected([])} disabled={!selected.length}>Limpar</button></div>
         <div className="nrs-selected-strip">
           {media.filter(item=>selected.includes(item.id)).map(item=><button type="button" className="nrs-thumb" key={item.id} onClick={()=>toggleSelected(item.id)} aria-label="Remover da seleção">{item.kind==="Vídeo"?<video src={item.url} muted/>:<img src={item.url} alt=""/>}</button>)}
-          <button className="nrs-add" type="button" aria-label="Adicionar mídias" onClick={()=>galleryInput.current?.click()}>＋</button>
+          <button className="nrs-add" type="button" aria-label="Selecionar mais fotos e vídeos na galeria" onClick={()=>galleryInput.current?.click()}><span>＋</span><small>Adicionar</small></button>
           <button className="nrs-continue" type="button" disabled={!selected.length} onClick={()=>setMessage("Mídias selecionadas. A próxima etapa do editor será aberta nesta experiência.")}>Continuar <span>→</span></button>
         </div>
       </section>
@@ -213,10 +213,13 @@ export default function NexoraReelsStartPage() {
             </button>
           ))}
         </div>
-        <div className="nrs-origin-content" role="tabpanel">
-          <div className="nrs-origin-content-icon">{activeSource === "Story" ? "◉" : activeSource === "Destaque" ? "✧" : "▧"}</div>
-          <div><b>{activeSource === "Story" ? "Escolha um Story" : activeSource === "Destaque" ? "Escolha um Destaque" : "Escolha um Post"}</b>
-          <p>{activeSource === "Story" ? "Os seus Stories disponíveis aparecerão aqui para selecionar e transformar em Reels." : activeSource === "Destaque" ? "Os Destaques do seu perfil aparecerão aqui para selecionar e transformar em Reels." : "As publicações do seu perfil aparecerão aqui para selecionar e transformar em Reels."}</p></div>
+        <div className={"nrs-origin-content nrs-origin-empty nrs-origin-empty-" + activeSource.toLowerCase()} role="tabpanel">
+          <button type="button" className="nrs-origin-add" aria-label={"Adicionar " + activeSource} onClick={() => setMessage(activeSource + ": nenhum conteúdo disponível para selecionar no momento.")}>＋</button>
+          <div className="nrs-origin-empty-copy">
+            <b>{activeSource === "Story" ? "Seus Stories" : activeSource === "Destaque" ? "Seus Destaques" : "Suas publicações"}</b>
+            <p>{activeSource === "Story" ? "Quando houver Stories disponíveis, eles aparecerão aqui neste formato vertical." : activeSource === "Destaque" ? "Seus Destaques aparecerão aqui em cartões verticais para escolher." : "Seus Posts aparecerão aqui em miniaturas quadradas, no formato de publicação."}</p>
+          </div>
+          <span className="nrs-origin-format" aria-hidden="true">{activeSource === "Post" ? "1:1" : "9:16"}</span>
         </div>
       </section>
 
