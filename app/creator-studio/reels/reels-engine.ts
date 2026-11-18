@@ -116,7 +116,8 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
       context.drawImage(overlayImage, width - w - 28, 36, w, Math.min(h, height * .3));
       context.restore();
     }
-    drawText(context, options.sticker, width, height, height * .24, 76);\n    drawText(context, options.text, width, height, height * .48, 58);
+    drawText(context, options.sticker, width, height, height * .24, 76);
+    drawText(context, options.text, width, height, height * .48, 58);
     drawText(context, options.subtitle, width, height, height * .86, 31);
   };
 
