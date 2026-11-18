@@ -646,7 +646,7 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
           </div>
           <div className="cs-story-mode-picker">
             {["POST", "STORY", "REEL", "LIVE"].map(item => <button type="button" key={item} className={mode === item ? "active" : ""} onClick={() => {
-              if (item === "LIVE") { setCameraError("A criação de LIVE será disponibilizada em uma etapa própria."); return; }
+              if (item === "LIVE") { stopCamera(); window.location.assign("/creator-studio/live"); return; }
               setMode(item); setCameraError("");
               if (item === "POST" || item === "REEL") { stopCamera(); onOpenEditor(item === "POST" ? "POST" : "REELS"); }
             }}>{item}</button>)}
