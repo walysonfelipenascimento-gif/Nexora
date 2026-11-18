@@ -69,9 +69,9 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
   canvas.height = height;
   const context = canvas.getContext("2d", { alpha: false });
   if (!context) throw new Error("Não foi possível preparar a renderização.");
-  const canvasStream = canvas.captureStream(30);
   const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AudioContextClass) throw new Error("Este navegador não oferece suporte à mixagem de áudio necessária para exportar o Reels.");
+  const canvasStream = canvas.captureStream(30);
   const audioContext = new AudioContextClass();
   const destination = audioContext.createMediaStreamDestination();
   if (destination) destination.stream.getAudioTracks().forEach((track) => canvasStream.addTrack(track));
@@ -80,7 +80,7 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
   video.playsInline = true;
   video.preload = "auto";
   video.muted = false;
-  video.volume = Math.max(0, Math.min(1, options.originalVolume));
+  video.volume = 1;
   video.playbackRate = Math.max(.25, Math.min(2, options.speed));
   video.style.position = "fixed";
   video.style.left = "-10000px";
@@ -157,7 +157,7 @@ export async function renderReels(options: ReelsRenderOptions): Promise<{ blob: 
     });
     streamRecorder.start(250);
     if (music) {
-      try { await music.play(); } catch { /* The user gesture normally unlocks audio; continue with video if blocked. */ }
+      await music.play();
     }
 
     for (let index = 0; index < options.clips.length; index += 1) {
