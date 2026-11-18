@@ -242,13 +242,14 @@ function StoryStudio({ onOpenEditor }: { onOpenEditor: (format: "POST" | "REELS"
 
   async function capturePhoto() {
     const video = cameraVideoRef.current;
-    if (!video || !video.videoWidth || !video.videoHeight) {
+    const stream = cameraStreamRef.current;
+    if (!video || !stream || !video.videoWidth || !video.videoHeight) {
       setCameraError("A câmera ainda está iniciando. Aguarde a imagem aparecer e tente novamente.");
       return;
     }
     setBusy(true);
     try {
-      const blob = await captureNexoraPhoto(video, cameraStreamRef.current!);
+      const blob = await captureNexoraPhoto(video, stream);
       setLocalMedia(new File([blob], "nexora-story.jpg", { type: blob.type || "image/jpeg" }));
     } catch (error) {
       setCameraError(error instanceof Error ? error.message : "A captura não pôde ser concluída.");
