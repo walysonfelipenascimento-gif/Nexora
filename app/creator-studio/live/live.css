@@ -7,7 +7,7 @@
 .nl-camera-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:radial-gradient(ellipse at 50% 35%,#b5a18f,#596d72 48%,#182327 100%)}
 .nl-camera-orb{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;font-size:64px;font-weight:800;color:#fff;background:linear-gradient(140deg,#4bd8ff,#8b68ff,#db72d7);box-shadow:0 0 70px #73caff55}
 .nl-camera-placeholder button{border:1px solid #ffffff8c;background:#ffffff24;color:#fff;border-radius:22px;padding:12px 22px;font-weight:700;backdrop-filter:blur(14px)}
-.nl-camera-placeholder p{font-size:11px;color:#fffbd;margin:0}
+.nl-camera-placeholder p{font-size:11px;color:#ffffffbd;margin:0}
 .nl-live-top{position:absolute;top:22px;left:20px;right:20px;display:flex;align-items:center;gap:12px;z-index:2}
 .nl-live-status{background:#f33e4e;color:#fff;border-radius:24px;padding:9px 16px;font-size:14px;font-weight:600;box-shadow:0 4px 18px #e9273b44}
 .nl-live-status span{font-size:12px;margin-right:5px}
