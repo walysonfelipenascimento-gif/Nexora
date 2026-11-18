@@ -28,6 +28,7 @@ type Reel = {
 
 const demoReels: Reel[] = [
   { id: 1, user: "flores.em.movimento", name: "Flores em Movimento", avatar: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=120&h=120&fit=crop", caption: "Um instante de calma: veja uma flor se abrir diante dos seus olhos. 🌸✨", song: "Natureza em foco · som ambiente", likes: 28400, comments: 1840, shares: 927, video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", tint: "sunset" },
+  { id: "nexora-luxury-pair-2026", user: "nexora.oficial", name: "Nexora · Coleção Exclusiva", avatar: "https://d2ol7oe51mr4n9.cloudfront.net/user_3MI5ygmPzDojCam6kLfbEScZRJM/3c452ee0-0e32-433f-b0b8-3b1c350850c5.jpg", caption: "Dois tênis. Uma conversa. Uma presença que não passa despercebida. 💜✨", song: "Som original · Nexora — Par de Luxo", likes: 0, comments: 0, shares: 0, video: "https://d2ol7oe51mr4n9.cloudfront.net/user_3MI5ygmPzDojCam6kLfbEScZRJM/6d487e09-78df-44ba-9d7e-3933ab07406d.mp4", tint: "violet" },
   { id: 2, user: "mundosempressa", name: "Mundo sem pressa", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop", caption: "Um lugar tão surreal que parece outro planeta. Você visitaria? 🌋", song: "Natureza em foco · áudio demo", likes: 19300, comments: 742, shares: 1260, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", tint: "violet" },
   { id: 3, user: "memes.da.nexa", name: "Memes da Nexa", avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&h=120&fit=crop", caption: "Eu ensaiando a resposta perfeita… e na hora falando “pois é né” 🤡", song: "Humor de milhões · áudio demo", likes: 36200, comments: 2310, shares: 3100, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", tint: "violet" },
   { id: 4, user: "rotas.secretas", name: "Rotas Secretas", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&h=120&fit=crop", caption: "Uma lagoa escondida entre montanhas. Salva esse destino para sonhar depois. 💎", song: "Diário de viagem · áudio demo", likes: 15700, comments: 598, shares: 1830, video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", tint: "sunset" },
@@ -151,7 +152,8 @@ export default function ReelsPage() {
   const allReels = [...publishedReels, ...demoReels];
   const reel = allReels[Math.min(index, allReels.length - 1)];
   const isPublishedReel = publishedReels.some((item) => item.id === reel.id);
-  const availableVideoSources = isPublishedReel || reel.id === 1 ? [reel.video] : Array.from(new Set(allReels.map((item) => item.video)));
+  const isLuxuryAdReel = reel.id === "nexora-luxury-pair-2026";
+  const availableVideoSources = isPublishedReel || reel.id === 1 || isLuxuryAdReel ? [reel.video] : Array.from(new Set(allReels.map((item) => item.video)));
   const activeVideoSource = availableVideoSources[(index + videoSourceIndex) % availableVideoSources.length];
 
   useEffect(() => {
@@ -443,8 +445,8 @@ export default function ReelsPage() {
           touchStart.current = null;
         }}>
         {!videoFailed ? <video key={`${reel.id}-${videoSourceIndex}`} ref={videoRef} className="reel-video" src={activeVideoSource} playsInline loop preload="auto" muted={muted} autoPlay onPlay={() => { if (!viewedReels.current.has(reel.id)) { viewedReels.current.add(reel.id); if (reel.databaseId && signedIn) { void recordStoredView(reel.databaseId).then((counted) => { if (counted) setPublishedReels((current) => current.map((item) => item.id === reel.id ? { ...item, views: Number(item.views || 0) + 1 } : item)); }).catch(() => undefined); } else { syncProfileReel("view", reel.id); } } }} onClick={() => setPaused((v) => !v)} onError={() => { if (videoSourceIndex < availableVideoSources.length - 1) setVideoSourceIndex((current) => current + 1); else { setVideoFailed(true); setPaused(true); } }} /> : <div className="reel-video-error"><strong>Esse vídeo não carregou 😕</strong><span>Não vamos fingir que é um vídeo mostrando uma foto. Tente passar para o próximo Reel.</span><button className="reels-primary" onClick={() => move(1)}>Próximo vídeo →</button></div>}
-        {!isPublishedReel && (reel.id === 1 ? <div className="reel-nature-label" key="nature-reel-label"><span>✦ NATUREZA EM MOVIMENTO</span><strong>Um momento de beleza natural</strong></div> : <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>)}
-        {!isPublishedReel && reel.id !== 1 && <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>}
+        {!isPublishedReel && !isLuxuryAdReel && (reel.id === 1 ? <div className="reel-nature-label" key="nature-reel-label"><span>✦ NATUREZA EM MOVIMENTO</span><strong>Um momento de beleza natural</strong></div> : <div className="reel-meme-hook" key={`caption-${reel.id}`}><em>POV · SITUAÇÃO REAL 😂</em>{reel.caption}</div>)}
+        {!isPublishedReel && reel.id !== 1 && !isLuxuryAdReel && <div className="reel-meme-sticker" key={`sticker-${reel.id}`}><img src={reel.image || imageForCaption(reel.caption)} alt="Imagem temática do meme" /><span>😂 MEME</span></div>}
         <div className="reel-vignette" />
         <div className="reel-top-controls">
           <span className="glass-chip"><span className="live-dot" /> PARA VOCÊ</span>
