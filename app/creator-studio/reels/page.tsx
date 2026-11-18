@@ -247,7 +247,7 @@ export default function CreateReelsPage() {
     setNotice("Preparando seu Reels. Não feche esta tela durante a exportação.");
     try {
       const result = await renderReels({
-        clips, soundtrack, overlayImage: overlayFile, text: overlayText,
+        clips, soundtrack, overlayImage: overlayFile, text: overlayText, sticker,
         subtitle, filter: filter.css, originalVolume, soundtrackVolume,
         speed, transition, onProgress: setProgress,
       });
