@@ -6,7 +6,7 @@ Dedicated Reels creation flow at `/creator-studio/reels`, isolated from the shar
 1. **Create:** camera capture picker and multi-file gallery import.
 2. **Edit:** vertical 9:16 preview, clip selection, duplicate, remove and reorder.
 3. **Timeline:** visual clip strip, playhead, video trim-in/trim-out, still-image duration and split-at-playhead.
-4. **Tools:** text overlay, lower caption track, image overlay, filters, speed, source/music volume and cut/fade-to-black transition.
+4. **Tools:** text overlay, emoji/figure overlay, lower caption track, image overlay, filters, speed, source/music volume and cut/fade-to-black transition.
 5. **Publish:** cover selection, caption, audience/comment/Story-share settings and local video export.
 
 ## Local functionality
