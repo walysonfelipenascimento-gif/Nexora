@@ -2,7 +2,7 @@ name: Validate Nexora Reels
 on:
   push:
     branches:
-      - feat/nexora-reels-on-production-base
+      - nexora/primeira-etapa-base-segura
   pull_request:
     branches:
       - nexora/primeira-etapa-base-segura
