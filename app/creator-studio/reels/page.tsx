@@ -234,6 +234,7 @@ export default function NexoraReelsStartPage() {
       </section>
 
       </> : <section className="nrs-editor-screen" aria-label="Editor de Reels">
+        <input ref={galleryInput} className="nrs-hidden" type="file" accept="image/*,video/*" multiple onChange={event => { importFiles(event.currentTarget.files); event.currentTarget.value = ""; }}/>
         <div className="nrs-editor-topbar">
           <button type="button" className="nrs-editor-back" onClick={()=>setEditorOpen(false)} aria-label="Voltar à seleção">‹</button>
           <div><b>Reels Studio</b><small>{selectedMedia.length} {selectedMedia.length===1?"clipe":"clipes"} na edição</small></div>
