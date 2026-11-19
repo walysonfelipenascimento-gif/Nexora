@@ -120,6 +120,12 @@ export default function Home() {
   const [saved, setSaved] = useState<number[]>([]);
   const [reposted, setReposted] = useState<number[]>([]);
   const [following, setFollowing] = useState<string[]>([]);
+  const [dismissedFeedSuggestions, setDismissedFeedSuggestions] = useState<string[]>([]);
+  const feedSuggestedPeople = [
+    { id: "antonio", name: "Antonio", username: "antonio", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=320&h=320&fit=crop" },
+    { id: "edu", name: "Edu Lizar", username: "edu.lizar", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=320&h=320&fit=crop" },
+    { id: "isabela", name: "Isabela", username: "isabela", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=320&h=320&fit=crop" },
+  ];
   const [commentsOpen, setCommentsOpen] = useState<number | null>(null);
   const [comments, setComments] = useState<Record<number, string[]>>({});
   useEffect(() => { try { const stored = localStorage.getItem("nexora-comments-v1"); if (stored) { const all = JSON.parse(stored); const feed: Record<number,string[]> = {}; Object.entries(all).forEach(([key,value]) => { if (key.startsWith("feed-") && Array.isArray(value)) feed[Number(key.slice(5))] = value as string[]; }); setComments(feed); } } catch {} const sync = (event: StorageEvent) => { if (event.key !== "nexora-comments-v1" || !event.newValue) return; try { const all = JSON.parse(event.newValue); const feed: Record<number,string[]> = {}; Object.entries(all).forEach(([key,value]) => { if (key.startsWith("feed-") && Array.isArray(value)) feed[Number(key.slice(5))] = value as string[]; }); setComments(feed); } catch {} }; window.addEventListener("storage",sync); return () => window.removeEventListener("storage",sync); }, []);
@@ -1116,18 +1122,19 @@ export default function Home() {
       </section>
 
       <section className="feed" aria-label={t("socialFeed")}>
-        {posts.map((post) => (
-          <article className="post-card" key={post.id}>
-            <header className="post-header">
+        {posts.map((post, index) => (
+          <article className="post-card nx-immersive-post" key={post.id}>
+            <header className="post-header nx-immersive-header">
               <img className="avatar" src={post.avatar} alt="" />
               <div className="post-author">
                 <strong>{post.name} {post.verified && <Verified />}</strong>
                 <span>@{post.username}</span>
               </div>
+              <button type="button" className="nx-creator-follow" onClick={() => setFollowing(current => current.includes(post.username) ? current.filter(name => name !== post.username) : [...current, post.username])}>{following.includes(post.username) ? "Seguindo" : "Seguir"}</button>
               <button className="more-button" aria-label={t("moreOptions")} onClick={() => setNotice("Mais opções de publicação serão adicionadas.")}>⋮</button>
             </header>
             {post.image ? (post.mediaType === "video" ? <video className="post-image" src={post.image} controls playsInline /> : <img className="post-image" src={post.image} alt={`Publicação de ${post.name}`} />) : <div className="text-post-visual"><span>NEXORA ✦</span><p>{post.caption}</p></div>}
-            <div className="post-bottom">
+            <div className="post-bottom nx-immersive-bottom">
               <div className="post-actions">
                 <button className={`post-action ${liked.includes(post.id) ? "is-liked" : ""}`} aria-label={t("like")} onClick={() => setLiked(current => current.includes(post.id) ? current.filter(id => id !== post.id) : [...current, post.id])}>
                   <svg viewBox="0 0 24 24"><path d="M20.8 8.7c0 5.1-8.8 11-8.8 11s-8.8-5.9-8.8-11A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z"/></svg><span>{(post.likes + (liked.includes(post.id) ? 1 : 0)).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 })}</span>
@@ -1155,6 +1162,25 @@ export default function Home() {
               </div>}
             </div>
           </article>
+          {index === 0 && feedSuggestedPeople.some(person => !dismissedFeedSuggestions.includes(person.id)) && (
+            <section className="nx-feed-discovery" aria-label="Sugestões de perfis Nexora">
+              <div className="nx-feed-discovery-heading">
+                <div><span>EXPANDA SEU UNIVERSO</span><h2>Pessoas para conhecer</h2><p>Descubra novos perfis na comunidade</p></div>
+                <button type="button" onClick={() => setDismissedFeedSuggestions(feedSuggestedPeople.map(person => person.id))}>Dispensar</button>
+              </div>
+              <div className="nx-feed-discovery-track">
+                {feedSuggestedPeople.filter(person => !dismissedFeedSuggestions.includes(person.id)).map(person => (
+                  <article className="nx-feed-person-card" key={person.id}>
+                    <button type="button" className="nx-feed-person-dismiss" aria-label={`Dispensar ${person.name}`} onClick={() => setDismissedFeedSuggestions(current => [...current, person.id])}>×</button>
+                    <img src={person.avatar} alt={`Foto de ${person.name}`} />
+                    <strong>{person.name}</strong><span>@{person.username}</span>
+                    <small>Sugestão da comunidade</small>
+                    <button type="button" className={following.includes(person.username) ? "is-following" : ""} onClick={() => setFollowing(current => current.includes(person.username) ? current.filter(name => name !== person.username) : [...current, person.username])}>{following.includes(person.username) ? "Seguindo" : "Seguir"}</button>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
         ))}
       </section>
 
