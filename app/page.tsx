@@ -1123,6 +1123,7 @@ export default function Home() {
 
       <section className="feed" aria-label={t("socialFeed")}>
         {posts.map((post, index) => (
+          <>
           <article className="post-card nx-immersive-post" key={post.id}>
             <header className="post-header nx-immersive-header">
               <img className="avatar" src={post.avatar} alt="" />
@@ -1181,6 +1182,7 @@ export default function Home() {
               </div>
             </section>
           )}
+          </>
         ))}
       </section>
 
