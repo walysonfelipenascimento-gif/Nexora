@@ -601,7 +601,7 @@ export default function ProfilePage() {
         .settings-choice.active{border-color:#7e83ff;background:#6654ff20}
         .settings-footer{flex:0 0 auto;padding:12px 17px calc(env(safe-area-inset-bottom) + 12px);border-top:1px solid #ffffff12;background:#0d0c18;display:flex;gap:8px}
         .settings-footer button{flex:1}
-              .profile-toast{position:fixed;z-index:150;left:50%;bottom:92px;transform:translateX(-50%);background:#19172a;border:1px solid #8f78ff66;color:#fff;padding:12px 16px;border-radius:14px;font-size:12px;box-shadow:0 8px 30px #0008;width:max-content;max-width:90vw}
+        .profile-toast{position:fixed;z-index:150;left:50%;bottom:92px;transform:translateX(-50%);background:#19172a;border:1px solid #8f78ff66;color:#fff;padding:12px 16px;border-radius:14px;font-size:12px;box-shadow:0 8px 30px #0008;width:max-content;max-width:90vw}
         @media(min-width:700px){.profile-shell{padding:0 24px}.profile-cover{height:230px}.profile-identity{padding:0 16px}.profile-tabs{gap:8px}.profile-tab{font-size:12px}.profile-grid{gap:9px}.profile-tile{border-radius:16px}}
         @media(max-width:380px){.profile-cover{height:145px}.profile-identity-actions{gap:5px}.profile-btn{padding:9px 10px;font-size:10px}.profile-name{font-size:20px}.profile-tab{padding:10px 9px;font-size:10px}.highlight-row{gap:9px}}
         /* Nexora profile — Instagram-inspired stats, with Nexora neon identity */
@@ -1019,3 +1019,4 @@ export default function ProfilePage() {
       {toast && <button className="profile-toast" role="status" onClick={() => setToast("")}>{toast}　×</button>}
     </main>
   );
+}
