@@ -199,7 +199,8 @@ export default function ProfilePage() {
     window.addEventListener("nexora-language-change", syncLanguage);
     window.addEventListener("storage", syncLanguage);
     return () => { window.removeEventListener("nexora-language-change", syncLanguage); window.removeEventListener("storage", syncLanguage); };
-  }, []);  const profileTabLabels: Record<TabName, string> = {
+  }, []);
+  const profileTabLabels: Record<TabName, string> = {
     "Publicações": translate(uiLanguage, "profilePosts"),
     "Reels": translate(uiLanguage, "profileReels"),
     "Preferências": translate(uiLanguage, "profilePreferences"),
@@ -400,7 +401,8 @@ export default function ProfilePage() {
         img.src = String(reader.result);
       };
       reader.readAsDataURL(file);
-    });  }
+    });
+  }
 
   useEffect(() => {
     if (!openedPost) return;
@@ -798,9 +800,8 @@ export default function ProfilePage() {
         }
         @media(max-width:350px){
           .profile-lower .profile-tab-glyph{font-size:18px}
-          .profile-lower .profile-tile-engagement{gap:3px;font-size:8px}        }
-      `}
-
+          .profile-lower .profile-tile-engagement{gap:3px;font-size:8px}
+        }
         /* Navegação cinematográfica dos Posts: cartões grandes, separados por um intervalo intencional. */
         .profile-lower .profile-inline-post-feed{display:flex;align-items:stretch;gap:clamp(78px,24vw,210px);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-snap-stop:always;scroll-padding-inline:7vw;overscroll-behavior-x:contain;padding:18px 7vw 30px;margin:0 -14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
         .profile-lower .profile-inline-post-feed::-webkit-scrollbar{display:none}
@@ -817,6 +818,8 @@ export default function ProfilePage() {
         @media(min-width:700px){.profile-lower .profile-inline-post-feed{gap:clamp(120px,20vw,250px);padding-inline:5vw;margin-inline:-24px}.profile-lower .profile-inline-post-card{flex-basis:min(38vw,390px);width:min(38vw,390px)}}
         @media(max-width:420px){.profile-lower .profile-inline-post-feed{gap:24vw;padding-inline:6vw;margin-inline:-14px}.profile-lower .profile-inline-post-card{flex-basis:62vw;width:62vw;border-radius:19px}.profile-lower .profile-inline-post-media{border-radius:18px}.profile-cinematic-card-overlay{padding:15px 13px}.profile-cinematic-card-overlay>strong{font-size:17px}}
         @media(prefers-reduced-motion:reduce){.profile-lower .profile-inline-post-feed{scroll-behavior:auto}}
+      `}
+
 </style>
 
       <div className="profile-shell">
