@@ -125,3 +125,60 @@
 .nrs-editor-bottom-actions button.primary{border:0;background:linear-gradient(100deg,#55e3ed,#8b8bfa 65%,#d467e5);color:#0b1120;font-weight:800}
 .nrs-editor-bottom-actions button span{margin-left:6px}
 @media(max-width:390px){.nrs-editor-screen{padding:11px;border-radius:18px}.nrs-editor-preview{width:min(100%,230px)}.nrs-editor-clip{flex-basis:54px;width:54px;height:59px}.nrs-editor-timeline{padding:10px 8px}.nrs-editor-bottom-actions button{font-size:9px}}
+
+
+/* Refinement pass: tactile controls, layered light and responsive feedback */
+.nrs-page{isolation:isolate}
+.nrs-page button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.nrs-page button:focus-visible,.nrs-page a:focus-visible{outline:2px solid #79f2f4;outline-offset:3px}
+.nrs-page button:disabled{cursor:not-allowed;filter:saturate(.45);opacity:.42}
+.nrs-aurora{pointer-events:none;filter:saturate(1.22)}
+.nrs-aurora:after{content:"";position:absolute;inset:-12% -18%;background:radial-gradient(ellipse at 18% 30%,#28dce51a,transparent 38%),radial-gradient(ellipse at 78% 22%,#a34be51c,transparent 36%),radial-gradient(ellipse at 54% 75%,#4d6dff12,transparent 42%);mix-blend-mode:screen;animation:nrs-aurora-breathe 11s ease-in-out infinite alternate}
+.nrs-aurora i{will-change:transform,opacity;filter:blur(32px);animation:nrs-aurora-drift 16s ease-in-out infinite alternate}
+.nrs-aurora i:nth-child(2){animation-delay:-4s}.nrs-aurora i:nth-child(3){animation-delay:-8s}.nrs-aurora i:nth-child(4){animation-delay:-11s}.nrs-aurora i:nth-child(5){animation-delay:-6s}
+@keyframes nrs-aurora-drift{0%{transform:translate3d(-3%,0,0) rotate(-7deg) scale(.94);opacity:.48}50%{transform:translate3d(4%,3%,0) rotate(5deg) scale(1.08);opacity:.82}100%{transform:translate3d(-1%,6%,0) rotate(-3deg) scale(1);opacity:.58}}
+@keyframes nrs-aurora-breathe{0%{opacity:.45;transform:scale(.96)}100%{opacity:.9;transform:scale(1.05)}}
+.nrs-source-card,.nrs-open-gallery,.nrs-filters button,.nrs-selected-head>button,.nrs-thumb,.nrs-add,.nrs-continue,.nrs-origin-tabs button,.nrs-origin-add,.nrs-editor-screen button{transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .2s ease,background .2s ease,box-shadow .2s ease,filter .2s ease}
+.nrs-source-card:hover,.nrs-origin-tabs button:hover{transform:translateY(-2px);filter:brightness(1.12)}
+.nrs-open-gallery:hover,.nrs-selected-head>button:not(:disabled):hover{color:#8ef5f6;text-shadow:0 0 14px #5ce5ed77}
+.nrs-filters button:hover{border-color:#70e8ee80;color:#e9fdff}
+.nrs-media{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.nrs-media:hover{transform:translateY(-2px);box-shadow:0 8px 22px #0006}
+.nrs-media.chosen{box-shadow:0 0 0 1px #54e4ed,0 0 20px #54e4ed30}
+.nrs-favorite{z-index:3;display:grid;place-items:center;width:29px;height:29px;padding:0;border:1px solid #ffffff48;border-radius:50%;background:#080d19b8;color:#fff;font-size:15px;line-height:1;backdrop-filter:blur(8px)}
+.nrs-favorite.on{border-color:#ffdc79;background:#46361d;color:#ffdc79;box-shadow:0 0 15px #ffdc7955}
+.nrs-favorite:active{transform:scale(.84)}
+.nrs-continue:not(:disabled),.nrs-editor-export,.nrs-editor-bottom-actions button.primary{position:relative;overflow:hidden;box-shadow:0 5px 18px #62dfe83b,inset 0 1px 0 #ffffff72}
+.nrs-continue:not(:disabled):before,.nrs-editor-export:before,.nrs-editor-bottom-actions button.primary:before{content:"";position:absolute;inset:0;transform:translateX(-130%);background:linear-gradient(105deg,transparent 25%,#ffffff75 48%,transparent 70%);transition:transform .65s ease}
+.nrs-continue:not(:disabled):hover:before,.nrs-editor-export:hover:before,.nrs-editor-bottom-actions button.primary:hover:before{transform:translateX(130%)}
+.nrs-continue:not(:disabled):active,.nrs-editor-export:active,.nrs-editor-bottom-actions button:active,.nrs-editor-tool-tabs button:active,.nrs-editor-choice-row button:active{transform:scale(.96)}
+.nrs-editor-screen{animation:nrs-editor-enter .38s cubic-bezier(.2,.75,.25,1) both}
+@keyframes nrs-editor-enter{from{opacity:0;transform:translateY(13px) scale(.99);filter:blur(5px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+.nrs-editor-preview{box-shadow:0 0 0 1px #72e9f022,0 0 32px #4adce92a,0 16px 38px #0008}
+.nrs-editor-preview:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(145deg,#ffffff12,transparent 25%,transparent 75%,#9b70ff0c)}
+.nrs-editor-clip:hover{border-color:#9af6f7;transform:translateY(-2px)}
+.nrs-editor-clip.active{box-shadow:0 0 0 1px #5be5ed,0 0 18px #54e5ed66,inset 0 0 12px #54e5ed18}
+.nrs-editor-clip-add:hover,.nrs-editor-timeline-head button:hover{border-color:#7af2f4;background:#16404b;box-shadow:0 0 18px #54e5ed30}
+.nrs-editor-tool-tabs button:hover{color:#eaffff;background:#ffffff0a}
+.nrs-editor-tool-tabs button.active{box-shadow:inset 0 0 0 1px #68dfe899,0 0 15px #68dfe822;background:linear-gradient(105deg,#1b5260,#3b315e)}
+.nrs-editor-choice-row button:hover{border-color:#72e9ef;box-shadow:0 0 14px #54e5ed22}
+.nrs-editor-choice-row button.selected{box-shadow:inset 0 0 0 1px #64e5ed,0 0 16px #64e5ed32}
+.nrs-editor-text-overlay{animation:nrs-text-pop .22s ease-out both}
+@keyframes nrs-text-pop{from{opacity:0;transform:translateY(-44%) scale(.96)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+.nrs-settings-backdrop{position:fixed;z-index:100;inset:0;display:grid;place-items:center;padding:18px;background:#02040bd9;backdrop-filter:blur(15px);animation:nrs-fade-in .18s ease both}
+.nrs-settings-panel{width:min(100%,390px);padding:18px;border:1px solid #ffffff26;border-radius:21px;background:linear-gradient(145deg,#17243a,#0b101d 75%);box-shadow:0 24px 90px #000b,0 0 32px #58dfe51a;animation:nrs-editor-enter .25s ease both}
+.nrs-settings-panel>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.nrs-settings-panel>header small{color:#6ce6ed;font-size:8px;letter-spacing:.18em;font-weight:800}
+.nrs-settings-panel>header h2{margin:5px 0 0;color:#f4f7ff;font:700 17px 'Space Grotesk'}
+.nrs-settings-panel>header button{width:32px;height:32px;border:1px solid #ffffff22;border-radius:10px;background:#ffffff0a;color:#fff;font-size:22px}
+.nrs-settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid #ffffff12}
+.nrs-settings-row span{display:flex;flex-direction:column;gap:4px}
+.nrs-settings-row b{color:#eaf2ff;font-size:11px}
+.nrs-settings-row small{color:#91a2ba;font-size:9px}
+.nrs-settings-row strong{color:#8debf0;font-size:10px}
+.nrs-settings-done{width:100%;height:41px;margin-top:14px;border:0;border-radius:11px;background:linear-gradient(100deg,#55e3ed,#8b8bfa 65%,#d467e5);color:#0b1120;font-size:11px;font-weight:800;box-shadow:0 5px 18px #62dfe83b}
+@keyframes nrs-fade-in{from{opacity:0}to{opacity:1}}
+.nrs-toast{animation:nrs-toast-in .24s ease-out both;backdrop-filter:blur(14px);box-shadow:0 12px 34px #0009,0 0 18px #51e2eb1b}
+@keyframes nrs-toast-in{from{opacity:0;transform:translate(-50%,9px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(hover:none){.nrs-source-card:hover,.nrs-origin-tabs button:hover,.nrs-media:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){.nrs-aurora:after,.nrs-aurora i,.nrs-editor-screen,.nrs-editor-text-overlay,.nrs-settings-backdrop,.nrs-settings-panel,.nrs-toast{animation:none!important}.nrs-page *{scroll-behavior:auto!important;transition:none!important}}
