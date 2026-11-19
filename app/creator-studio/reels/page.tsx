@@ -18,6 +18,15 @@ export default function NexoraReelsStartPage() {
   const [cameraError, setCameraError] = useState("");
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [recording, setRecording] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [activeClip, setActiveClip] = useState(0);
+  const [activeTool, setActiveTool] = useState<"Texto" | "Áudio" | "Efeitos" | "Transições" | "Ajustes">("Texto");
+  const [overlayText, setOverlayText] = useState("");
+  const [previewFilter, setPreviewFilter] = useState("none");
+  const [transitionStyle, setTransitionStyle] = useState("Dissolver");
+  const [clipDuration, setClipDuration] = useState(0);
+  const selectedMedia = useMemo(() => media.filter(item => selected.includes(item.id)), [media, selected]);
+  const currentClip = selectedMedia[activeClip] ?? selectedMedia[0];
   const galleryInput = useRef<HTMLInputElement>(null);
   const cameraVideo = useRef<HTMLVideoElement>(null);
   const cameraStream = useRef<MediaStream | null>(null);
@@ -157,6 +166,7 @@ export default function NexoraReelsStartPage() {
         <button className="nrs-settings" type="button" aria-label="Configurações" onClick={() => setMessage("Configurações do Reels Studio")}>⚙</button>
       </header>
 
+      {!editorOpen ? <>
       <section className="nrs-hero">
         <span className="nrs-eyebrow">CENTRAL DE CRIAÇÃO</span>
         <h1>Vamos criar<br/>algo incrível</h1>
@@ -198,7 +208,7 @@ export default function NexoraReelsStartPage() {
         <div className="nrs-selected-strip">
           {media.filter(item=>selected.includes(item.id)).map(item=><button type="button" className="nrs-thumb" key={item.id} onClick={()=>toggleSelected(item.id)} aria-label="Remover da seleção">{item.kind==="Vídeo"?<video src={item.url} muted/>:<img src={item.url} alt=""/>}</button>)}
           <button className="nrs-add" type="button" aria-label="Selecionar mais fotos e vídeos na galeria" onClick={()=>galleryInput.current?.click()}><span>＋</span><small>Adicionar</small></button>
-          <button className="nrs-continue" type="button" disabled={!selected.length} onClick={()=>setMessage("Mídias selecionadas. A próxima etapa do editor será aberta nesta experiência.")}>Continuar <span>→</span></button>
+          <button className="nrs-continue" type="button" disabled={!selected.length} onClick={()=>{setActiveClip(0);setEditorOpen(true);setMessage("");}}>Continuar <span>→</span></button>
         </div>
       </section>
 
@@ -223,7 +233,53 @@ export default function NexoraReelsStartPage() {
         </div>
       </section>
 
-      {cameraOpen?<div className="nrs-camera-backdrop" role="dialog" aria-modal="true" aria-label="Câmera Nexora">
+      </> : <section className="nrs-editor-screen" aria-label="Editor de Reels">
+        <div className="nrs-editor-topbar">
+          <button type="button" className="nrs-editor-back" onClick={()=>setEditorOpen(false)} aria-label="Voltar à seleção">‹</button>
+          <div><b>Reels Studio</b><small>{selectedMedia.length} {selectedMedia.length===1?"clipe":"clipes"} na edição</small></div>
+          <button type="button" className="nrs-editor-export" onClick={()=>setMessage("A próxima etapa será a tela de exportação. Sua edição continua preservada.")}>Exportar</button>
+        </div>
+        <div className="nrs-editor-preview-wrap">
+          <div className="nrs-editor-preview" style={{filter:previewFilter}}>
+            {currentClip ? (currentClip.kind==="Vídeo"
+              ? <video key={currentClip.id} src={currentClip.url} controls playsInline onLoadedMetadata={event=>setClipDuration(event.currentTarget.duration||0)} onTimeUpdate={event=>setClipDuration(event.currentTarget.duration||0)} />
+              : <img src={currentClip.url} alt="Prévia do clipe selecionado" />)
+              : <div className="nrs-editor-no-media">Selecione uma mídia para visualizar</div>}
+            {overlayText ? <div className="nrs-editor-text-overlay">{overlayText}</div> : null}
+          </div>
+          <div className="nrs-editor-preview-caption"><span>PRÉVIA 9:16</span><span>{currentClip?.kind ?? "Sem mídia"}{clipDuration>0 ? " · "+Math.round(clipDuration)+"s" : ""}</span></div>
+        </div>
+        <div className="nrs-editor-timeline">
+          <div className="nrs-editor-timeline-head"><b>Linha do tempo</b><span>{selectedMedia.length} clipes</span><button type="button" onClick={()=>galleryInput.current?.click()}>＋ Adicionar mídia</button></div>
+          <div className="nrs-editor-track-label">VÍDEO 1</div>
+          <div className="nrs-editor-clips">
+            {selectedMedia.map((item,index)=><button key={item.id} type="button" className={"nrs-editor-clip "+(activeClip===index?"active":"")} onClick={()=>{setActiveClip(index);setClipDuration(0);}} aria-label={"Editar clipe "+(index+1)}>
+              {item.kind==="Vídeo"?<video src={item.url} muted playsInline/>:<img src={item.url} alt=""/>}
+              <span>{item.kind==="Vídeo"?"▶ ":""}{index+1}</span>
+            </button>)}
+            <button type="button" className="nrs-editor-clip-add" onClick={()=>galleryInput.current?.click()} aria-label="Adicionar clipe">＋</button>
+          </div>
+          <div className="nrs-editor-track-label audio">ÁUDIO</div>
+          <div className="nrs-editor-audio-track"><span>＋ Adicionar áudio na próxima etapa</span></div>
+          <div className="nrs-editor-track-label text">TEXTO</div>
+          <div className="nrs-editor-text-track"><span>{overlayText ? "TEXTO · "+overlayText : "Adicione uma camada de texto pelas ferramentas"}</span></div>
+          <div className="nrs-editor-playhead" aria-hidden="true"><i/></div>
+        </div>
+        <div className="nrs-editor-tools">
+          <div className="nrs-editor-tool-tabs" role="tablist" aria-label="Ferramentas do editor">
+            {(["Texto","Áudio","Efeitos","Transições","Ajustes"] as const).map(tool=><button key={tool} type="button" role="tab" aria-selected={activeTool===tool} className={activeTool===tool?"active":""} onClick={()=>setActiveTool(tool)}>{tool}</button>)}
+          </div>
+          <div className="nrs-editor-tool-panel">
+            {activeTool==="Texto" ? <div className="nrs-editor-text-controls"><label htmlFor="nrs-overlay-text">Texto sobre o vídeo</label><input id="nrs-overlay-text" value={overlayText} onChange={event=>setOverlayText(event.target.value)} placeholder="Escreva uma legenda..." maxLength={100}/><small>O texto aparece na prévia e representa uma camada editável.</small></div> : null}
+            {activeTool==="Áudio" ? <div className="nrs-editor-coming"><b>Trilha de áudio</b><span>Importação e mixagem de áudio serão adicionadas na próxima tela do editor.</span></div> : null}
+            {activeTool==="Efeitos" ? <div className="nrs-editor-choice-row">{[{label:"Original",value:"none"},{label:"Cinema",value:"saturate(1.18) contrast(1.12)"},{label:"Frio",value:"saturate(.85) hue-rotate(12deg)"},{label:"Brilho",value:"brightness(1.15) saturate(1.1)"},{label:"P&B",value:"grayscale(1)"}].map(item=><button type="button" key={item.label} className={previewFilter===item.value?"selected":""} onClick={()=>setPreviewFilter(item.value)}>{item.label}</button>)}</div> : null}
+            {activeTool==="Transições" ? <div className="nrs-editor-choice-row">{["Dissolver","Deslizar","Zoom"].map(item=><button type="button" key={item} className={transitionStyle===item?"selected":""} onClick={()=>setTransitionStyle(item)}>{item}</button>)}</div> : null}
+            {activeTool==="Ajustes" ? <div className="nrs-editor-coming"><b>Formato vertical 9:16</b><span>Prévia preparada para Reels. Controles avançados de imagem e enquadramento serão adicionados nas próximas etapas.</span></div> : null}
+          </div>
+        </div>
+        <div className="nrs-editor-bottom-actions"><button type="button" onClick={()=>setEditorOpen(false)}>Voltar à galeria</button><button type="button" className="primary" onClick={()=>setMessage("Primeira tela do editor concluída. A próxima etapa será edição avançada e exportação.")}>Continuar edição <span>→</span></button></div>
+      </section>}
+      {cameraOpen && !editorOpen?<div className="nrs-camera-backdrop" role="dialog" aria-modal="true" aria-label="Câmera Nexora">
         <div className="nrs-camera-panel">
           <header><div><b>Câmera Nexora</b><small>Mesmo perfil de captura dos Stories e da LIVE</small></div><button type="button" onClick={()=>{stopCamera();setCameraOpen(false);}} aria-label="Fechar câmera">×</button></header>
           <div className="nrs-camera-view">
