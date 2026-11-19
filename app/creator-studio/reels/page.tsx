@@ -14,6 +14,7 @@ export default function NexoraReelsStartPage() {
   const [activeSource, setActiveSource] = useState<"Story" | "Destaque" | "Post">("Story");
   const [message, setMessage] = useState("");
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
@@ -163,7 +164,7 @@ export default function NexoraReelsStartPage() {
         <a href="/creator-studio" className="nrs-brand" aria-label="Voltar ao Creator Studio">
           <span className="nrs-wordmark">NEXORA</span><span className="nrs-brand-sub">REELS STUDIO</span>
         </a>
-        <button className="nrs-settings" type="button" aria-label="Configurações" onClick={() => setMessage("Configurações do Reels Studio")}>⚙</button>
+        <button className="nrs-settings" type="button" aria-label="Configurações" onClick={() => setSettingsOpen(true)}>⚙</button>
       </header>
 
       {!editorOpen ? <>
@@ -192,7 +193,7 @@ export default function NexoraReelsStartPage() {
           {visible.map((item,index)=>{const chosen=selected.includes(item.id);return <button key={item.id} type="button" className={"nrs-media "+(chosen?"chosen":"")} onClick={()=>toggleSelected(item.id)} aria-label={(chosen?"Remover ":"Selecionar ")+item.file.name}>
             {item.kind==="Vídeo"?<video src={item.url} muted playsInline/>:<img src={item.url} alt={item.file.name}/>}
             <span className="nrs-media-check">{chosen?selected.indexOf(item.id)+1:""}</span>{item.kind==="Vídeo"?<span className="nrs-video-mark">▶</span>:null}
-            <span className={"nrs-favorite "+(item.favorite?"on":"")} onClick={event=>{event.stopPropagation();setMedia(current=>current.map(m=>m.id===item.id?{...m,favorite:!m.favorite}:m));}} role="button" aria-label="Alternar favorito">★</span>
+            <button type="button" className={"nrs-favorite "+(item.favorite?"on":"")} onClick={event=>{event.stopPropagation();setMedia(current=>current.map(m=>m.id===item.id?{...m,favorite:!m.favorite}:m));}} aria-label={item.favorite?"Remover dos favoritos":"Adicionar aos favoritos"} aria-pressed={item.favorite}>★</button>
             <span className="nrs-media-number">{index+1}</span>
           </button>;})}
         </div> : <div className="nrs-empty-gallery">
@@ -280,6 +281,15 @@ export default function NexoraReelsStartPage() {
         </div>
         <div className="nrs-editor-bottom-actions"><button type="button" onClick={()=>setEditorOpen(false)}>Voltar à galeria</button><button type="button" className="primary" onClick={()=>setMessage("Primeira tela do editor concluída. A próxima etapa será edição avançada e exportação.")}>Continuar edição <span>→</span></button></div>
       </section>}
+      {settingsOpen ? <div className="nrs-settings-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setSettingsOpen(false);}}>
+        <section className="nrs-settings-panel" role="dialog" aria-modal="true" aria-labelledby="nrs-settings-title">
+          <header><div><small>PERSONALIZAÇÃO</small><h2 id="nrs-settings-title">Configurações do Reels</h2></div><button type="button" aria-label="Fechar configurações" onClick={()=>setSettingsOpen(false)}>×</button></header>
+          <div className="nrs-settings-row"><span><b>Formato de criação</b><small>Proporção vertical para Reels</small></span><strong>9:16</strong></div>
+          <div className="nrs-settings-row"><span><b>Prévia de efeitos</b><small>Aplicação visual em tempo real</small></span><strong>Ativa</strong></div>
+          <div className="nrs-settings-row"><span><b>Privacidade dos arquivos</b><small>As mídias ficam nesta sessão do navegador</small></span><strong>Local</strong></div>
+          <button type="button" className="nrs-settings-done" onClick={()=>setSettingsOpen(false)}>Concluir</button>
+        </section>
+      </div> : null}
       {cameraOpen && !editorOpen?<div className="nrs-camera-backdrop" role="dialog" aria-modal="true" aria-label="Câmera Nexora">
         <div className="nrs-camera-panel">
           <header><div><b>Câmera Nexora</b><small>Mesmo perfil de captura dos Stories e da LIVE</small></div><button type="button" onClick={()=>{stopCamera();setCameraOpen(false);}} aria-label="Fechar câmera">×</button></header>
