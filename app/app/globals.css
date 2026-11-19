@@ -2181,3 +2181,44 @@ button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:fo
 .create-hub-planning .create-hub-art{background:linear-gradient(145deg,rgba(75,218,224,.35),rgba(122,108,255,.34))}
 @media(max-width:420px){.create-hub-shell{padding:18px!important;border-radius:25px!important}.create-hub-grid{gap:10px}.create-hub-card{min-height:164px!important;padding:13px!important;border-radius:19px!important}.create-hub-art{width:50px;height:50px;border-radius:16px}.create-hub-copy strong{font-size:14px}.create-hub-copy small{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.create-hub-card{transition:none!important}}
+
+
+/* Feed imersivo Nexora — escopo restrito às publicações e descoberta */
+.nx-immersive-post{position:relative;isolation:isolate;min-height:min(790px,calc(100svh - 205px));height:min(790px,calc(100svh - 205px));overflow:hidden;border:1px solid rgba(135,145,255,.24);border-radius:22px;background:#0b1020;box-shadow:0 18px 48px rgba(0,0,0,.36),0 0 26px rgba(88,104,255,.08)}
+.nx-immersive-post>.nx-immersive-header{position:absolute;z-index:3;top:0;left:0;right:0;min-height:76px;padding:12px 14px;background:linear-gradient(180deg,rgba(5,8,18,.82),rgba(5,8,18,.18));backdrop-filter:blur(8px)}
+.nx-immersive-post>.post-image{position:absolute;z-index:-1;inset:0;width:100%;height:100%;aspect-ratio:auto;margin:0;border-radius:0;object-fit:cover;object-position:center;background:#101526}
+.nx-immersive-post>.text-post-visual{position:absolute;inset:0;min-height:0;justify-content:center}
+.nx-immersive-post:after{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(5,7,15,.18),transparent 34%,rgba(5,7,15,.18) 55%,rgba(5,7,15,.88) 100%)}
+.nx-immersive-post>.nx-immersive-header,.nx-immersive-post>.nx-immersive-bottom{z-index:2}
+.nx-immersive-post .avatar{flex-basis:42px;width:42px;height:42px;border:2px solid #b6a5ff;padding:1px}
+.nx-immersive-post .post-author strong{font-size:13px;color:#fff;text-shadow:0 1px 8px #000}
+.nx-immersive-post .post-author span{font-size:10px;color:#e2e5f4;text-shadow:0 1px 8px #000}
+.nx-immersive-post .nx-creator-follow{flex:none;padding:7px 12px;border:1px solid rgba(255,255,255,.68);border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font-size:10px;font-weight:800;backdrop-filter:blur(8px)}
+.nx-immersive-post .more-button{flex:0 0 30px;width:30px;height:32px;color:#fff;background:rgba(5,8,18,.28);border-radius:9px}
+.nx-immersive-post>.nx-immersive-bottom{position:absolute;z-index:2;right:0;bottom:0;left:0;padding:18px 16px 20px;background:linear-gradient(180deg,transparent,rgba(5,7,15,.74) 24%,rgba(5,7,15,.94))}
+.nx-immersive-post .post-actions{position:absolute;right:13px;bottom:22px;display:flex;flex-direction:column;align-items:center;gap:13px;width:42px}
+.nx-immersive-post .post-action{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;color:#fff;font-size:9px;text-shadow:0 1px 6px #000}
+.nx-immersive-post .post-action svg{width:25px;height:25px;flex-basis:25px;stroke:#fff}
+.nx-immersive-post .post-action span{font-size:9px}
+.nx-immersive-post .post-action.is-liked svg{fill:#ff5b9e;stroke:#ff5b9e}
+.nx-immersive-post .post-action.is-saved svg{fill:#83ddff;stroke:#83ddff}
+.nx-immersive-post .post-caption{max-width:calc(100% - 58px);margin:0 54px 4px 0;color:#fff;font-size:13px;line-height:1.5;text-shadow:0 1px 8px #000}
+.nx-immersive-post .comments-panel{position:relative;z-index:4;margin:12px 48px 0 0;padding:12px;border:1px solid rgba(255,255,255,.16);border-radius:14px;background:rgba(9,12,24,.94);backdrop-filter:blur(16px)}
+.nx-feed-discovery{margin:16px 0 20px;padding:17px 14px 14px;overflow:hidden;border:1px solid rgba(132,139,255,.24);border-radius:20px;background:radial-gradient(ellipse at 100% 0,rgba(102,90,255,.17),transparent 48%),linear-gradient(145deg,#121827,#0b101d)}
+.nx-feed-discovery-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+.nx-feed-discovery-heading span{color:#8ce8ff;font-size:8px;font-weight:900;letter-spacing:1.5px}
+.nx-feed-discovery-heading h2{margin:5px 0 3px;color:#fff;font-size:17px;letter-spacing:-.4px}
+.nx-feed-discovery-heading p{margin:0;color:#aab3c8;font-size:10px}
+.nx-feed-discovery-heading>button{border:0;background:transparent;color:#a9a5ff;font-size:10px;font-weight:800}
+.nx-feed-discovery-track{display:flex;gap:11px;overflow-x:auto;padding:1px 1px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.nx-feed-discovery-track::-webkit-scrollbar{display:none}
+.nx-feed-person-card{position:relative;flex:0 0 154px;display:flex;min-height:218px;flex-direction:column;align-items:center;padding:15px 11px 11px;border:1px solid rgba(185,194,255,.15);border-radius:17px;background:linear-gradient(155deg,rgba(255,255,255,.065),rgba(255,255,255,.025));scroll-snap-align:start}
+.nx-feed-person-card>img{width:78px;height:78px;margin:3px 0 9px;border:2px solid rgba(141,132,255,.7);border-radius:50%;object-fit:cover}
+.nx-feed-person-card>strong{max-width:100%;overflow:hidden;color:#fff;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.nx-feed-person-card>span{margin-top:3px;color:#a9b1c6;font-size:9px}
+.nx-feed-person-card>small{margin:8px 0 10px;color:#aebee0;font-size:8px}
+.nx-feed-person-dismiss{position:absolute;top:7px;right:8px;width:22px;height:22px;border:0;border-radius:50%;color:#d8def0;background:rgba(255,255,255,.08);font-size:17px;line-height:1}
+.nx-feed-person-card>button:last-child{width:100%;min-height:32px;margin-top:auto;border:0;border-radius:10px;color:#090b15;background:linear-gradient(105deg,#55dcff,#9b83ff 68%,#df64e9);font-size:10px;font-weight:900}
+.nx-feed-person-card>button:last-child.is-following{border:1px solid rgba(255,255,255,.14);color:#e8ebf8;background:#303747}
+@media(max-width:600px){.nx-immersive-post{min-height:calc(100svh - 185px);height:calc(100svh - 185px);border-radius:17px}.nx-immersive-post .post-header{min-height:66px}.nx-immersive-post .post-caption{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.nx-feed-discovery-track{scroll-behavior:auto}}
